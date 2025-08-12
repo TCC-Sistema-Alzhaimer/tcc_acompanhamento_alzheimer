@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'front-end/**' # só dispara se houver mudanças no front-end
+      - 'front-end/**'
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
@@ -24,24 +24,20 @@ jobs:
           submodules: true
           lfs: false
 
-      # Instalar Node.js para rodar o front-end
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # Instalar dependências do front-end 
       - name: Install dependencies
         working-directory: ./front-end
         run: npm install
 
-      # Gerar versão web do Expo
       - name: Build web version
         working-directory: ./front-end
         run: npm run build:web
 
-      # Deploy para Azure Static Web Apps
-      - name: Build And Deploy
+      - name: Deploy to Azure Static Web Apps
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -49,8 +45,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "front-end"
-          api_location: ""
-          output_location: "front-end/dist"
+          app_artifact_location: "dist"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
