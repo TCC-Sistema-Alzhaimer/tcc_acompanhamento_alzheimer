@@ -1,18 +1,18 @@
-name: Azure WebApp Deploy - Backend
+name: Deploy Backend Azure WebApp via Service Principal
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'back-end/**'   # dispara só se mudar algo no backend
+      - 'backend/**'
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
+    - name: Checkout repository
       uses: actions/checkout@v3
 
     - name: Set up JDK 17
@@ -22,13 +22,17 @@ jobs:
         distribution: 'temurin'
 
     - name: Build with Maven
-      working-directory: ./back-end
-      run: mvn clean package --file pom.xml
+      working-directory: ./backend
+      run: mvn clean package
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Deploy to Azure WebApp
       uses: azure/webapps-deploy@v2
       with:
-        app-name: 'backend-tcc-alzheimer-springboot'  # nome do app no Azure
-        slot-name: 'production'
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: ./back-end/target/*.jar
+        app-name: backend-tcc-alzheimer-springboot
+        slot-name: production
+        package: ./backend/target/*.jar
