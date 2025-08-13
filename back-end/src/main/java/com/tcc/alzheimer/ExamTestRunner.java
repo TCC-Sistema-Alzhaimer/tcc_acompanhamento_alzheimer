@@ -31,6 +31,6 @@ public class ExamTestRunner implements CommandLineRunner {
 
         examRepository.save(exam);
 
-        System.out.println("✅ Exame salvo com ID: " + exam.getId());
+        System.out.println("✅ Exame salvo com ID:  " + exam.getId());
     }
 }
