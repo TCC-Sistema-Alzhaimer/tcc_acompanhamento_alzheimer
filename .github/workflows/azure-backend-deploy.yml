@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'backend/**'
+      - 'back-end/**'
 
 jobs:
   build-and-deploy:
@@ -22,7 +22,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Build with Maven
-      working-directory: ./backend
+      working-directory: ./back-end
       run: mvn clean package
 
     - name: Azure Login
@@ -35,4 +35,4 @@ jobs:
       with:
         app-name: backend-tcc-alzheimer-springboot
         slot-name: production
-        package: ./backend/target/*.jar
+        package: ./back-end/target/*.jar
