@@ -2,7 +2,7 @@ package com.tcc.alzheimer.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import java.util.List;
 import java.time.LocalDate;
 
 @Entity
@@ -12,27 +12,26 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class Exam {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "doctor_id", nullable = false)
     private Integer doctorId;
-
-    @Column(name = "patient_id", nullable = false)
     private Integer patientId;
-
-    @Column(nullable = false)
     private String type;
-
-    @Column(name = "request_date", nullable = false)
     private LocalDate requestDate;
-
     private String result;
-
     private String note;
-
     private String status;
+
+    @OneToMany(mappedBy = "exam", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ExamFile> examFiles;
+
+    @OneToMany(mappedBy = "examFile.exam", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Transient // se quiser simplificar, senão pode remover
+    private List<Indicator> indicators; // relação indireta via ExamFile
+
+    @OneToOne(mappedBy = "exam", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Conclusion conclusion;
 }
 
