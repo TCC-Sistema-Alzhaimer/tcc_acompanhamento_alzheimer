@@ -9,8 +9,10 @@ public class AlzheimerApplication {
 
 	public static void main(String[] args) {
 
-		Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
-        dotenv.entries().forEach(e -> System.setProperty(e.getKey(), e.getValue()));
+		if (System.getenv("DB_URL") == null) { // Só carrega .env se não tiver var no ambiente
+            Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+            dotenv.entries().forEach(e -> System.setProperty(e.getKey(), e.getValue()));
+        }
 
 		SpringApplication.run(AlzheimerApplication.class, args);
 	}
