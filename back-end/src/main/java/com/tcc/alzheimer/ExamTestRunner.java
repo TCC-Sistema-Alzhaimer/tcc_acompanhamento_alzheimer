@@ -22,7 +22,7 @@ public class ExamTestRunner implements CommandLineRunner {
         Exam exam = Exam.builder()
                 .doctorId(1)
                 .patientId(2)
-                .type("Blood Test")
+                .type("Funcionaaaa")
                 .requestDate(LocalDate.now())
                 .result("Pending")
                 .note("Paciente deve estar em jejum")

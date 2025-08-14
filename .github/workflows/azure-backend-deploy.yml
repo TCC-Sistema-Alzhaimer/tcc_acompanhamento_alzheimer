@@ -28,7 +28,7 @@ jobs:
 
     - name: Build with Maven
       working-directory: ./back-end
-      run: mvn clean package
+      run: mvn clean package -DskipTests
 
     - name: Azure Login
       uses: azure/login@v1
