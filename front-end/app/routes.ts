@@ -2,7 +2,9 @@ import { type RouteConfig, index, layout, route } from "@react-router/dev/routes
 import { ROUTES } from "./routes/EnumRoutes";
 
 export default [
-    
+    // Rota inicial redirecionando para /login
+    index("routes/RedirectToLogin.tsx"),
+
     layout("./layout/Auth/index.tsx", [
         route(ROUTES.LOGIN, "routes/Auth/login.tsx"),
     ]),
@@ -15,5 +17,4 @@ export default [
     layout("./layout/Patient/index.tsx", [
         route(ROUTES.CAREGIVER.EXAMINATION, "routes/Caregiver/exam.tsx"),
     ]),
-
 ] satisfies RouteConfig;
