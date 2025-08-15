@@ -50,7 +50,7 @@ function LoginPage() {
                 label="Usuário:" 
                 type="email"  
                 onChange={(e) => setUsername(e.target.value)} 
-                placeholder="Email" 
+                placeholder="Email " 
             />
             <Form.Input 
                 name="password" 
