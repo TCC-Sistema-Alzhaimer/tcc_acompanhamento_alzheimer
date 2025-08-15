@@ -36,6 +36,10 @@ jobs:
       - name: Build React App
         working-directory: ./front-end
         run: npm run build
+      
+      - name: Copy staticwebapp.config.json
+        working-directory: ./front-end
+        run: cp staticwebapp.config.json build/client/
 
       - name: Deploy to Azure Static Web Apps
         id: builddeploy
