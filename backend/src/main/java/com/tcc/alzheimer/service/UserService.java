@@ -10,6 +10,7 @@ import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.User;
 import com.tcc.alzheimer.repository.UserRepository;
 
+
 @Service
 public class UserService {
     private final UserRepository repo;

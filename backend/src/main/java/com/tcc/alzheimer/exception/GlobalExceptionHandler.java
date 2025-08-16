@@ -11,6 +11,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.tcc.alzheimer.dto.ApiErrorDTO;
+
 import java.util.stream.Collectors;
 
 @RestControllerAdvice

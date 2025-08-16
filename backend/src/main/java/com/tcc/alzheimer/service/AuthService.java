@@ -1,11 +1,11 @@
 package com.tcc.alzheimer.service;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 
 import com.tcc.alzheimer.dto.LoginDTO;
 import com.tcc.alzheimer.dto.LoginResponseDTO;
