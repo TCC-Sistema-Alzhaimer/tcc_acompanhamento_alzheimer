@@ -1,10 +1,10 @@
-package com.tcc.alzheimer;
+package com.alzheimer.tcc;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class AlzheimerApplicationTests {
+class TccApplicationTests {
 
 	@Test
 	void contextLoads() {

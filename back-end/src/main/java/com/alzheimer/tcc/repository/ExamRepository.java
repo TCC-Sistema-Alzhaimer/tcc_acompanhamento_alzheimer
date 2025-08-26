@@ -1,9 +1,9 @@
-package com.tcc.alzheimer.repository;
+package com.alzheimer.tcc.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.tcc.alzheimer.model.Exam;
+import com.alzheimer.tcc.model.Exam;
 
 @Repository
 public interface ExamRepository extends JpaRepository<Exam, Integer> {

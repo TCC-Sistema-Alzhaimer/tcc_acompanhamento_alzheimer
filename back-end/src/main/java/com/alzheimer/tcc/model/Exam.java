@@ -1,4 +1,4 @@
-package com.tcc.alzheimer.model;
+package com.alzheimer.tcc.model;
 
 import jakarta.persistence.*;
 import lombok.*;
