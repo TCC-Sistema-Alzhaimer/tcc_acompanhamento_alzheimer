@@ -8,7 +8,7 @@
 		<version>3.5.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.alzheimer</groupId>
+	<groupId>com.tcc.alzheimer</groupId>
 	<artifactId>tcc</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>tcc</name>
@@ -46,7 +46,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>io.github.cdimascio</groupId>
+			<artifactId>java-dotenv</artifactId>
+			<version>5.2.2</version>
+		</dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
