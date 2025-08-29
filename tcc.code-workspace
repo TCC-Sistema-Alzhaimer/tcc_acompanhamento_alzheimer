@@ -1,0 +1,24 @@
+{
+  "folders": [
+    {
+      "path": "backend"
+    },
+    {
+      "path": "frontend"
+    },
+    {
+      "path": "mobile"
+    }
+  ],
+  "settings": {
+    "java.compile.nullAnalysis.mode": "disabled",
+    "java.import.gradle.enabled": false,
+    "java.import.maven.enabled": true,
+    "java.project.sourcePaths": [
+      "backend/src/main/java",
+      "backend/src/test/java"
+    ],
+    "java.project.outputPath": "backend/target/classes",
+    "java.project.referencedLibraries": ["backend/target/dependency/*.jar"]
+  }
+}
