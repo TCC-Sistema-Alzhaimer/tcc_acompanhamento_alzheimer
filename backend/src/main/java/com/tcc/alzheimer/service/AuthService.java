@@ -21,8 +21,7 @@ public class AuthService {
     private final PasswordEncoder encoder;
     private final Key key;
 
-    public AuthService(UserService userService, PasswordEncoder encoder,
-            @Value("${jwt.secret}") String secret) {
+    public AuthService(UserService userService, PasswordEncoder encoder, @Value("${jwt.secret}") String secret) {
         this.userService = userService;
         this.encoder = encoder;
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));

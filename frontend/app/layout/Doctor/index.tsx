@@ -6,10 +6,11 @@ import AccountMenu from "./TopbarItem/AccountMenu";
 import ActionButton from "~/components/ActionButton";
 import ForumIcon from "@mui/icons-material/Forum";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import { SystemRoles } from "~/types/SystemRoles";
 
 function DoctorLayout() {
   return (
-    <AuthGuard allowRoles={["doctor"]}>
+    <AuthGuard allowRoles={[SystemRoles.DOCTOR, SystemRoles.ADMIN]}>
       <div className="flex flex-col h-screen">
         <div>
           <Topbar>
