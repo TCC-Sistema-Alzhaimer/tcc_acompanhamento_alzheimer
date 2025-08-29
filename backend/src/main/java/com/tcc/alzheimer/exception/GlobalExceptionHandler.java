@@ -1,6 +1,4 @@
-package com.alzheimer.tcc.exception;
-
-import com.alzheimer.tcc.dto.ApiErrorDTO;
+package com.tcc.alzheimer.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -12,6 +10,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import com.tcc.alzheimer.dto.ApiErrorDTO;
 
 import java.util.stream.Collectors;
 

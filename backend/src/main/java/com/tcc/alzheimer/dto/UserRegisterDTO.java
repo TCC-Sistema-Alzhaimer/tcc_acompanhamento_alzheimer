@@ -1,4 +1,4 @@
-package com.alzheimer.tcc.dto;
+package com.tcc.alzheimer.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

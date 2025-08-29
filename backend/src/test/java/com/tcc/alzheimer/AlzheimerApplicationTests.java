@@ -1,4 +1,4 @@
-package com.alzheimer.tcc;
+package com.tcc.alzheimer;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

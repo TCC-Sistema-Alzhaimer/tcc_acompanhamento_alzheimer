@@ -1,14 +1,15 @@
-package com.alzheimer.tcc.service;
+package com.tcc.alzheimer.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.alzheimer.tcc.dto.UserDTO;
-import com.alzheimer.tcc.dto.UserRegisterDTO;
-import com.alzheimer.tcc.exception.ResourceConflictException;
-import com.alzheimer.tcc.exception.ResourceNotFoundException;
-import com.alzheimer.tcc.model.User;
-import com.alzheimer.tcc.repository.UserRepository;
+import com.tcc.alzheimer.dto.UserDTO;
+import com.tcc.alzheimer.dto.UserRegisterDTO;
+import com.tcc.alzheimer.exception.ResourceConflictException;
+import com.tcc.alzheimer.exception.ResourceNotFoundException;
+import com.tcc.alzheimer.model.User;
+import com.tcc.alzheimer.repository.UserRepository;
+
 
 @Service
 public class UserService {

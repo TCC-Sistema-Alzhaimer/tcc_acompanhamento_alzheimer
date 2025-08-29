@@ -19,6 +19,10 @@ public class ExamTestRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        if( examRepository.findAll().size() > 0 ) {
+            System.out.println("Exames já existem. Não será criado nenhum exame de teste.");
+            return;
+        }
         Exam exam = Exam.builder()
                 .doctorId(1)
                 .patientId(2)

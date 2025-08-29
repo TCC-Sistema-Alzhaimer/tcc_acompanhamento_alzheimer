@@ -1,4 +1,4 @@
-package com.alzheimer.tcc.model;
+package com.tcc.alzheimer.model;
 
 import java.time.LocalDate;
 

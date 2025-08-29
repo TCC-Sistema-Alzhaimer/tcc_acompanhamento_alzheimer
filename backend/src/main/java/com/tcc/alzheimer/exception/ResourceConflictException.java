@@ -1,4 +1,4 @@
-package com.alzheimer.tcc.exception;
+package com.tcc.alzheimer.exception;
 
 public class ResourceConflictException extends RuntimeException {
     public ResourceConflictException(String message) {

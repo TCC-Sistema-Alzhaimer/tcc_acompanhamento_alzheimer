@@ -1,4 +1,4 @@
-package com.alzheimer.tcc.dto;
+package com.tcc.alzheimer.dto;
 
 import java.time.LocalDateTime;
 

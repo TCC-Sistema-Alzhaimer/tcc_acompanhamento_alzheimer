@@ -1,12 +1,12 @@
-package com.alzheimer.tcc.controller;
+package com.tcc.alzheimer.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import com.alzheimer.tcc.dto.LoginDTO;
-import com.alzheimer.tcc.dto.LoginResponseDTO;
-import com.alzheimer.tcc.service.AuthService;
+import com.tcc.alzheimer.dto.LoginDTO;
+import com.tcc.alzheimer.dto.LoginResponseDTO;
+import com.tcc.alzheimer.service.AuthService;
 
 import jakarta.validation.Valid;
 

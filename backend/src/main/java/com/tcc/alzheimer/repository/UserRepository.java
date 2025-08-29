@@ -1,8 +1,8 @@
-package com.alzheimer.tcc.repository;
+package com.tcc.alzheimer.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.alzheimer.tcc.model.User;
+import com.tcc.alzheimer.model.User;
 
 import java.util.Optional;
 
