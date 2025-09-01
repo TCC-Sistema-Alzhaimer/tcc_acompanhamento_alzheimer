@@ -16,7 +16,7 @@ import com.tcc.alzheimer.model.roles.Patient;
 import com.tcc.alzheimer.service.roles.PatientService;
 
 @RestController
-@RequestMapping("/Patients")
+@RequestMapping("/patients")
 public class PatientController {
     private final PatientService service;
 
