@@ -7,8 +7,8 @@ import com.tcc.alzheimer.dto.UserDTO;
 import com.tcc.alzheimer.dto.UserRegisterDTO;
 import com.tcc.alzheimer.exception.ResourceConflictException;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
-import com.tcc.alzheimer.model.User;
-import com.tcc.alzheimer.repository.UserRepository;
+import com.tcc.alzheimer.model.roles.User;
+import com.tcc.alzheimer.repository.roles.UserRepository;
 
 
 @Service
@@ -36,6 +36,6 @@ public class UserService {
         user.setPassword(encoder.encode(dto.password()));
         repo.save(user);
 
-        return new UserDTO(user.getId(), user.getEmail(), user.getRole());
+        return new UserDTO(user.getId(), user.getEmail(), user.getType());
     }
 }

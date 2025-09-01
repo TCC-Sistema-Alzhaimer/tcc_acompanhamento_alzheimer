@@ -3,14 +3,14 @@ version: '3.8'
 services:
   backend:
     build:
-      context: ./back-end
+      context: ./backend
       dockerfile: docker/Dockerfile.dev
     container_name: backend-alzheimer
     ports:
       - "8080:8080"
       - "5005:5005" # debug remoto opcional
     volumes:
-      - ./back-end:/app
+      - ./backend:/app
       - ~/.m2:/root/.m2
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
@@ -24,13 +24,13 @@ services:
 
   frontend:
     build:
-      context: ./front-end
+      context: ./frontend
       dockerfile: Dockerfile.dev
     container_name: frontend-alzheimer
     ports:
       - "5173:5173"
     volumes:
-      - ./front-end:/app
+      - ./frontend:/app
       - /app/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
