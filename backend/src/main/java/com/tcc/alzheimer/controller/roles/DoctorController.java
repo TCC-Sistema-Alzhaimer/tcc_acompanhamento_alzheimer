@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tcc.alzheimer.dto.DoctorDto;
 import com.tcc.alzheimer.model.roles.Doctor;
+import com.tcc.alzheimer.model.roles.Patient;
 import com.tcc.alzheimer.service.roles.DoctorService;
 
 @RestController
@@ -36,18 +38,44 @@ public class DoctorController {
     }
 
     @PostMapping
-    public ResponseEntity<Doctor> create(@RequestBody Doctor doctor) {
-        return ResponseEntity.ok(service.save(doctor));
+    public ResponseEntity<Doctor> create(@RequestBody DoctorDto dto) {
+        Doctor doctor = new Doctor();
+        doctor.setCpf(dto.getCpf());
+        doctor.setName(dto.getName());
+        doctor.setEmail(dto.getEmail());
+        doctor.setPhone(dto.getPhone());
+        doctor.setCrm(dto.getCrm());
+        doctor.setSpeciality(dto.getSpeciality());
+        doctor.setPassword(dto.getPassword());
+        doctor.setType(dto.getUserType());
+
+        return ResponseEntity.ok(service.save(doctor, dto.getPatientEmails()));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Doctor> update(@PathVariable Long id, @RequestBody Doctor doctor) {
-        return ResponseEntity.ok(service.update(id, doctor));
+    public ResponseEntity<Doctor> update(@PathVariable Long id, @RequestBody DoctorDto dto) {
+        Doctor doctor = new Doctor();
+        doctor.setCpf(dto.getCpf());
+        doctor.setName(dto.getName());
+        doctor.setEmail(dto.getEmail());
+        doctor.setPhone(dto.getPhone());
+        doctor.setCrm(dto.getCrm());
+        doctor.setPassword(dto.getPassword());
+        doctor.setSpeciality(dto.getSpeciality());
+        doctor.setType(dto.getUserType());
+
+        return ResponseEntity.ok(service.update(id, doctor, dto.getPatientEmails()));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/patients")
+    public ResponseEntity<List<Patient>> getPatients(@PathVariable Long id) {
+        Doctor doctor = service.findById(id);
+        return ResponseEntity.ok(service.getPatients(doctor));
     }
 }

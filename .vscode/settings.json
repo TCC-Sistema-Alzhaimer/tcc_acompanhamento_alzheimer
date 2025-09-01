@@ -10,5 +10,6 @@
     "java.project.outputPath": "backend/target/classes",
     "java.project.referencedLibraries": [
         "backend/target/dependency/*.jar"
-    ]
+    ],
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

@@ -2,6 +2,7 @@ package com.tcc.alzheimer.controller.roles;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tcc.alzheimer.dto.PatientDto;
+import com.tcc.alzheimer.dto.PatientResponseDTO;
+import com.tcc.alzheimer.dto.PatientUpdateDTO;
+import com.tcc.alzheimer.exception.ResourceNotFoundException;
+import com.tcc.alzheimer.model.roles.Caregiver;
+import com.tcc.alzheimer.model.roles.Doctor;
 import com.tcc.alzheimer.model.roles.Patient;
 import com.tcc.alzheimer.service.roles.PatientService;
 
@@ -35,18 +42,53 @@ public class PatientController {
     }
 
     @PostMapping
-    public ResponseEntity<Patient> create(@RequestBody Patient patient) {
-        return ResponseEntity.ok(service.save(patient));
+    public ResponseEntity<Patient> create(@RequestBody PatientDto dto) {
+        Patient patient = new Patient();
+        patient.setCpf(dto.getCpf());
+        patient.setName(dto.getName());
+        patient.setEmail(dto.getEmail());
+        patient.setPhone(dto.getPhone());
+        patient.setBirthdate(dto.getBirthdate());
+        patient.setGender(dto.getGender());
+        patient.setAddress(dto.getAddress());
+        patient.setPassword(dto.getPassword());
+        patient.setType(dto.getUserType());
+
+        return ResponseEntity.ok(service.save(patient, dto.getDoctorEmails(), dto.getCaregiverEmails()));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Patient> update(@PathVariable Long id, @RequestBody Patient patient) {
-        return ResponseEntity.ok(service.update(id, patient));
+    public ResponseEntity<?> updatePatient(
+            @PathVariable Long id,
+            @RequestBody PatientUpdateDTO dto
+    ) {
+        try {
+            PatientResponseDTO updated = service.update(id, dto);
+            return ResponseEntity.ok(updated);
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        } catch (Exception ex) {
+            ex.printStackTrace(); // Para debug
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao atualizar paciente: " + ex.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/caregivers")
+    public ResponseEntity<List<Caregiver>> getCaregivers(@PathVariable Long id) {
+        Patient patient = service.findById(id);
+        return ResponseEntity.ok(service.getCaregivers(patient));
+    }
+
+    @GetMapping("/{id}/doctors")
+    public ResponseEntity<List<Doctor>> getDoctors(@PathVariable Long id) {
+        Patient patient = service.findById(id);
+        return ResponseEntity.ok(service.getDoctors(patient));
     }
 }

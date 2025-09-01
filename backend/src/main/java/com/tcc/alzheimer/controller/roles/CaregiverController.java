@@ -12,12 +12,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tcc.alzheimer.dto.CaregiverDto;
 import com.tcc.alzheimer.model.roles.Caregiver;
+import com.tcc.alzheimer.model.roles.Patient;
 import com.tcc.alzheimer.service.roles.CaregiverService;
 
 @RestController
 @RequestMapping("/carregivers")
 public class CaregiverController {
+
     private final CaregiverService service;
 
     public CaregiverController(CaregiverService service) {
@@ -35,18 +38,46 @@ public class CaregiverController {
     }
 
     @PostMapping
-    public ResponseEntity<Caregiver> create(@RequestBody Caregiver Caregiver) {
-        return ResponseEntity.ok(service.save(Caregiver));
+    public ResponseEntity<Caregiver> create(@RequestBody CaregiverDto dto) {
+        Caregiver caregiver = new Caregiver();
+        caregiver.setCpf(dto.getCpf());
+        caregiver.setName(dto.getName());
+        caregiver.setEmail(dto.getEmail());
+        caregiver.setPhone(dto.getPhone());
+        caregiver.setBirthdate(dto.getBirthdate());
+        caregiver.setGender(dto.getGender());
+        caregiver.setAddress(dto.getAddress());
+        caregiver.setPassword(dto.getPassword());
+        caregiver.setType(dto.getUserType());
+
+        return ResponseEntity.ok(service.save(caregiver, dto.getPatientEmails()));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Caregiver> update(@PathVariable Long id, @RequestBody Caregiver Caregiver) {
-        return ResponseEntity.ok(service.update(id, Caregiver));
+    public ResponseEntity<Caregiver> update(@PathVariable Long id, @RequestBody CaregiverDto dto) {
+        Caregiver caregiver = new Caregiver();
+        caregiver.setCpf(dto.getCpf());
+        caregiver.setName(dto.getName());
+        caregiver.setEmail(dto.getEmail());
+        caregiver.setPhone(dto.getPhone());
+        caregiver.setBirthdate(dto.getBirthdate());
+        caregiver.setGender(dto.getGender());
+        caregiver.setAddress(dto.getAddress());
+        caregiver.setPassword(dto.getPassword());
+        caregiver.setType(dto.getUserType());
+
+        return ResponseEntity.ok(service.update(id, caregiver, dto.getPatientEmails()));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/patients")
+    public ResponseEntity<List<Patient>> getPatients(@PathVariable Long id) {
+        Caregiver caregiver = service.findById(id);
+        return ResponseEntity.ok(service.getPatients(caregiver));
     }
 }
