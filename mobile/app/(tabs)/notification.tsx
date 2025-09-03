@@ -2,10 +2,10 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { StyleSheet } from "react-native";
 
-export default function HomeNewScreen() {
+export default function NotificationScreen() {
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">Home New</ThemedText>
+      <ThemedText type="title">Notificações</ThemedText>
     </ThemedView>
   );
 }
