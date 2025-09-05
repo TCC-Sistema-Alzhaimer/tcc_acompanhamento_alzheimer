@@ -1,4 +1,4 @@
-package com.tcc.alzheimer.dto;
+package com.tcc.alzheimer.dto.auth;
 import com.tcc.alzheimer.model.enums.UserType;
 public record LoginResponseDTO(
         String token,

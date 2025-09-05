@@ -1,4 +1,4 @@
-package com.tcc.alzheimer.dto;
+package com.tcc.alzheimer.dto.roles;
 
 import java.util.List;
 

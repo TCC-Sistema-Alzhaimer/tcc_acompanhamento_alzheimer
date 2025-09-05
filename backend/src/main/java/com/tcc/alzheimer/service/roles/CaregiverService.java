@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.tcc.alzheimer.dto.CaregiverDto;
+import com.tcc.alzheimer.dto.roles.CaregiverDto;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Caregiver;
 import com.tcc.alzheimer.model.roles.Patient;

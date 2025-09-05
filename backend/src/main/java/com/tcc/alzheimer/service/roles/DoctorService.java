@@ -7,7 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tcc.alzheimer.dto.DoctorDto;
+import com.tcc.alzheimer.dto.roles.DoctorDto;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Doctor;
 import com.tcc.alzheimer.model.roles.Patient;

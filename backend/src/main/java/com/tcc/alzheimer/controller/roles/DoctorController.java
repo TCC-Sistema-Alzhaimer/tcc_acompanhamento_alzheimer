@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tcc.alzheimer.dto.DoctorDto;
+import com.tcc.alzheimer.dto.roles.DoctorDto;
 import com.tcc.alzheimer.model.roles.Doctor;
 import com.tcc.alzheimer.model.roles.Patient;
 import com.tcc.alzheimer.service.roles.DoctorService;

@@ -1,10 +1,10 @@
-package com.tcc.alzheimer.service;
+package com.tcc.alzheimer.service.roles;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.tcc.alzheimer.dto.UserDTO;
-import com.tcc.alzheimer.dto.UserRegisterDTO;
+import com.tcc.alzheimer.dto.roles.UserDTO;
+import com.tcc.alzheimer.dto.roles.UserRegisterDTO;
 import com.tcc.alzheimer.exception.ResourceConflictException;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.User;

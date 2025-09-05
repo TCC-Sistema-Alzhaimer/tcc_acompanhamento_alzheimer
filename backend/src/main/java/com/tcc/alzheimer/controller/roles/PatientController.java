@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tcc.alzheimer.dto.PatientDto;
-import com.tcc.alzheimer.dto.PatientResponseDTO;
-import com.tcc.alzheimer.dto.PatientUpdateDTO;
+import com.tcc.alzheimer.dto.roles.PatientDto;
+import com.tcc.alzheimer.dto.roles.PatientResponseDTO;
+import com.tcc.alzheimer.dto.roles.PatientUpdateDTO;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Caregiver;
 import com.tcc.alzheimer.model.roles.Doctor;
