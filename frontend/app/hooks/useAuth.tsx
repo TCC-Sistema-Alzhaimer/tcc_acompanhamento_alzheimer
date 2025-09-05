@@ -2,13 +2,11 @@
 import Cookies from "js-cookie";
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
-import { doctors, patients, users } from "~/mocks/mock";
 import { ROUTES } from "~/routes/EnumRoutes";
 import { loginRequest } from "~/services/auth";
 import type { LoginResponse } from "~/types/api/auth/LoginResponse";
-import type { Patient } from "~/types/Users";
 
-interface AuthContextType {
+export interface AuthContextType {
   user: { user: LoginResponse } | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
@@ -24,9 +22,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const loginResult = await loginRequest({ email: username, password });
     if (loginResult.status === 200) {
       const foundUser: LoginResponse = loginResult.data;
+      console.log("Resposta completa da API:", loginResult);
       if (foundUser?.token) {
         Cookies.set("token", foundUser.token);
-        localStorage.setItem("token", foundUser.token);
+        //localStorage.setItem("token", foundUser.token); -> removido para usar cookies HttpOnly
       }
       setUser({ user: foundUser });
       navigate(ROUTES.DOCTOR.EXAMINATION);
@@ -36,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function logout() {
-    localStorage.removeItem("token");
+    //localStorage.removeItem("token"); -> removido para usar cookies HttpOnly
     Cookies.remove("token");
     setUser(null);
     navigate(ROUTES.LOGIN);

@@ -3,5 +3,7 @@ import type { LoginRequest } from "~/types/api/auth/LoginRequest";
 import type { LoginResponse } from "~/types/api/auth/LoginResponse";
 
 export const loginRequest = (body: LoginRequest) => {
-  return api.post<LoginResponse>("/auth/login", body);
+  const result = api.post<LoginResponse>("/api/auth/login", body);
+  console.log("loginRequest result:", result); //remover depois
+  return result;
 };
