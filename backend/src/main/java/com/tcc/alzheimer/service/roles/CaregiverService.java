@@ -3,8 +3,10 @@ package com.tcc.alzheimer.service.roles;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.tcc.alzheimer.dto.CaregiverDto;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Caregiver;
 import com.tcc.alzheimer.model.roles.Patient;
@@ -16,10 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class CaregiverService {
     private final CaregiverRepository repo;
     private final PatientRepository patientRepo;
+    private final PasswordEncoder encoder;
 
-    public CaregiverService(CaregiverRepository repo, PatientRepository patientRepo) {
+    public CaregiverService(CaregiverRepository repo, PatientRepository patientRepo, PasswordEncoder encoder) {
         this.repo = repo;
         this.patientRepo = patientRepo;
+        this.encoder = encoder;
     }
 
     public List<Caregiver> findAll() {
@@ -31,19 +35,38 @@ public class CaregiverService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cuidador com id " + id + " não encontrado"));
     }
 
-    public Caregiver save(Caregiver caregiver, List<String> patientEmails) {
-        if (patientEmails == null || patientEmails.isEmpty()) {
-            throw new IllegalArgumentException("Cuidador precisa ter pelo menos 1 paciente.");
+    public Caregiver save(CaregiverDto dto) {
+
+        if ((repo.findByEmail(dto.getEmail()).isEmpty()) || (repo.findByCpf(dto.getCpf()).isEmpty())) {
+            Caregiver caregiver = new Caregiver();
+            caregiver.setCpf(dto.getCpf());
+            caregiver.setName(dto.getName());
+            caregiver.setEmail(dto.getEmail());
+            caregiver.setPhone(dto.getPhone());
+            caregiver.setBirthdate(dto.getBirthdate());
+            caregiver.setGender(dto.getGender());
+            caregiver.setAddress(dto.getAddress());
+            caregiver.setPassword(encoder.encode(dto.getPassword()));
+            caregiver.setType(dto.getUserType());
+            List<String> patientEmails = dto.getPatientEmails();
+
+            if (patientEmails == null || patientEmails.isEmpty()) {
+                throw new IllegalArgumentException("Cuidador precisa ter pelo menos 1 paciente.");
+            }
+
+            patientEmails.forEach(email -> {
+                Patient patient = patientRepo.findByEmail(email)
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Paciente com email " + email + " não encontrado"));
+                caregiver.getPatients().add(patient);
+                patient.getCaregivers().add(caregiver);
+            });
+
+            return repo.save(caregiver);
+        } else {
+            throw new IllegalArgumentException("Cuidador já existe. Não será recriado.");
         }
 
-        patientEmails.forEach(email -> {
-            Patient patient = patientRepo.findByEmail(email)
-                    .orElseThrow(() -> new ResourceNotFoundException("Paciente com email " + email + " não encontrado"));
-            caregiver.getPatients().add(patient);
-            patient.getCaregivers().add(caregiver);
-        });
-
-        return repo.save(caregiver);
     }
 
     @Transactional
@@ -64,7 +87,8 @@ public class CaregiverService {
 
             patientEmails.forEach(email -> {
                 Patient patient = patientRepo.findByEmail(email)
-                        .orElseThrow(() -> new ResourceNotFoundException("Paciente com email " + email + " não encontrado"));
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Paciente com email " + email + " não encontrado"));
                 existing.getPatients().add(patient);
                 patient.getCaregivers().add(existing);
             });

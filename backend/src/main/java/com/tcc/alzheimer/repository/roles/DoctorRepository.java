@@ -13,8 +13,8 @@ import com.tcc.alzheimer.model.roles.Patient;
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     Optional<Doctor> findByEmail(String email);
-    
-    Doctor findByCrm(String crm);
+    Optional<Doctor> findByCpf(String cpf);
+    Optional<Doctor> findByCrm(String crm);
 
     List<Doctor> findByPatients(Patient patient);
 }

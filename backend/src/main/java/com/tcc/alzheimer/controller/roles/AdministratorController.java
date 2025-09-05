@@ -36,7 +36,7 @@ public class AdministratorController {
 
     @PostMapping
     public ResponseEntity<Administrator> create(@RequestBody Administrator administrator) {
-        return ResponseEntity.ok(service.save(administrator));
+        return ResponseEntity.ok(service.register(administrator));
     }
 
     @PutMapping("/{id}")

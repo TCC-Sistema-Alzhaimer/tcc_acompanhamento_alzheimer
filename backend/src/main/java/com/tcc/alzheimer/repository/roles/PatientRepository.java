@@ -14,6 +14,7 @@ import com.tcc.alzheimer.model.roles.Patient;
 public interface PatientRepository extends JpaRepository<Patient, Long> {
 
     Optional<Patient> findByEmail(String email);
+    Optional<Patient> findByCpf(String cpf);
     
     List<Patient> findByCaregivers(Caregiver caregiver);
 

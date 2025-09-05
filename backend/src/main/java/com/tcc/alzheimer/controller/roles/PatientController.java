@@ -43,18 +43,7 @@ public class PatientController {
 
     @PostMapping
     public ResponseEntity<Patient> create(@RequestBody PatientDto dto) {
-        Patient patient = new Patient();
-        patient.setCpf(dto.getCpf());
-        patient.setName(dto.getName());
-        patient.setEmail(dto.getEmail());
-        patient.setPhone(dto.getPhone());
-        patient.setBirthdate(dto.getBirthdate());
-        patient.setGender(dto.getGender());
-        patient.setAddress(dto.getAddress());
-        patient.setPassword(dto.getPassword());
-        patient.setType(dto.getUserType());
-
-        return ResponseEntity.ok(service.save(patient, dto.getDoctorEmails(), dto.getCaregiverEmails()));
+        return ResponseEntity.ok(service.save(dto));
     }
 
     @PutMapping("/{id}")
@@ -68,7 +57,6 @@ public class PatientController {
         } catch (ResourceNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         } catch (Exception ex) {
-            ex.printStackTrace(); // Para debug
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erro ao atualizar paciente: " + ex.getMessage());
         }

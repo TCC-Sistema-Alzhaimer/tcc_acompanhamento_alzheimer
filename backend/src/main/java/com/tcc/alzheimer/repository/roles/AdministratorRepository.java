@@ -10,4 +10,6 @@ import com.tcc.alzheimer.model.roles.Administrator;
 @Repository
 public interface AdministratorRepository extends JpaRepository<Administrator, Long> {
     Optional<Administrator> findByEmail(String email);
+    Optional<Administrator> findByCpf(String cpf);
+    
 }

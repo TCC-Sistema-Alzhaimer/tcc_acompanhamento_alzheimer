@@ -194,7 +194,7 @@ def update_patient(token, id, name=None, email=None, doctor_emails=None, caregiv
 # --- Execução ---
 token = login_admin("admin@gmail.com", "123456")
 if token:
-
+    print(token)
     print("\n--- Operações CRUD Exemplos ---")
     print("\n--- Add Admin ---\n")
     admin = create_admin(token)
@@ -202,8 +202,8 @@ if token:
     doctor = create_doctor(token)
     print("\n--- Add Patient ---\n")
     patient = create_patient(token, doctor_emails=[doctor["email"]])
-    patient = create_patient(token, doctor_emails=[doctor["email"]])
-    patient = create_patient(token, doctor_emails=[doctor["email"]])
+    #patient = create_patient(token, doctor_emails=[doctor["email"]])
+    #patient = create_patient(token, doctor_emails=[doctor["email"]])
     print("\n--- Add Carregiver ---\n")
     caregiver = create_caregiver(token, patient_emails=[patient["email"]])
 
@@ -211,21 +211,21 @@ if token:
 
     
     print("\n--- Get patient ---\n")
-    get_patient_by_id(token, patient["id"])
+    #get_patient_by_id(token, patient["id"])
     print("\n--- Get doctor ---\n")
-    get_doctor_by_id(token, doctor["id"])
+    #get_doctor_by_id(token, doctor["id"])
     print("\n--- Get patients by doctor ---\n")
-    get_patients_by_doctor_id(token, doctor["id"])
+    #get_patients_by_doctor_id(token, doctor["id"])
     print("\n--- Get carregiver ---\n")
-    get_caregiver_by_id(token, caregiver["id"])
+    #get_caregiver_by_id(token, caregiver["id"])
     
 
     print("\n--- Operações PUT Exemplos ---\n")
     print("\n--- Put patient ---\n")
-    update_patient(token, patient["id"], name="Paciente Atualizado")
+    #update_patient(token, patient["id"], name="Paciente Atualizado")
     print("\n--- Put doctor ---\n")
-    update_doctor(token, doctor["id"], speciality="Neurologista")
+    #update_doctor(token, doctor["id"], speciality="Neurologista")
     print("\n--- Put carrigiver ---\n")
-    update_caregiver(token, caregiver["id"], name="Cuidador Atualizado")
+    #update_caregiver(token, caregiver["id"], name="Cuidador Atualizado")
     print("\n--- Put admin ---\n")
-    update_admin(token, admin["id"], name="Administrador Atualizado")
+    #update_admin(token, admin["id"], name="Administrador Atualizado")

@@ -39,17 +39,7 @@ public class DoctorController {
 
     @PostMapping
     public ResponseEntity<Doctor> create(@RequestBody DoctorDto dto) {
-        Doctor doctor = new Doctor();
-        doctor.setCpf(dto.getCpf());
-        doctor.setName(dto.getName());
-        doctor.setEmail(dto.getEmail());
-        doctor.setPhone(dto.getPhone());
-        doctor.setCrm(dto.getCrm());
-        doctor.setSpeciality(dto.getSpeciality());
-        doctor.setPassword(dto.getPassword());
-        doctor.setType(dto.getUserType());
-
-        return ResponseEntity.ok(service.save(doctor, dto.getPatientEmails()));
+        return ResponseEntity.ok(service.save(dto));
     }
 
     @PutMapping("/{id}")

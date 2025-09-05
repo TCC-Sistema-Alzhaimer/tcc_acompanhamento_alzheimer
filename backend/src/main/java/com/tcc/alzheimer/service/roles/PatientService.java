@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.tcc.alzheimer.dto.PatientDto;
 import com.tcc.alzheimer.dto.PatientResponseDTO;
 import com.tcc.alzheimer.dto.PatientUpdateDTO;
-
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Caregiver;
 import com.tcc.alzheimer.model.roles.Doctor;
@@ -16,18 +18,20 @@ import com.tcc.alzheimer.model.roles.Patient;
 import com.tcc.alzheimer.repository.roles.CaregiverRepository;
 import com.tcc.alzheimer.repository.roles.DoctorRepository;
 import com.tcc.alzheimer.repository.roles.PatientRepository;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PatientService {
     private final PatientRepository repo;
     private final DoctorRepository doctorRepo;
     private final CaregiverRepository caregiverRepo;
+    private final PasswordEncoder encoder;
 
-    public PatientService(PatientRepository repo, DoctorRepository doctorRepo, CaregiverRepository caregiverRepo) {
+    public PatientService(PatientRepository repo, DoctorRepository doctorRepo, CaregiverRepository caregiverRepo,
+            PasswordEncoder encoder) {
         this.repo = repo;
         this.doctorRepo = doctorRepo;
         this.caregiverRepo = caregiverRepo;
+        this.encoder = encoder;
     }
 
     public List<Patient> findAll() {
@@ -39,31 +43,50 @@ public class PatientService {
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente com id " + id + " não encontrado"));
     }
 
-    public Patient save(Patient patient, List<String> doctorEmails, List<String> caregiverEmails) {
-        if (doctorEmails == null || doctorEmails.isEmpty()) {
-            throw new IllegalArgumentException("Paciente precisa ter pelo menos 1 médico.");
-        }
+    public Patient save(PatientDto dto) {
 
-        // Vincular médicos
-        doctorEmails.forEach(email -> {
-            Doctor doctor = doctorRepo.findByEmail(email)
-                    .orElseThrow(() -> new ResourceNotFoundException("Médico com email " + email + " não encontrado"));
-            patient.getDoctors().add(doctor);
-            doctor.getPatients().add(patient);
-        });
+        if ((repo.findByEmail(dto.getEmail()).isEmpty()) || (repo.findByCpf(dto.getCpf()).isEmpty())) {
+            Patient patient = new Patient();
+            patient.setCpf(dto.getCpf());
+            patient.setName(dto.getName());
+            patient.setEmail(dto.getEmail());
+            patient.setPhone(dto.getPhone());
+            patient.setBirthdate(dto.getBirthdate());
+            patient.setGender(dto.getGender());
+            patient.setAddress(dto.getAddress());
+            patient.setPassword(encoder.encode(dto.getPassword()));
+            patient.setType(dto.getUserType());
+            List<String> doctorEmails = dto.getDoctorEmails();
+            List<String> caregiverEmails = dto.getCaregiverEmails();
+            if (doctorEmails == null || doctorEmails.isEmpty()) {
+                throw new IllegalArgumentException("Paciente precisa ter pelo menos 1 médico.");
+            }
 
-        // Vincular cuidadores (opcional)
-        if (caregiverEmails != null) {
-            caregiverEmails.forEach(email -> {
-                Caregiver caregiver = caregiverRepo.findByEmail(email)
+            // Vincular médicos
+            doctorEmails.forEach(email -> {
+                Doctor doctor = doctorRepo.findByEmail(email)
                         .orElseThrow(
-                                () -> new ResourceNotFoundException("Cuidador com email " + email + " não encontrado"));
-                patient.getCaregivers().add(caregiver);
-                caregiver.getPatients().add(patient);
+                                () -> new ResourceNotFoundException("Médico com email " + email + " não encontrado"));
+                patient.getDoctors().add(doctor);
+                doctor.getPatients().add(patient);
             });
+
+            // Vincular cuidadores (opcional)
+            if (caregiverEmails != null) {
+                caregiverEmails.forEach(email -> {
+                    Caregiver caregiver = caregiverRepo.findByEmail(email)
+                            .orElseThrow(
+                                    () -> new ResourceNotFoundException(
+                                            "Cuidador com email " + email + " não encontrado"));
+                    patient.getCaregivers().add(caregiver);
+                    caregiver.getPatients().add(patient);
+                });
+            }
+            return repo.save(patient);
+        } else {
+            throw new IllegalArgumentException("Email ou CPF do paciente já cadastrado.");
         }
 
-        return repo.save(patient);
     }
 
     @Transactional
@@ -88,7 +111,8 @@ public class PatientService {
             patient.getDoctors().clear();
             for (String email : dto.getDoctorEmails()) {
                 Doctor doctor = doctorRepo.findByEmail(email)
-                        .orElseThrow(() -> new ResourceNotFoundException("Médico com email " + email + " não encontrado"));
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Médico com email " + email + " não encontrado"));
                 patient.getDoctors().add(doctor);
                 doctor.getPatients().add(patient);
             }
@@ -100,7 +124,8 @@ public class PatientService {
             patient.getCaregivers().clear();
             for (String email : dto.getCaregiverEmails()) {
                 Caregiver caregiver = caregiverRepo.findByEmail(email)
-                        .orElseThrow(() -> new ResourceNotFoundException("Cuidador com email " + email + " não encontrado"));
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Cuidador com email " + email + " não encontrado"));
                 patient.getCaregivers().add(caregiver);
                 caregiver.getPatients().add(patient);
             }
@@ -119,7 +144,8 @@ public class PatientService {
         response.setGender(saved.getGender());
         response.setAddress(saved.getAddress());
         response.setDoctorEmails(saved.getDoctors().stream().map(Doctor::getEmail).collect(Collectors.toList()));
-        response.setCaregiverEmails(saved.getCaregivers().stream().map(Caregiver::getEmail).collect(Collectors.toList()));
+        response.setCaregiverEmails(
+                saved.getCaregivers().stream().map(Caregiver::getEmail).collect(Collectors.toList()));
 
         return response;
     }

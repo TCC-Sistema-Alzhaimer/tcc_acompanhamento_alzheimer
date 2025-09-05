@@ -15,4 +15,5 @@ public interface CaregiverRepository extends JpaRepository<Caregiver, Long> {
     List<Caregiver> findByPatients(Patient patient);
 
     Optional<Caregiver> findByEmail(String email);
+    Optional<Caregiver> findByCpf(String cpf);
 }

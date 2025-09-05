@@ -2,18 +2,22 @@ package com.tcc.alzheimer.service.roles;
 
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
+import com.tcc.alzheimer.model.enums.UserType;
 import com.tcc.alzheimer.model.roles.Administrator;
 import com.tcc.alzheimer.repository.roles.AdministratorRepository;
 
 @Service
 public class AdministratorService {
     private final AdministratorRepository repo;
+    private final PasswordEncoder encoder;
 
-    public AdministratorService(AdministratorRepository repo) {
+    public AdministratorService(AdministratorRepository repo, PasswordEncoder encoder) {
         this.repo = repo;
+        this.encoder = encoder;
     }
 
     public List<Administrator> findAll() {
@@ -27,6 +31,24 @@ public class AdministratorService {
 
     public Administrator save(Administrator administrator) {
         return repo.save(administrator);
+    }
+
+    public Administrator register(Administrator administrator) {
+        if (repo.findByEmail(administrator.getEmail()).isEmpty() || repo.findByCpf(administrator.getCpf()).isEmpty()) {
+            Administrator admin = new Administrator();
+            admin.setCpf(administrator.getCpf());
+            admin.setName(administrator.getName());
+            admin.setEmail(administrator.getEmail());
+            admin.setPhone(administrator.getPhone());
+            admin.setPassword(encoder.encode(administrator.getPassword()));
+            admin.setType(UserType.ADMINISTRATOR);
+
+            repo.save(admin);
+        }  else {
+            throw new IllegalArgumentException("Administrador já existe. Não será recriado.");
+        }
+
+        return administrator;
     }
 
     public Administrator update(Long id, Administrator administrator) {

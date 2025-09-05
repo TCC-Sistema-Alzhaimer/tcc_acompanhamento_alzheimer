@@ -39,18 +39,7 @@ public class CaregiverController {
 
     @PostMapping
     public ResponseEntity<Caregiver> create(@RequestBody CaregiverDto dto) {
-        Caregiver caregiver = new Caregiver();
-        caregiver.setCpf(dto.getCpf());
-        caregiver.setName(dto.getName());
-        caregiver.setEmail(dto.getEmail());
-        caregiver.setPhone(dto.getPhone());
-        caregiver.setBirthdate(dto.getBirthdate());
-        caregiver.setGender(dto.getGender());
-        caregiver.setAddress(dto.getAddress());
-        caregiver.setPassword(dto.getPassword());
-        caregiver.setType(dto.getUserType());
-
-        return ResponseEntity.ok(service.save(caregiver, dto.getPatientEmails()));
+        return ResponseEntity.ok(service.save(dto));
     }
 
     @PutMapping("/{id}")
