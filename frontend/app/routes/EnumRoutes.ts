@@ -3,6 +3,7 @@ export const ROUTES = {
   HOME: "/home",
   PROFILE: "/profile",
   USER: "/user/:id",
+  PRIVATE_HOME: "/private-home",
 
   DOCTOR: {
     DASHBOARD: "/doctor/dashboard",

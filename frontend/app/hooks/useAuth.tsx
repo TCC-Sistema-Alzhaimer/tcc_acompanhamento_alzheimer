@@ -1,13 +1,13 @@
-// src/hooks/useAuth.tsx
 import Cookies from "js-cookie";
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, type ReactNode, useEffect } from "react";
+import { api } from "~/services/api";
 import { useNavigate } from "react-router";
 import { ROUTES } from "~/routes/EnumRoutes";
-import { loginRequest } from "~/services/auth";
+import { loginRequest, refreshRequest } from "~/services/auth";
 import type { LoginResponse } from "~/types/api/auth/LoginResponse";
 
 export interface AuthContextType {
-  user: { user: LoginResponse } | null;
+  user: LoginResponse | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
 }
@@ -15,20 +15,15 @@ export interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<{ user: LoginResponse } | null>(null);
+  const [user, setUser] = useState<LoginResponse | null>(null);
   const navigate = useNavigate();
 
   async function login(username: string, password: string) {
     const loginResult = await loginRequest({ email: username, password });
     if (loginResult.status === 200) {
       const foundUser: LoginResponse = loginResult.data;
-      console.log("Resposta completa da API:", loginResult);
-      if (foundUser?.token) {
-        Cookies.set("token", foundUser.token);
-        //localStorage.setItem("token", foundUser.token); -> removido para usar cookies HttpOnly
-      }
-      setUser({ user: foundUser });
-      navigate(ROUTES.DOCTOR.EXAMINATION);
+
+      setUser(foundUser);
       return Promise.resolve();
     }
     return Promise.reject(new Error("Usuário ou senha inválidos"));
@@ -40,6 +35,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     navigate(ROUTES.LOGIN);
   }
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const refreshResult = await refreshRequest();
+        if (refreshResult.status === 200) {
+          setUser(refreshResult.data);
+        }
+      } catch (error) {
+        console.log("Não foi possível atualizar o usuário:", error);
+        setUser(null);
+      }
+    };
+
+    loadUser();
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>

@@ -19,7 +19,7 @@ function LoginPage() {
             try {
                 const res = await login(username, password);
                 // aqui você decide rota com base no tipo de usuário retornado
-                navigate(ROUTES.HOME);
+                navigate(ROUTES.PRIVATE_HOME);
             } catch (error: any) {
                 alert(error.message);
                 setUsername("");

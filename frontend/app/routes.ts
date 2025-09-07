@@ -19,4 +19,9 @@ export default [
   layout("./layout/Patient/index.tsx", [
     route(ROUTES.CAREGIVER.EXAMINATION, "routes/Caregiver/exam.tsx"),
   ]),
+
+  layout("./layout/PrivatePages/index.tsx", [
+    route(ROUTES.PRIVATE_HOME, "routes/PrivateWelcome/private_home.tsx"),
+  ]),
+
 ] satisfies RouteConfig;

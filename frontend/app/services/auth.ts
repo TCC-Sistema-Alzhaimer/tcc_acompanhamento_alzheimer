@@ -7,3 +7,9 @@ export const loginRequest = (body: LoginRequest) => {
   console.log("loginRequest result:", result); //remover depois
   return result;
 };
+
+export const refreshRequest = () => {
+  return api.post<LoginResponse>("/api/auth/refresh", null, {
+    withCredentials: true, // garante envio do cookie HttpOnly
+  });
+};
