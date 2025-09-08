@@ -5,7 +5,7 @@ import { UserSearch } from "./UserSearch";
 import { getAllUsers, searchUsers } from "~/services/userService";
 
 interface UserListProps {
-  onSelectUser: (id: number) => void;
+  onSelectUser: (id: number, userType: string) => void;
   onCreateUser: () => void;
 }
 
@@ -47,7 +47,7 @@ export function UserList({ onSelectUser, onCreateUser }: UserListProps) {
             selected={selectedId === u.id}
             onClick={() => {
               setSelectedId(u.id!);
-              onSelectUser(u.id!);
+              onSelectUser(u.id!, u.userType); // passa userType
             }}
           />
         ))}

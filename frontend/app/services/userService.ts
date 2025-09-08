@@ -2,6 +2,12 @@ import { api } from "./api";
 import type { BasicListModel } from "~/types/roles/models";
 import type { CreateDoctorDTO, CreatePatientDTO, CreateCaregiverDTO, CreateAdminDTO } from "~/types/roles/dtos";
 import { SystemRoles } from "~/types/SystemRoles";
+import type {
+  DoctorModel,
+  PatientModel,
+  CaregiverModel,
+  AdminModel,
+} from "~/types/roles/models";
 
 // Busca todos os usuários
 export const getAllUsers = () => {
@@ -82,6 +88,37 @@ export async function createUser(userType: SystemRoles, form: any) {
       };
       return createAdmin(adminDto);
 
+    default:
+      throw new Error("Tipo de usuário inválido");
+  }
+}
+
+export async function getUserById(userType: SystemRoles, id: number) {
+  console.log("Fetching user", userType, id);
+  switch (userType) {
+    case SystemRoles.DOCTOR:
+      return api.get<DoctorModel>(`doctors/${id}`);
+    case SystemRoles.PATIENT:
+      return api.get<PatientModel>(`patients/${id}`);
+    case SystemRoles.CARREGIVER:
+      return api.get<CaregiverModel>(`caregivers/${id}`);
+    case SystemRoles.ADMIN:
+      return api.get<AdminModel>(`administrators/${id}`);
+    default:
+      throw new Error("Tipo de usuário inválido");
+  }
+}
+
+export async function updateUser(userType: SystemRoles, id: number, data: any) {
+  switch (userType) {
+    case SystemRoles.DOCTOR:
+      return api.put(`doctors/${id}`, data);
+    case SystemRoles.PATIENT:
+      return api.put(`patients/${id}`, data);
+    case SystemRoles.CARREGIVER:
+      return api.put(`caregivers/${id}`, data);
+    case SystemRoles.ADMIN:
+      return api.put(`administrators/${id}`, data);
     default:
       throw new Error("Tipo de usuário inválido");
   }

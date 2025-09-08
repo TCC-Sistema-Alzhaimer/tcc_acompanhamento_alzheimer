@@ -1,4 +1,3 @@
-// apiInterceptors.ts
 import { api } from "~/services/api";
 import Cookies from "js-cookie";
 import type { AuthContextType } from "~/hooks/useAuth";
@@ -13,26 +12,31 @@ export function setupInterceptors(auth: AuthContextType) {
   });
 
   api.interceptors.response.use(
-    (res) => res,
-    async (err) => {
-      if (err.response?.status === 401) {
-        try {
-          // tenta renovar o token
-          const refreshRes = await api.post("/auth/refresh");
-          const newToken = refreshRes.data.token;
+  (res) => res,
+  async (err) => {
+    if (err.response?.status === 401) {
+      try {
+        const refreshRes = await api.post("/auth/refresh");
+        const newToken = refreshRes.data.token;
 
-          // atualiza no cookie e localStorage
-          Cookies.set("token", newToken);
-          localStorage.setItem("token", newToken);
+        Cookies.set("token", newToken);
+        localStorage.setItem("token", newToken);
 
-          // repete a requisição original com o novo token
-          err.config.headers.Authorization = `Bearer ${newToken}`;
-          return api.request(err.config);
-        } catch (e) {
-          auth.logout();
-        }
+        err.config.headers.Authorization = `Bearer ${newToken}`;
+        return api.request(err.config);
+      } catch (e) {
+        auth.logout();
       }
-      return Promise.reject(err);
     }
-  );
+
+    // NOVO: se receber 403, redireciona para login
+    if (err.response?.status === 403) {
+      auth.logout(); // opcional: limpa o estado do usuário
+      window.location.href = "/login"; // ou ROUTES.LOGIN se tiver enum
+    }
+
+    return Promise.reject(err);
+  }
+);
+
 }

@@ -35,4 +35,16 @@ public class UserService {
                 ))
                 .toList();
     }
+
+    public List<BasicDtoForList> searchUsers(String query) {
+    return repo.searchByNameOrEmail(query).stream()
+            .map(user -> new BasicDtoForList(
+                    user.getId(),
+                    user.getName(),
+                    user.getEmail(),
+                    user.getPhone(),
+                    user.getType()
+            ))
+            .toList();
+}
 }

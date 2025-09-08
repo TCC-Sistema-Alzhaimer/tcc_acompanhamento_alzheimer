@@ -38,7 +38,7 @@ export function UserCreateForm() {
   const [caregivers, setCaregivers] = useState<BasicListModel[]>([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Carregar listas para selects
+  // Carregar listas
   useEffect(() => {
     switch (userType) {
       case SystemRoles.DOCTOR:
@@ -59,11 +59,10 @@ export function UserCreateForm() {
     }
   }, [userType]);
 
-  // Helper para transformar listas em opções do react-select
-  const toOptions = (list: BasicListModel[]) => list.map(u => ({ value: u.email, label: u.name }));
+  const toOptions = (list: BasicListModel[]) =>
+    list.map(u => ({ value: u.email, label: u.name }));
 
   const handleSubmit = async () => {
-
     const typedUserType = userType as SystemRoles;
 
     try {
@@ -76,29 +75,39 @@ export function UserCreateForm() {
     }
   };
 
+  // Opções fixas
+  const roleOptions = [
+    { value: SystemRoles.DOCTOR, label: "Médico" },
+    { value: SystemRoles.PATIENT, label: "Paciente" },
+    { value: SystemRoles.CARREGIVER, label: "Cuidador" },
+    { value: SystemRoles.ADMIN, label: "Administrador" }
+  ];
+
+  const genderOptions = [
+    { value: SystemGenders.M, label: "Masculino" },
+    { value: SystemGenders.F, label: "Feminino" }
+  ];
+
   return (
     <div className="flex flex-col items-center justify-start p-3 w-full rounded-2xl shadow-2xl bg-white gap-3">
       <Modal
         isOpen={showSuccessModal}
-        onClose={() => window.location.reload()} // fecha e recarrega
+        onClose={() => window.location.reload()}
         title="Sucesso!"
       >
         Usuário criado com sucesso.
       </Modal>
+
       <h2 className="text-xl font-bold mb-4">Criar Usuário</h2>
 
-      {/* Seleção do tipo de usuário */}
-      <select
-        value={userType}
-        onChange={(e) => setUserType(e.target.value as SystemRoles | "")}
-        className="p-2 border rounded w-full"
-      >
-        <option value="">Selecione o tipo</option>
-        <option value={SystemRoles.DOCTOR}>Médico</option>
-        <option value={SystemRoles.PATIENT}>Paciente</option>
-        <option value={SystemRoles.CARREGIVER}>Cuidador</option>
-        <option value={SystemRoles.ADMIN}>Administrador</option>
-      </select>
+      {/* Select do tipo de usuário */}
+      <Select
+        options={roleOptions}
+        placeholder="Selecione o tipo"
+        value={roleOptions.find(opt => opt.value === userType) || null}
+        onChange={(selected) => setUserType(selected?.value || "")}
+        className="w-full"
+      />
 
       {/* Campos comuns */}
       <Input
@@ -124,7 +133,6 @@ export function UserCreateForm() {
       >
         Email
       </Input>
-
       <Input
         placeholder="Digite o telefone"
         value={form.phone || ""}
@@ -142,11 +150,23 @@ export function UserCreateForm() {
         Senha
       </Input>
 
-      {/* Campos específicos */}
+      {/* Específicos */}
       {userType === SystemRoles.DOCTOR && (
         <>
-          <Input placeholder="CRM" value={form.crm || ""} onChange={(e) => setForm({ ...form, crm: e.target.value })} >CRM </Input>
-          <Input placeholder="Especialidade" value={form.specialty || ""} onChange={(e) => setForm({ ...form, specialty: e.target.value })} >Especialidade </Input>
+          <Input
+            placeholder="CRM"
+            value={form.crm || ""}
+            onChange={(e) => setForm({ ...form, crm: e.target.value })}
+          >
+            CRM
+          </Input>
+          <Input
+            placeholder="Especialidade"
+            value={form.specialty || ""}
+            onChange={(e) => setForm({ ...form, specialty: e.target.value })}
+          >
+            Especialidade
+          </Input>
 
           <Select
             options={toOptions(patients)}
@@ -154,11 +174,12 @@ export function UserCreateForm() {
             placeholder="Selecione pacientes"
             value={(form.patientEmails || []).map(email => ({ value: email, label: email }))}
             onChange={(selected) => setForm({ ...form, patientEmails: selected.map(s => s.value) })}
+            className="w-full"
           />
         </>
       )}
 
-      {userType === SystemRoles.PATIENT && (
+      {(userType === SystemRoles.PATIENT || userType === SystemRoles.CARREGIVER) && (
         <>
           <Input
             type="date"
@@ -168,27 +189,34 @@ export function UserCreateForm() {
           >
             Data de Nascimento
           </Input>
-          <label className="block text-sm font-medium text-gray-700">
-            Gênero
-          </label>
-          <select
-            className="mt-1 w-full rounded-md border px-3 py-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            value={form.gender || ""}
-            onChange={(e) => setForm({ ...form, gender: e.target.value as SystemGenders })}
-            required
-          >
-            <option value="">Selecione...</option>
-            <option value={SystemGenders.M}>{SystemGenders.M}</option>
-            <option value={SystemGenders.F}>{SystemGenders.F}</option>
-          </select>
-          <Input placeholder="Endereço" value={form.address || ""} onChange={(e) => setForm({ ...form, address: e.target.value })} />
 
+          <Select
+            options={genderOptions}
+            placeholder="Selecione gênero"
+            value={genderOptions.find(opt => opt.value === form.gender) || null}
+            onChange={(selected) => setForm({ ...form, gender: selected?.value })}
+            className="w-full"
+          />
+
+          <Input
+            placeholder="Endereço"
+            value={form.address || ""}
+            onChange={(e) => setForm({ ...form, address: e.target.value })}
+          >
+            Endereço
+          </Input>
+        </>
+      )}
+
+      {userType === SystemRoles.PATIENT && (
+        <>
           <Select
             options={toOptions(doctors)}
             isMulti
             placeholder="Selecione médicos"
             value={(form.doctorEmails || []).map(email => ({ value: email, label: email }))}
             onChange={(selected) => setForm({ ...form, doctorEmails: selected.map(s => s.value) })}
+            className="w-full"
           />
 
           <Select
@@ -197,43 +225,20 @@ export function UserCreateForm() {
             placeholder="Selecione cuidadores"
             value={(form.caregiverEmails || []).map(email => ({ value: email, label: email }))}
             onChange={(selected) => setForm({ ...form, caregiverEmails: selected.map(s => s.value) })}
+            className="w-full"
           />
         </>
       )}
 
       {userType === SystemRoles.CARREGIVER && (
-        <>
-          <Input
-            type="date"
-            placeholder="Data de nascimento"
-            value={form.birthdate || ""}
-            onChange={(e) => setForm({ ...form, birthdate: e.target.value })}
-          >
-            Data de Nascimento
-          </Input>
-          <label className="block text-sm font-medium text-gray-700">
-            Gênero
-          </label>
-          <select
-            className="mt-1 w-full rounded-md border px-3 py-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            value={form.gender || ""}
-            onChange={(e) => setForm({ ...form, gender: e.target.value as SystemGenders })}
-            required
-          >
-            <option value="">Selecione...</option>
-            <option value="M">{SystemGenders.M}</option>
-            <option value="F">{SystemGenders.F}</option>
-          </select>
-          <Input placeholder="Endereço" value={form.address || ""} onChange={(e) => setForm({ ...form, address: e.target.value })} />
-
-          <Select
-            options={toOptions(patients)}
-            isMulti
-            placeholder="Selecione pacientes"
-            value={(form.patientEmails || []).map(email => ({ value: email, label: email }))}
-            onChange={(selected) => setForm({ ...form, patientEmails: selected.map(s => s.value) })}
-          />
-        </>
+        <Select
+          options={toOptions(patients)}
+          isMulti
+          placeholder="Selecione pacientes"
+          value={(form.patientEmails || []).map(email => ({ value: email, label: email }))}
+          onChange={(selected) => setForm({ ...form, patientEmails: selected.map(s => s.value) })}
+          className="w-full"
+        />
       )}
 
       <Button onClick={handleSubmit}>Criar</Button>
