@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.tcc.alzheimer.exception.ResourceConflictException;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.enums.UserType;
 import com.tcc.alzheimer.model.roles.Administrator;
@@ -26,29 +27,31 @@ public class AdministratorService {
 
     public Administrator findById(Long id) {
         return repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Adm com id " + id + " não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Administrador com id " + id + " não encontrado"));
     }
 
     public Administrator save(Administrator administrator) {
+        // Não usado diretamente, usar register para criar
         return repo.save(administrator);
     }
 
     public Administrator register(Administrator administrator) {
-        if (repo.findByEmail(administrator.getEmail()).isEmpty() || repo.findByCpf(administrator.getCpf()).isEmpty()) {
-            Administrator admin = new Administrator();
-            admin.setCpf(administrator.getCpf());
-            admin.setName(administrator.getName());
-            admin.setEmail(administrator.getEmail());
-            admin.setPhone(administrator.getPhone());
-            admin.setPassword(encoder.encode(administrator.getPassword()));
-            admin.setType(UserType.ADMINISTRATOR);
-
-            repo.save(admin);
-        }  else {
-            throw new IllegalArgumentException("Administrador já existe. Não será recriado.");
+        if (repo.findByCpf(administrator.getCpf()).isPresent()) {
+            throw new ResourceConflictException("CPF já cadastrado!");
+        }
+        if (repo.findByEmail(administrator.getEmail()).isPresent()) {
+            throw new ResourceConflictException("Email já cadastrado!");
         }
 
-        return administrator;
+        Administrator admin = new Administrator();
+        admin.setCpf(administrator.getCpf());
+        admin.setName(administrator.getName());
+        admin.setEmail(administrator.getEmail());
+        admin.setPhone(administrator.getPhone());
+        admin.setPassword(encoder.encode(administrator.getPassword()));
+        admin.setType(UserType.ADMINISTRATOR);
+
+        return repo.save(admin);
     }
 
     public Administrator update(Long id, Administrator administrator) {

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tcc.alzheimer.dto.roles.DoctorDto;
+import com.tcc.alzheimer.exception.ResourceConflictException;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Doctor;
 import com.tcc.alzheimer.model.roles.Patient;
@@ -36,33 +37,41 @@ public class DoctorService {
     }
 
     public Doctor save(DoctorDto dto) {
-        if ((repo.findByEmail(dto.getEmail()).isEmpty()) || (repo.findByCpf(dto.getCpf()).isEmpty())
-                || (repo.findByCrm(dto.getCrm()).isEmpty())) {
-            Doctor doctor = new Doctor();
-            doctor.setCpf(dto.getCpf());
-            doctor.setName(dto.getName());
-            doctor.setEmail(dto.getEmail());
-            doctor.setPhone(dto.getPhone());
-            doctor.setCrm(dto.getCrm());
-            doctor.setSpeciality(dto.getSpeciality());
-            doctor.setPassword(encoder.encode(dto.getPassword()));
-            doctor.setType(dto.getUserType());
-            List<String> patientEmails = dto.getPatientEmails();
-
-            if (patientEmails != null) {
-                patientEmails.forEach(email -> {
-                    Patient patient = patientRepo.findByEmail(email)
-                            .orElseThrow(
-                                    () -> new ResourceNotFoundException(
-                                            "Paciente com email " + email + " não encontrado"));
-                    doctor.getPatients().add(patient);
-                    patient.getDoctors().add(doctor);
-                });
-            }
-            return repo.save(doctor);
-        } else {
-            throw new IllegalArgumentException("Médico já existe. Não será recriado.");
+        // Verificar duplicidade antes de criar
+        if (repo.findByCpf(dto.getCpf()).isPresent()) {
+            throw new ResourceConflictException("CPF já cadastrado!");
         }
+        if (repo.findByEmail(dto.getEmail()).isPresent()) {
+            throw new ResourceConflictException("Email já cadastrado!");
+        }
+        if (repo.findByCrm(dto.getCrm()).isPresent()) {
+            throw new ResourceConflictException("CRM já cadastrado!");
+        }
+
+        // Criar novo médico
+        Doctor doctor = new Doctor();
+        doctor.setCpf(dto.getCpf());
+        doctor.setName(dto.getName());
+        doctor.setEmail(dto.getEmail());
+        doctor.setPhone(dto.getPhone());
+        doctor.setCrm(dto.getCrm());
+        doctor.setSpeciality(dto.getSpeciality());
+        doctor.setPassword(encoder.encode(dto.getPassword()));
+        doctor.setType(dto.getUserType());
+
+        // Vincular pacientes, se houver
+        List<String> patientEmails = dto.getPatientEmails();
+        if (patientEmails != null) {
+            patientEmails.forEach(email -> {
+                Patient patient = patientRepo.findByEmail(email)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Paciente com email " + email + " não encontrado"));
+                doctor.getPatients().add(patient);
+                patient.getDoctors().add(doctor);
+            });
+        }
+
+        return repo.save(doctor);
     }
 
     @Transactional
@@ -82,8 +91,8 @@ public class DoctorService {
 
             patientEmails.forEach(email -> {
                 Patient patient = patientRepo.findByEmail(email)
-                        .orElseThrow(
-                                () -> new ResourceNotFoundException("Paciente com email " + email + " não encontrado"));
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Paciente com email " + email + " não encontrado"));
                 existing.getPatients().add(patient);
                 patient.getDoctors().add(existing);
             });

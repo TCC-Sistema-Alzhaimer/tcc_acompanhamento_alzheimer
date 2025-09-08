@@ -37,6 +37,7 @@ export function UserCreateForm() {
   const [patients, setPatients] = useState<BasicListModel[]>([]);
   const [caregivers, setCaregivers] = useState<BasicListModel[]>([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // estado para erros
 
   // Carregar listas
   useEffect(() => {
@@ -64,18 +65,23 @@ export function UserCreateForm() {
 
   const handleSubmit = async () => {
     const typedUserType = userType as SystemRoles;
+    setErrorMessage(null); // limpa erros anteriores
 
     try {
       await createUser(typedUserType, form);
       setShowSuccessModal(true);
       setForm({});
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Erro ao criar usuário");
+      const msg =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Erro ao criar usuário";
+      setErrorMessage(msg);
     }
   };
 
-  // Opções fixas
   const roleOptions = [
     { value: SystemRoles.DOCTOR, label: "Médico" },
     { value: SystemRoles.PATIENT, label: "Paciente" },
@@ -239,6 +245,13 @@ export function UserCreateForm() {
           onChange={(selected) => setForm({ ...form, patientEmails: selected.map(s => s.value) })}
           className="w-full"
         />
+      )}
+
+      {/* Exibir mensagem de erro */}
+      {errorMessage && (
+        <div className="w-full p-2 bg-red-100 text-red-700 rounded">
+          {errorMessage}
+        </div>
       )}
 
       <Button onClick={handleSubmit}>Criar</Button>
