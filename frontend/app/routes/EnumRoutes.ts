@@ -5,6 +5,10 @@ export const ROUTES = {
   USER: "/user/:id",
   PRIVATE_HOME: "/private-home",
 
+  ADMIN: {
+    MANAGEMENT: "/management",
+  },
+
   DOCTOR: {
     DASHBOARD: "/doctor/dashboard",
     PATIENTS: "/doctor/patients",

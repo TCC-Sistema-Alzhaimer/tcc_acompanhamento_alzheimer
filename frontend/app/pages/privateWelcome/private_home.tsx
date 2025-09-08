@@ -4,30 +4,32 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import ActionCard from "~/components/ActionCard";
+import { ROUTES } from "~/routes/EnumRoutes";
+import { useNavigate } from "react-router-dom";
 
 export default function PrivateHome() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const actions = [];
-
   if (user?.role === "ADMINISTRATOR") {
     actions.push(
-      { title: "Gerenciar Usuários", icon: <PeopleIcon /> },
-      { title: "Relatórios", icon: <DescriptionIcon /> }
+      { title: "Gerenciar Usuários", icon: <PeopleIcon /> , path: ROUTES.ADMIN.MANAGEMENT},
+      { title: "Relatórios", icon: <DescriptionIcon />, path: ROUTES.PRIVATE_HOME }
     );
   }
 
   if (user?.role === "DOCTOR") {
     actions.push(
-      { title: "Registrar Exame", icon: <AssignmentIcon /> },
-      { title: "Consultar Pacientes", icon: <PeopleIcon /> }
+      { title: "Registrar Exame", icon: <AssignmentIcon />, path: ROUTES.PRIVATE_HOME },
+      { title: "Consultar Pacientes", icon: <PeopleIcon />, path: ROUTES.PRIVATE_HOME }
     );
   }
 
   if (user?.role === "CAREGIVER") {
     actions.push(
-      { title: "Meus Pacientes", icon: <PeopleIcon /> },
-      { title: "Agendar Exames", icon: <EventAvailableIcon /> }
+      { title: "Meus Pacientes", icon: <PeopleIcon />, path: ROUTES.PRIVATE_HOME },
+      { title: "Agendar Exames", icon: <EventAvailableIcon />, path: ROUTES.PRIVATE_HOME }
     );
   }
 
@@ -43,7 +45,7 @@ export default function PrivateHome() {
             key={action.title}
             title={action.title}
             icon={action.icon}
-            onClick={() => console.log(`Clicked ${action.title}`)}
+            onClick={() => navigate(action.path)}
           />
         ))}
       </div>

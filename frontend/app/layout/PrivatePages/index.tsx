@@ -11,7 +11,7 @@ export default function PrivateLayout() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
-      {/* Topbar */}
+      {/* Topbar fixa */}
       <Topbar>
         <ActionButton title="Mensagens">
           <ForumIcon />
@@ -22,13 +22,12 @@ export default function PrivateLayout() {
         <AccountMenu />
       </Topbar>
 
-      {/* Conteúdo principal */}
-      <div className="flex flex-row h-full">
-        {/* Área principal */}
-        <div className="flex-1 p-6">
+      <div className="flex flex-1 overflow-hidden">
+        <div className="flex-1 p-6 overflow-y-auto">
           <Outlet />
         </div>
       </div>
     </div>
   );
 }
+

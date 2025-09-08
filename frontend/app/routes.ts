@@ -22,6 +22,7 @@ export default [
 
   layout("./layout/PrivatePages/index.tsx", [
     route(ROUTES.PRIVATE_HOME, "routes/PrivateWelcome/private_home.tsx"),
+    route(ROUTES.ADMIN.MANAGEMENT, "routes/userManagement/UserManagement.tsx"),
   ]),
 
 ] satisfies RouteConfig;

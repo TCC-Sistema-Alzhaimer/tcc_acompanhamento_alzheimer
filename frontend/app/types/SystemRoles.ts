@@ -1,6 +1,6 @@
 export enum SystemRoles {
   DOCTOR = "DOCTOR",
-  CAREGIVER = "CAREGIVER",
+  CARREGIVER = "CARREGIVER",
   ADMIN = "ADMIN",
   PATIENT = "PATIENT",
 }

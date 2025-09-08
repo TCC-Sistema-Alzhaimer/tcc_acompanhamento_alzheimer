@@ -35,7 +35,7 @@ public class AuthService {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    //Login simples (accessToken em storage)
+    // Login simples (accessToken em storage)
     public LoginResponseDTO loginSessionStorage(LoginDTO dto) {
         User user = validateUser(dto);
         String token = generateAccessToken(user);
@@ -43,13 +43,23 @@ public class AuthService {
         return new LoginResponseDTO(token, user.getId(), user.getEmail(), user.getType());
     }
 
-    //Login com HttpOnly Refresh Token
+    // Login com HttpOnly Refresh Token
     public LoginResponseDTO loginHttpOnly(LoginDTO dto, HttpServletResponse response) {
         User user = validateUser(dto);
         String accessToken = generateAccessToken(user);
         String refreshToken = generateRefreshToken(user);
 
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+        ResponseCookie accessCookie = ResponseCookie.from("token", accessToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(15 * 60)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(true)
                 .sameSite("Strict")
@@ -57,7 +67,7 @@ public class AuthService {
                 .maxAge(7 * 24 * 60 * 60)
                 .build();
 
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
         return new LoginResponseDTO(accessToken, user.getId(), user.getEmail(), user.getType());
     }
@@ -105,7 +115,8 @@ public class AuthService {
 
     private String extractRefreshToken(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-        if (cookies == null) throw new RuntimeException("No cookies found");
+        if (cookies == null)
+            throw new RuntimeException("No cookies found");
 
         return Arrays.stream(cookies)
                 .filter(c -> c.getName().equals("refreshToken"))

@@ -39,6 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadUser = async () => {
       try {
+        console.log("Tentando atualizar o usuário com refresh token...");
         const refreshResult = await refreshRequest();
         if (refreshResult.status === 200) {
           setUser(refreshResult.data);

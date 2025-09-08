@@ -1,0 +1,27 @@
+package com.tcc.alzheimer.controller.roles;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.tcc.alzheimer.dto.roles.BasicDtoForList;
+import com.tcc.alzheimer.service.roles.UserService;
+
+@RestController
+@RequestMapping("/users")
+public class UsersController {
+
+    private final UserService service;
+
+    public UsersController(UserService service) {
+        this.service = service;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<BasicDtoForList>> getAllUsers() {
+        return ResponseEntity.ok(service.getAllUsers());
+    }
+}

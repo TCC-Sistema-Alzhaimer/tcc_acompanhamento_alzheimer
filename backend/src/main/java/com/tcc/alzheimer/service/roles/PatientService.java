@@ -44,7 +44,6 @@ public class PatientService {
     }
 
     public Patient save(PatientDto dto) {
-
         if ((repo.findByEmail(dto.getEmail()).isEmpty()) || (repo.findByCpf(dto.getCpf()).isEmpty())) {
             Patient patient = new Patient();
             patient.setCpf(dto.getCpf());
