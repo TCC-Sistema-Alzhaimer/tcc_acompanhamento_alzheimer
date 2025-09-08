@@ -14,6 +14,7 @@ import {
 import type { BasicListModel } from "~/types/roles/models";
 import { SystemRoles } from "~/types/SystemRoles";
 import { SystemGenders } from "~/types/gender";
+import type { DoctorModel, PatientModel, CaregiverModel } from "~/types/roles/models";
 
 type UserForm = {
   name?: string;
@@ -22,7 +23,7 @@ type UserForm = {
   email?: string;
   password?: string;
   crm?: string;
-  specialty?: string;
+  speciality?: string;
   birthdate?: string;
   gender?: string;
   address?: string;
@@ -61,32 +62,60 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
 
   // Carregar dados do usuário para edição
   useEffect(() => {
-  if (userId) {
-    getUserById(userType, userId)
-      .then(res => {
-        const data = res.data;
+    if (userId) {
+      getUserById(userType, userId)
+        .then(res => {
+          const data = res.data;
 
-        // Apenas pacientes e cuidadores têm birthdate
-        const birthdate =
-          "birthdate" in data && data.birthdate
-            ? new Date(data.birthdate).toISOString().split("T")[0]
-            : "";
+          const birthdate =
+            "birthdate" in data && data.birthdate
+              ? new Date(data.birthdate).toISOString().split("T")[0]
+              : "";
 
-        setForm({
-          ...data,
-          birthdate
-        });
-      })
-      .catch(console.error);
-  }
-}, [userId, userType]);
+          let gender = "";
+          if ("gender" in data && data.gender) {
+            if (data.gender.toUpperCase() === "M") gender = SystemGenders.M;
+            else if (data.gender.toUpperCase() === "F") gender = SystemGenders.F;
+          }
+
+          let doctorEmails: string[] = [];
+          let caregiverEmails: string[] = [];
+          let patientEmails: string[] = [];
+
+          if (userType === SystemRoles.PATIENT) {
+            const patientData = data as PatientModel;
+            doctorEmails = patientData.doctors?.map((d: DoctorModel) => d.email) || [];
+            caregiverEmails = patientData.caregivers?.map((c: CaregiverModel) => c.email) || [];
+          } else if (userType === SystemRoles.CARREGIVER) {
+            const caregiverData = data as CaregiverModel;
+            patientEmails = caregiverData.patients?.map((p: PatientModel) => p.email) || [];
+          } else if (userType === SystemRoles.DOCTOR) {
+            const doctorData = data as DoctorModel;
+            patientEmails = doctorData.patients?.map((p: PatientModel) => p.email) || [];
+          }
+
+          setForm({
+            ...data,
+            birthdate,
+            gender,
+            doctorEmails,
+            caregiverEmails,
+            patientEmails,
+          });
+        })
+        .catch(console.error);
+    }
+  }, [userId, userType]);
+
+
+
 
   const toOptions = (list: BasicListModel[]) =>
     list.map(u => ({ value: u.email, label: u.name }));
 
   const handleSubmit = async () => {
     try {
-      await updateUser(userType, userId!,form);
+      await updateUser(userType, userId!, form);
       setShowSuccessModal(true);
     } catch (error) {
       console.error(error);
@@ -143,14 +172,7 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
       >
         Telefone
       </Input>
-      <Input
-        type="password"
-        placeholder="Senha"
-        value={form.password || ""}
-        onChange={(e) => setForm({ ...form, password: e.target.value })}
-      >
-        Senha
-      </Input>
+      
 
       {/* Campos específicos */}
       {userType === SystemRoles.DOCTOR && (
@@ -164,8 +186,8 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
           </Input>
           <Input
             placeholder="Especialidade"
-            value={form.specialty || ""}
-            onChange={(e) => setForm({ ...form, specialty: e.target.value })}
+            value={form.speciality || ""}
+            onChange={(e) => setForm({ ...form, speciality: e.target.value })}
           >
             Especialidade
           </Input>

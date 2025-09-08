@@ -4,7 +4,8 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,6 +22,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
+@JsonIdentityInfo(
+    generator = ObjectIdGenerators.PropertyGenerator.class,
+    property = "id"
+)
 public class Patient extends User {
 
     @Column(nullable = false)
@@ -38,7 +43,6 @@ public class Patient extends User {
         joinColumns = @JoinColumn(name = "patient_id"),
         inverseJoinColumns = @JoinColumn(name = "caregiver_id")
     )
-    @JsonManagedReference
     private Set<Caregiver> caregivers = new HashSet<>();
 
     @ManyToMany
@@ -47,6 +51,5 @@ public class Patient extends User {
         joinColumns = @JoinColumn(name = "patient_id"),
         inverseJoinColumns = @JoinColumn(name = "doctor_id")
     )
-    @JsonManagedReference
     private Set<Doctor> doctors = new HashSet<>();
 }

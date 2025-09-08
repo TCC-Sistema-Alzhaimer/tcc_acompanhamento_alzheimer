@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     //localStorage.removeItem("token"); -> removido para usar cookies HttpOnly
     Cookies.remove("token");
     setUser(null);
-    navigate(ROUTES.LOGIN);
+    navigate("/");
   }
 
   useEffect(() => {

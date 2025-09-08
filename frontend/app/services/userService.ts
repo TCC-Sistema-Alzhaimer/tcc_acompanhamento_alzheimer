@@ -112,6 +112,7 @@ export async function getUserById(userType: SystemRoles, id: number) {
 export async function updateUser(userType: SystemRoles, id: number, data: any) {
   switch (userType) {
     case SystemRoles.DOCTOR:
+      console.log(data)
       return api.put(`doctors/${id}`, data);
     case SystemRoles.PATIENT:
       return api.put(`patients/${id}`, data);

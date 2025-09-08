@@ -3,7 +3,8 @@ package com.tcc.alzheimer.model.roles;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,6 +19,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
+@JsonIdentityInfo(
+    generator = ObjectIdGenerators.PropertyGenerator.class,
+    property = "id"
+)
 public class Doctor extends User {
 
     @Column(name = "crm", nullable = false, unique = true)
@@ -27,7 +32,5 @@ public class Doctor extends User {
     private String speciality;
 
     @ManyToMany(mappedBy = "doctors")
-    @JsonBackReference
     private Set<Patient> patients = new HashSet<>();
-
 }
