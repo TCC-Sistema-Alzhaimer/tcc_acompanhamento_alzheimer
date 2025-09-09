@@ -22,7 +22,7 @@ public class UserTesteRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         String email = "admin1@gmail.com";
-        String rawPassword = "123456";
+        String rawPassword = "senha123";
 
         if (administratorRepository.findByEmail(email).isEmpty()) {
             Administrator admin = new Administrator();

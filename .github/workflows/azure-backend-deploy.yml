@@ -12,6 +12,7 @@ env:
   SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
   SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
   API_KEY: ${{ secrets.API_KEY_PROD }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
 jobs:
   build-and-deploy:
@@ -29,7 +30,7 @@ jobs:
 
     - name: Build with Maven
       working-directory: ./backend
-      run: mvn clean package -DskipTests
+      run: mvn -B clean package -DskipTests -X
 
     - name: Azure Login
       uses: azure/login@v1
