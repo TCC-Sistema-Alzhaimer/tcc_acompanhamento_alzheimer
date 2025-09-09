@@ -15,36 +15,45 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository repo;
+        private final UserRepository repo;
 
-    public User findByEmail(String email) {
-        return repo.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Usuário com email '" + email + "' não encontrado"
-                ));
-    }
+        public User findByEmail(String email) {
+                return repo.findByEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Usuário com email '" + email + "' não encontrado"));
+        }
 
-    public List<BasicDtoForList> getAllUsers() {
-        return repo.findAll().stream()
-                .map(user -> new BasicDtoForList(
-                        user.getId(),
-                        user.getName(),
-                        user.getEmail(),
-                        user.getPhone(),
-                        user.getType()
-                ))
-                .toList();
-    }
+        public List<BasicDtoForList> getAllUsers() {
+                return repo.findAll().stream()
+                                .map(user -> new BasicDtoForList(
+                                                user.getId(),
+                                                user.getName(),
+                                                user.getEmail(),
+                                                user.getPhone(),
+                                                user.getType()))
+                                .toList();
+        }
 
-    public List<BasicDtoForList> searchUsers(String query) {
-    return repo.searchByNameOrEmail(query).stream()
-            .map(user -> new BasicDtoForList(
-                    user.getId(),
-                    user.getName(),
-                    user.getEmail(),
-                    user.getPhone(),
-                    user.getType()
-            ))
-            .toList();
-}
+        public List<BasicDtoForList> searchUsers(String query) {
+                return repo.searchByNameOrEmail(query).stream()
+                                .map(user -> new BasicDtoForList(
+                                                user.getId(),
+                                                user.getName(),
+                                                user.getEmail(),
+                                                user.getPhone(),
+                                                user.getType()))
+                                .toList();
+        }
+
+        public List<BasicDtoForList> getPatientsAndCaregivers() {
+                return repo.findByTypeIn(List.of("PATIENT", "CAREGIVER")).stream()
+                                .map(user -> new BasicDtoForList(
+                                                user.getId(),
+                                                user.getName(),
+                                                user.getEmail(),
+                                                user.getPhone(),
+                                                user.getType()))
+                                .toList();
+        }
+
 }

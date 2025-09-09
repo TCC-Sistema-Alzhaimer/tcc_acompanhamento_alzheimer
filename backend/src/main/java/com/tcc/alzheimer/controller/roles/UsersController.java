@@ -30,4 +30,10 @@ public class UsersController {
     public ResponseEntity<List<BasicDtoForList>> searchUsers(@RequestParam String query) {
         return ResponseEntity.ok(service.searchUsers(query));
     }
+
+    @GetMapping("/patients-and-caregivers")
+    public ResponseEntity<List<BasicDtoForList>> getPatientsAndCaregivers() {
+        return ResponseEntity.ok(service.getPatientsAndCaregivers());
+    }
+
 }

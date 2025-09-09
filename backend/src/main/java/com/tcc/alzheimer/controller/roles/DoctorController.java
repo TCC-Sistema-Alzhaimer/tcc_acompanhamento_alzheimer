@@ -10,11 +10,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tcc.alzheimer.dto.roles.BasicDtoForList;
 import com.tcc.alzheimer.dto.roles.DoctorDto;
 import com.tcc.alzheimer.model.roles.Doctor;
-import com.tcc.alzheimer.model.roles.Patient;
 import com.tcc.alzheimer.service.roles.DoctorService;
 
 @RestController
@@ -64,8 +65,11 @@ public class DoctorController {
     }
 
     @GetMapping("/{id}/patients")
-    public ResponseEntity<List<Patient>> getPatients(@PathVariable Long id) {
+    public ResponseEntity<List<BasicDtoForList>> getPatients(
+            @PathVariable Long id,
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String serviceType) {
         Doctor doctor = service.findById(id);
-        return ResponseEntity.ok(service.getPatients(doctor));
+        return ResponseEntity.ok(service.searchUsersByDoc(doctor, query, serviceType));
     }
 }

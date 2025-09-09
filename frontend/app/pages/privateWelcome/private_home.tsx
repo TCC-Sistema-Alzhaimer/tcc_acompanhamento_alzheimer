@@ -22,7 +22,7 @@ export default function PrivateHome() {
   if (user?.role === "DOCTOR") {
     actions.push(
       { title: "Registrar Exame", icon: <AssignmentIcon />, path: ROUTES.PRIVATE_HOME },
-      { title: "Consultar Pacientes", icon: <PeopleIcon />, path: ROUTES.PRIVATE_HOME }
+      { title: "Consultar Pacientes", icon: <PeopleIcon />, path: ROUTES.ADMIN.MANAGEMENT }
     );
   }
 

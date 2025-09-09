@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.tcc.alzheimer.model.roles.Caregiver;
@@ -14,9 +16,23 @@ import com.tcc.alzheimer.model.roles.Patient;
 public interface PatientRepository extends JpaRepository<Patient, Long> {
 
     Optional<Patient> findByEmail(String email);
+
     Optional<Patient> findByCpf(String cpf);
-    
+
     List<Patient> findByCaregivers(Caregiver caregiver);
 
     List<Patient> findByDoctors(Doctor doctor);
+
+    @Query("""
+                SELECT p FROM Patient p
+                JOIN p.doctors d
+                WHERE d.id = :doctorId
+                  AND (:query IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))
+                                     OR LOWER(p.email) LIKE LOWER(CONCAT('%', :query, '%')))
+                  AND (:serviceType IS NULL OR LOWER(p.type) = LOWER(:serviceType))
+            """)
+    List<Patient> findByDoctorWithFilters(
+            @Param("doctorId") Long doctorId,
+            @Param("query") String query,
+            @Param("serviceType") String serviceType);
 }

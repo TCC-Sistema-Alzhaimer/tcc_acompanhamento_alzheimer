@@ -13,6 +13,7 @@ import {
 import type { BasicListModel } from "~/types/roles/models";
 import { SystemRoles } from "~/types/SystemRoles";
 import { SystemGenders } from "~/types/gender";
+import { useAuth } from "~/hooks/useAuth"; // hook do usuário logado
 
 type UserForm = {
   name?: string;
@@ -31,15 +32,18 @@ type UserForm = {
 };
 
 export function UserCreateForm() {
+  const { user } = useAuth();
+  const currentUserRole = user?.role;
+
   const [userType, setUserType] = useState<SystemRoles | "">("");
   const [form, setForm] = useState<UserForm>({});
   const [doctors, setDoctors] = useState<BasicListModel[]>([]);
   const [patients, setPatients] = useState<BasicListModel[]>([]);
   const [caregivers, setCaregivers] = useState<BasicListModel[]>([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // estado para erros
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Carregar listas
+  // Carregar listas de acordo com o tipo selecionado
   useEffect(() => {
     switch (userType) {
       case SystemRoles.DOCTOR:
@@ -64,11 +68,9 @@ export function UserCreateForm() {
     list.map(u => ({ value: u.email, label: u.name }));
 
   const handleSubmit = async () => {
-    const typedUserType = userType as SystemRoles;
-    setErrorMessage(null); // limpa erros anteriores
-
+    setErrorMessage(null);
     try {
-      await createUser(typedUserType, form);
+      await createUser(userType as SystemRoles, form);
       setShowSuccessModal(true);
       setForm({});
     } catch (error: any) {
@@ -87,7 +89,12 @@ export function UserCreateForm() {
     { value: SystemRoles.PATIENT, label: "Paciente" },
     { value: SystemRoles.CARREGIVER, label: "Cuidador" },
     { value: SystemRoles.ADMIN, label: "Administrador" }
-  ];
+  ].filter(r => {
+    if (currentUserRole === SystemRoles.DOCTOR) {
+      return r.value !== SystemRoles.DOCTOR && r.value !== SystemRoles.ADMIN;
+    }
+    return true;
+  });
 
   const genderOptions = [
     { value: SystemGenders.M, label: "Masculino" },
@@ -156,7 +163,7 @@ export function UserCreateForm() {
         Senha
       </Input>
 
-      {/* Específicos */}
+      {/* Campos específicos */}
       {userType === SystemRoles.DOCTOR && (
         <>
           <Input
@@ -247,7 +254,6 @@ export function UserCreateForm() {
         />
       )}
 
-      {/* Exibir mensagem de erro */}
       {errorMessage && (
         <div className="w-full p-2 bg-red-100 text-red-700 rounded">
           {errorMessage}

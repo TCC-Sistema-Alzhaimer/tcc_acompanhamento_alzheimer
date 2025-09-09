@@ -1,12 +1,12 @@
 package com.tcc.alzheimer.service.roles;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tcc.alzheimer.dto.roles.BasicDtoForList;
 import com.tcc.alzheimer.dto.roles.DoctorDto;
 import com.tcc.alzheimer.exception.ResourceConflictException;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
@@ -106,7 +106,34 @@ public class DoctorService {
         repo.delete(doctor);
     }
 
-    public List<Patient> getPatients(Doctor doctor) {
-        return new ArrayList<>(doctor.getPatients());
+    public List<BasicDtoForList> searchUsersByDoc(Doctor doctor) {
+        return doctor.getPatients().stream()
+                .map(patient -> new BasicDtoForList(
+                        patient.getId(),
+                        patient.getName(),
+                        patient.getEmail(),
+                        patient.getPhone(),
+                        patient.getType()))
+                .toList();
     }
+
+    public List<BasicDtoForList> searchUsersByDoc(Doctor doctor, String query, String serviceType) {
+    List<Patient> patients;
+
+    // se não tiver filtro, retorna todos direto
+    if ((query == null || query.isBlank()) && (serviceType == null || serviceType.isBlank())) {
+        patients = patientRepo.findByDoctors(doctor);
+    } else {
+        patients = patientRepo.findByDoctorWithFilters(doctor.getId(), query, serviceType);
+    }
+
+    return patients.stream()
+            .map(patient -> new BasicDtoForList(
+                    patient.getId(),
+                    patient.getName(),
+                    patient.getEmail(),
+                    patient.getPhone(),
+                    patient.getType()))
+            .toList();
+}
 }

@@ -124,3 +124,6 @@ export async function updateUser(userType: SystemRoles, id: number, data: any) {
       throw new Error("Tipo de usuário inválido");
   }
 }
+
+export const getPatientsAndCaregivers = () => 
+  api.get<BasicListModel[]>("/users/patients-and-caregivers", { withCredentials: true });
