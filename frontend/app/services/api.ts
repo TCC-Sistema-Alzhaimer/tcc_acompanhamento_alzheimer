@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const apiEndpoint = import.meta.env.VITE_API_URL;
+const apiEndpoint = "https://backend-tcc-alzheimer-springboot.azurewebsites.net";
 
 export const api = axios.create({
   baseURL: apiEndpoint,
