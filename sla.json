@@ -1,0 +1,93 @@
+[
+    {
+        "id": 35,
+        "cpf": "123456784614",
+        "name": "Patient 4614",
+        "email": "patient4614@example.com",
+        "phone": "119946149999",
+        "password": "senha123",
+        "type": "PATIENT",
+        "birthdate": "1940-01-01",
+        "gender": "M",
+        "address": "Rua das Flores, 123",
+        "caregivers": [],
+        "doctors": [
+            {
+                "id": 33,
+                "cpf": "123456783061",
+                "name": "Doctor 3061",
+                "email": "doctor3061@example.com",
+                "phone": "119930619999",
+                "password": "senha123",
+                "type": "DOCTOR",
+                "crm": "915970",
+                "speciality": "Cardiologista"
+            }
+        ]
+    },
+    {
+        "id": 36,
+        "cpf": "123456784784",
+        "name": "Patient 4784",
+        "email": "patient4784@example.com",
+        "phone": "119947849999",
+        "password": "senha123",
+        "type": "PATIENT",
+        "birthdate": "1940-01-01",
+        "gender": "M",
+        "address": "Rua das Flores, 123",
+        "caregivers": [
+            {
+                "id": 37,
+                "cpf": "123456786850",
+                "name": "Caregiver 6850",
+                "email": "caregiver6850@example.com",
+                "phone": "119968509999",
+                "password": "senha123",
+                "type": "CAREGIVER",
+                "birthdate": "1940-01-01",
+                "gender": "M",
+                "address": "Rua das Flores, 123"
+            }
+        ],
+        "doctors": [
+            {
+                "id": 33,
+                "cpf": "123456783061",
+                "name": "Doctor 3061",
+                "email": "doctor3061@example.com",
+                "phone": "119930619999",
+                "password": "senha123",
+                "type": "DOCTOR",
+                "crm": "915970",
+                "speciality": "Cardiologista"
+            }
+        ]
+    },
+    {
+        "id": 34,
+        "cpf": "123456785919",
+        "name": "Patient 5919",
+        "email": "patient5919@example.com",
+        "phone": "119959199999",
+        "password": "senha123",
+        "type": "PATIENT",
+        "birthdate": "1940-01-01",
+        "gender": "M",
+        "address": "Rua das Flores, 123",
+        "caregivers": [],
+        "doctors": [
+            {
+                "id": 33,
+                "cpf": "123456783061",
+                "name": "Doctor 3061",
+                "email": "doctor3061@example.com",
+                "phone": "119930619999",
+                "password": "senha123",
+                "type": "DOCTOR",
+                "crm": "915970",
+                "speciality": "Cardiologista"
+            }
+        ]
+    }
+]

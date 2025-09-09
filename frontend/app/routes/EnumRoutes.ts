@@ -3,6 +3,11 @@ export const ROUTES = {
   HOME: "/home",
   PROFILE: "/profile",
   USER: "/user/:id",
+  PRIVATE_HOME: "/private-home",
+
+  ADMIN: {
+    MANAGEMENT: "/management",
+  },
 
   DOCTOR: {
     DASHBOARD: "/doctor/dashboard",

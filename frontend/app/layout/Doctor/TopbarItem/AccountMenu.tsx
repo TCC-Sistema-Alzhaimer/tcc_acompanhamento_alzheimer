@@ -17,11 +17,13 @@ import ActionButton from "~/components/ActionButton";
 
 export default function AccountMenu() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
   const open = Boolean(anchorEl);
 
-  // const { logout } = useAuth();
+  const { logout } = useAuth();
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    console.log(event.currentTarget);
     setAnchorEl(event.currentTarget);
   };
 
@@ -33,7 +35,7 @@ export default function AccountMenu() {
     <React.Fragment>
       <Box sx={{ display: "flex", alignItems: "center", textAlign: "center" }}>
         <Tooltip title="Account settings">
-          <ActionButton >
+          <ActionButton onClick={handleClick}>
             <PermIdentityIcon />
           </ActionButton>
         </Tooltip>
@@ -85,7 +87,7 @@ export default function AccountMenu() {
           </ListItemIcon>
           Configurações
         </MenuItem>
-        <MenuItem onClick={() => {}}>
+        <MenuItem onClick={logout}>
           <ListItemIcon>
             <Logout fontSize="small" />
           </ListItemIcon>

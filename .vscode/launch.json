@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-AlzheimerApplication<tcc>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.tcc.alzheimer.AlzheimerApplication",
+            "projectName": "tcc",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

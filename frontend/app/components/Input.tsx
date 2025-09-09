@@ -1,57 +1,38 @@
-import { useState } from "react";
+import { IMaskInput } from "react-imask";
 
 interface InputProps {
-    children?: React.ReactNode;
-    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    value?: string;
-    placeholder?: string;
-    icon?: React.ReactNode;
-    onSearch?: (s: string) => void;
-    className?: string;
-    iconClassName?: string;
+  children?: React.ReactNode;
+  value?: string;
+  placeholder?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  mask?: string; // máscara opcional
+  type?: string;
+  className?: string;
 }
 
-function Input({children, onChange, placeholder, icon, onSearch, className, iconClassName}: InputProps) {
+export default function Input({ children, value, placeholder, onChange, mask, type = "text", className }: InputProps) {
+  return (
+    <div className="flex flex-col w-full mb-3">
+      {children && <label className="block mb-1 font-medium">{children}</label>}
 
-    const [valueInput, setValueInput] = useState("");
-
-    return (
-        <div className="flex items-start flex-col w-full" >
-
-            {children && (
-                <label 
-                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                >
-                    {children}
-                </label>
-            )}
-
-            <div className="flex w-full gap-2">
-                <input 
-                    type="text" 
-                    id="first_name" 
-                    className={className}
-                    placeholder={placeholder}
-                    required 
-                    onChange={(e) => {onChange; setValueInput(e.target.value)}}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter" && onSearch) {
-                            onSearch(valueInput);
-                        }
-                    }}
-                />
-
-
-                {icon && (
-                    <div className={iconClassName} onClick={() => onSearch?.(valueInput)}>
-                        {icon}
-                    </div>
-                )
-            }</div>
-
- 
-        </div>
-    );
+      {mask ? (
+        <IMaskInput
+          type={type}
+          mask={mask}
+          value={value}
+          placeholder={placeholder}
+          onChange={onChange}
+          className={`mt-1 w-full rounded-md border px-3 py-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${className}`}
+        />
+      ) : (
+        <input
+          type={type}
+          value={value}
+          placeholder={placeholder}
+          onChange={onChange}
+          className={`mt-1 w-full rounded-md border px-3 py-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${className}`}
+        />
+      )}
+    </div>
+  );
 }
-
-export default Input;
