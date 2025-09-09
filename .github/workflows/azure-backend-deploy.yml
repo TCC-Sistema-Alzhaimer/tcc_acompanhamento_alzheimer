@@ -8,8 +8,9 @@ on:
       - 'backend/**'
 
 env:
-  DB_URL: ${{ secrets.DB_URL_PROD }}
-  DB_PASSWORD: ${{ secrets.DB_PASSWORD_PROD }}
+  SPRING_DATASOURCE_URL: ${{ secrets.DB_URL }}
+  SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
   API_KEY: ${{ secrets.API_KEY_PROD }}
 
 jobs:
