@@ -22,7 +22,7 @@ export default [
 
   layout("./layout/PrivatePages/index.tsx", [
     route(ROUTES.PRIVATE_HOME, "routes/PrivateWelcome/private_home.tsx"),
-    route(ROUTES.ADMIN.MANAGEMENT, "routes/userManagement/UserManagement.tsx"),
+    route(ROUTES.ADMIN.MANAGEMENT, "routes/userManagement/userManagement.tsx"),
     route(ROUTES.DOCTOR.PATIENTS, "routes/Doctor/DoctorPatients.tsx"),
   ]),
 
