@@ -1,2 +1,3 @@
 .env
 tcc.code-workspace
+backend/docker-compose.yml
