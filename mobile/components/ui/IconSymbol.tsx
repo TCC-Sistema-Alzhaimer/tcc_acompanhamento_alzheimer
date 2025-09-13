@@ -9,7 +9,7 @@ type IconMapping = Record<
   SymbolViewProps["name"],
   ComponentProps<typeof MaterialIcons>["name"]
 >;
-type IconSymbolName = keyof typeof MAPPING;
+export type IconSymbolName = keyof typeof MAPPING;
 
 /**
  * Add your SF Symbols to Material Icons mappings here.
@@ -24,6 +24,7 @@ const MAPPING = {
   "envelope.fill": "email",
   "bell.fill": "notifications",
   "person.crop.circle": "account-circle",
+  "rectangle.portrait.and.arrow.right": "logout",
 } as IconMapping;
 
 /**
