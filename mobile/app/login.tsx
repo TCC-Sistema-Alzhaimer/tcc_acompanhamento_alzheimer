@@ -15,6 +15,11 @@ import {
 } from "react-native";
 import { login } from "../services/authService";
 import * as SecureStore from "expo-secure-store";
+import {
+  AuthenticationError,
+  NetworkError,
+  NotFoundError,
+} from "@/services/errors";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("admin1@gmail.com");
@@ -39,8 +44,28 @@ export default function LoginScreen() {
       } else {
         throw new Error("Resposta de autenticação inválida");
       }
-    } catch (error: any) {
-      Alert.alert("Erro no Login", error.message);
+    } catch (error) {
+      if (error instanceof AuthenticationError) {
+        Alert.alert(
+          "Erro de Autenticação",
+          "A senha está incorreta. Tente novamente"
+        );
+      } else if (error instanceof NotFoundError) {
+        Alert.alert(
+          "Usuário não Encontrado",
+          "Este e-mail não está cadastrado em nosso sistema"
+        );
+      } else if (error instanceof NetworkError) {
+        Alert.alert(
+          "Erro de Conexão",
+          "Não foi possível conectar ao servidor. Verifique sua internet"
+        );
+      } else {
+        Alert.alert(
+          "Erro",
+          "Ocorreu um erro inesperado. Tente novamente mais tarde"
+        );
+      }
     } finally {
       setIsLoading(false);
     }
