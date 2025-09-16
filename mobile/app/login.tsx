@@ -14,10 +14,11 @@ import {
   View,
 } from "react-native";
 import { login } from "../services/authService";
+import * as SecureStore from "expo-secure-store";
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState("joao.silva123@mail.com");
-  const [password, setPassword] = useState("123456");
+  const [email, setEmail] = useState("admin1@gmail.com");
+  const [password, setPassword] = useState("senha123");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -29,8 +30,15 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     try {
-      await login(email, password);
-      router.replace("/home" as any);
+      const response = await login(email, password);
+
+      if (response && response.token) {
+        await SecureStore.setItemAsync("userToken", response.token);
+        console.log("Token salvo com sucesso!", response.token);
+        router.replace("/home" as any);
+      } else {
+        throw new Error("Resposta de autenticação inválida");
+      }
     } catch (error: any) {
       Alert.alert("Erro no Login", error.message);
     } finally {
