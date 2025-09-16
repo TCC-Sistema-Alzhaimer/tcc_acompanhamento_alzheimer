@@ -13,9 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tcc.alzheimer.dto.roles.PatientDto;
-import com.tcc.alzheimer.dto.roles.PatientResponseDTO;
-import com.tcc.alzheimer.dto.roles.PatientUpdateDTO;
+import com.tcc.alzheimer.dto.roles.patient.PatientPostAndUpdateDto;
+import com.tcc.alzheimer.dto.roles.patient.PatientResponseGetDTO;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Caregiver;
 import com.tcc.alzheimer.model.roles.Doctor;
@@ -32,27 +31,27 @@ public class PatientController {
     }
 
     @GetMapping
-    public List<Patient> findAll() {
+    public List<PatientResponseGetDTO> findAll() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Patient> findById(@PathVariable Long id) {
+    public ResponseEntity<PatientResponseGetDTO> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Patient> create(@RequestBody PatientDto dto) {
+    public ResponseEntity<Patient> create(@RequestBody PatientPostAndUpdateDto dto) {
         return ResponseEntity.ok(service.save(dto));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updatePatient(
             @PathVariable Long id,
-            @RequestBody PatientUpdateDTO dto
+            @RequestBody PatientPostAndUpdateDto dto
     ) {
         try {
-            PatientResponseDTO updated = service.update(id, dto);
+            PatientResponseGetDTO updated = service.update(id, dto);
             return ResponseEntity.ok(updated);
         } catch (ResourceNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
@@ -70,13 +69,11 @@ public class PatientController {
 
     @GetMapping("/{id}/caregivers")
     public ResponseEntity<List<Caregiver>> getCaregivers(@PathVariable Long id) {
-        Patient patient = service.findById(id);
-        return ResponseEntity.ok(service.getCaregivers(patient));
+        return ResponseEntity.ok(service.getCaregivers(id));
     }
 
     @GetMapping("/{id}/doctors")
     public ResponseEntity<List<Doctor>> getDoctors(@PathVariable Long id) {
-        Patient patient = service.findById(id);
-        return ResponseEntity.ok(service.getDoctors(patient));
+        return ResponseEntity.ok(service.getDoctors(id));
     }
 }

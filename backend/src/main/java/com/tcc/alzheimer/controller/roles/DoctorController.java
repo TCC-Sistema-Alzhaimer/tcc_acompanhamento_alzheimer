@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tcc.alzheimer.dto.roles.BasicDtoForList;
-import com.tcc.alzheimer.dto.roles.DoctorDto;
+import com.tcc.alzheimer.dto.roles.doctor.DoctorPostAndPutDto;
+import com.tcc.alzheimer.dto.roles.doctor.DoctorGetDto;
 import com.tcc.alzheimer.model.roles.Doctor;
 import com.tcc.alzheimer.service.roles.DoctorService;
 
@@ -29,22 +30,22 @@ public class DoctorController {
     }
 
     @GetMapping
-    public List<Doctor> findAll() {
+    public List<DoctorGetDto> findAll() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Doctor> findById(@PathVariable Long id) {
+    public ResponseEntity<DoctorGetDto> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Doctor> create(@RequestBody DoctorDto dto) {
+    public ResponseEntity<Doctor> create(@RequestBody DoctorPostAndPutDto dto) {
         return ResponseEntity.ok(service.save(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Doctor> update(@PathVariable Long id, @RequestBody DoctorDto dto) {
+    public ResponseEntity<Doctor> update(@PathVariable Long id, @RequestBody DoctorPostAndPutDto dto) {
         Doctor doctor = new Doctor();
         doctor.setCpf(dto.getCpf());
         doctor.setName(dto.getName());
@@ -69,7 +70,7 @@ public class DoctorController {
             @PathVariable Long id,
             @RequestParam(required = false) String query,
             @RequestParam(required = false) String serviceType) {
-        Doctor doctor = service.findById(id);
-        return ResponseEntity.ok(service.searchUsersByDoc(doctor, query, serviceType));
+        
+        return ResponseEntity.ok(service.searchUsersByDoc(id, query, serviceType));
     }
 }

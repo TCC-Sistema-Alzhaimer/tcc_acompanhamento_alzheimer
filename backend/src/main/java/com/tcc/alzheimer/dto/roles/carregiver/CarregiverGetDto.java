@@ -1,4 +1,4 @@
-package com.tcc.alzheimer.dto.roles;
+package com.tcc.alzheimer.dto.roles.carregiver;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -10,16 +10,13 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PatientUpdateDTO {
-
-    private String name;
+public class CarregiverGetDto {
     private String cpf;
+    private String name;
     private String email;
     private String phone;
     private LocalDate birthdate;
     private String gender;
     private String address;
-    private String password;
-    private List<String> doctorEmails;
-    private List<String> caregiverEmails;
+    private List<String> patientEmails; // Lista de emails de pacientes atribuídos
 }
