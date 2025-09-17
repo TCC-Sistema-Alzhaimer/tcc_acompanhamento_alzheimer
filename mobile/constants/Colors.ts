@@ -5,6 +5,7 @@
 
 const tintColorLight = "#0a7ea4";
 const tintColorDark = "#fff";
+const brandColor = "#5BBFBA";
 
 export const Colors = {
   light: {
@@ -19,6 +20,7 @@ export const Colors = {
     danger: "#D14343",
     secondaryText: "#3C4852",
     secondaryBackground: "#F5F5F5",
+    brandBackground: brandColor,
   },
   dark: {
     text: "#ECEDEE",
@@ -32,5 +34,6 @@ export const Colors = {
     danger: "#EF4444",
     secondaryText: "#9CA3AF",
     secondaryBackground: "#1F2224",
+    brandBackground: brandColor,
   },
 };

@@ -4,7 +4,6 @@ import { useRouter } from "expo-router";
 import { StyleSheet, View } from "react-native";
 
 export default function HomeNewScreen() {
-  // You can access the navigation prop like so:
   const router = useRouter();
 
   return (

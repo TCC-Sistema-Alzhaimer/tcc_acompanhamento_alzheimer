@@ -2,10 +2,13 @@ import { Card } from "@/components/card/Card";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { ThemedView } from "@/components/ThemedView";
 import { DoctorMocks } from "@/mocks/doctor-mock";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function MessagesScreen() {
+  const router = useRouter();
+
   const [doctorsList, setDoctorsList] = useState(DoctorMocks);
   const [filteredDoctors, setFilteredDoctors] = useState(DoctorMocks);
   const [searchText, setSearchText] = useState("");
@@ -46,7 +49,7 @@ export default function MessagesScreen() {
               key={doctor.id}
               style={styles.card}
               themed={false}
-              onPress={() => console.log(`Card ${doctor.name} pressed`)}
+              onPress={() => router.push(`/chat/${doctor.id}`)}
             >
               <Card.Avatar uri="https://admin.cnnbrasil.com.br/wp-content/uploads/sites/12/2025/07/Avatar-Fogo-e-Cinzas.png?w=1200&h=900&crop=0" />
               <Card.Title title={doctor.name} subtitle={doctor.role} />
