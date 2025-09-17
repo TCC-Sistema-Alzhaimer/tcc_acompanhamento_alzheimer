@@ -29,7 +29,7 @@ export default function HomeNewScreen() {
         </Card.Root>
 
         <Card.Root themed={false} onPress={() => console.log("Card pressed")}>
-          <Card.Avatar uri="https://admin.cnnbrasil.com.br/wp-content/uploads/sites/12/2025/07/Avatar-Fogo-e-Cinzas.png?w=1200&h=900&crop=0" />
+          <Card.Avatar />
           <Card.Title
             title="Welcome Back!"
             subtitle="Here's your summary for today."
