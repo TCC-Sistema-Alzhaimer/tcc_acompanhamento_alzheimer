@@ -59,7 +59,6 @@ const styles = StyleSheet.create({
   },
   bubbleLeft: {
     alignSelf: "flex-start",
-    // canto inferior-esquerdo um pouco mais fechado (efeito "balão")
     borderBottomLeftRadius: 6,
   },
   bubbleRight: {
@@ -71,6 +70,6 @@ const styles = StyleSheet.create({
   },
   time: {
     fontSize: 12,
-    marginTop: 4, // timestamp colado na bolha
+    marginTop: 4,
   },
 });

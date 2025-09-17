@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
   headerCard: {
     padding: 12,
     borderRadius: 10,
+    borderWidth: 0,
   },
   content: {
     flex: 1,
