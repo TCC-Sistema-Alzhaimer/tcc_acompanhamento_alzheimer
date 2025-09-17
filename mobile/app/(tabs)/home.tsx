@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     flex: 0.2,
     marginBottom: 16,
     justifyContent: "center",
-    borderColor: "#ddd",
+    borderColor: "#444", // cor mais sutil para fundo preto
   },
   content: {
     flex: 1,
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     alignContent: "center",
     padding: 16,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#555",
     borderRadius: 8,
   },
 });
