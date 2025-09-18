@@ -28,13 +28,16 @@ export default function HomeNewScreen() {
           <Card.Icon name="paperplane.fill" />
         </Card.Root>
 
-        <Card.Root themed={false} onPress={() => console.log("Card pressed")}>
+        <Card.Root themed={false} onPress={() => router.push("/conclusion")}>
           <Card.Avatar />
           <Card.Title
-            title="Welcome Back!"
-            subtitle="Here's your summary for today."
+            title="Conclusões médicas"
+            subtitle="Visualize suas conclusões médicas."
           />
-          <Card.Icon name="paperplane.fill" />
+          <Card.Icon
+            name="paperplane.fill"
+            onPress={() => router.push("/conclusion")}
+          />
         </Card.Root>
       </View>
     </ThemedView>

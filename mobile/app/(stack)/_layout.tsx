@@ -24,6 +24,20 @@ export default function TabLayout() {
             headerShown: true,
           }}
         />
+        <Stack.Screen
+          name="exam/[id]"
+          options={{
+            title: "Detalhes do Exame",
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="conclusion/index"
+          options={{
+            title: "Conclusões Médicas",
+            headerShown: true,
+          }}
+        />
       </Stack>
     </SafeAreaView>
   );
