@@ -38,15 +38,6 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="explore"
-          options={{
-            title: "Explore",
-            tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="paperplane.fill" color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
           name="messages"
           options={{
             title: "Mensagens",
@@ -61,6 +52,15 @@ export default function TabLayout() {
             title: "Notificações",
             tabBarIcon: ({ color }) => (
               <IconSymbol size={28} name="bell.fill" color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="configuration"
+          options={{
+            title: "Configurações",
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={28} name="gearshape.fill" color={color} />
             ),
           }}
         />

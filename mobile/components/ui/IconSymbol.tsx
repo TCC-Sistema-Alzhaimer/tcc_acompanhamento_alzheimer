@@ -26,6 +26,7 @@ const MAPPING = {
   "person.crop.circle": "account-circle",
   "rectangle.portrait.and.arrow.right": "logout",
   magnifyingglass: "search",
+  "gearshape.fill": "settings",
 } as IconMapping;
 
 /**
