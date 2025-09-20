@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.tcc.alzheimer.dto.roles.BasicDtoForList;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
+import com.tcc.alzheimer.model.enums.UserType;
 import com.tcc.alzheimer.model.roles.User;
 import com.tcc.alzheimer.repository.roles.UserRepository;
 
@@ -46,7 +47,7 @@ public class UserService {
         }
 
         public List<BasicDtoForList> getPatientsAndCaregivers() {
-                return repo.findByTypeIn(List.of("PATIENT", "CAREGIVER")).stream()
+                return repo.findByTypeIn(List.of(UserType.PATIENT.name(), UserType.CAREGIVER.name())).stream()
                                 .map(user -> new BasicDtoForList(
                                                 user.getId(),
                                                 user.getName(),

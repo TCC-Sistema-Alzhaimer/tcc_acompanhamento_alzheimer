@@ -1,3 +1,5 @@
 .env
 tcc.code-workspace
 backend/docker-compose.yml
+backend/src/main/resources/google-credentials.json
+backend/src/main/resources/firebase-credentials.json
