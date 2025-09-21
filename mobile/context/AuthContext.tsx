@@ -16,7 +16,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await performLogout();
       router.replace("/login");
     } catch (error) {
-      console.error(error);
+      console.error("Erro no logout, mas redirecionando mesmo assim:", error);
       router.replace("/login");
     }
   };

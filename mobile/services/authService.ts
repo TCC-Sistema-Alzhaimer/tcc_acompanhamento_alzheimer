@@ -14,7 +14,6 @@ export const login = async (email: string, password: string) => {
       email,
       password,
     });
-    console.log("Usuário autenticado:", response.data);
     return response.data;
   } catch (error) {
     if (isAxiosError(error)) {
@@ -43,7 +42,6 @@ export const login = async (email: string, password: string) => {
 export const logout = async () => {
   try {
     await SecureStore.deleteItemAsync("userToken");
-    console.log("Token removido com sucesso!");
   } catch (error) {
     console.error("Erro ao remover o token:", error);
     throw new Error("Não foi possível remover a sessão do dispositivo.");

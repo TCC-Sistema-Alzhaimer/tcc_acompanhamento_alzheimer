@@ -1,12 +1,12 @@
 import { Card } from "@/components/card/Card";
 import { ThemedView } from "@/components/ThemedView";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 import { StyleSheet, View } from "react-native";
 
 export default function HomeNewScreen() {
-  // You can access the navigation prop like so:
   const router = useRouter();
-
+  const { logout } = useAuth();
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
@@ -15,7 +15,10 @@ export default function HomeNewScreen() {
             title="Welcome Back!"
             subtitle="Here's your summary for today."
           />
-          <Card.Icon name="rectangle.portrait.and.arrow.right" />
+          <Card.Icon
+            name="rectangle.portrait.and.arrow.right"
+            onPress={logout}
+          />
         </Card.Root>
       </View>
 

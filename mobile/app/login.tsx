@@ -39,7 +39,6 @@ export default function LoginScreen() {
 
       if (response && response.token) {
         await SecureStore.setItemAsync("userToken", response.token);
-        console.log("Token salvo com sucesso!", response.token);
         router.replace("/home" as any);
       } else {
         throw new Error("Resposta de autenticação inválida");
