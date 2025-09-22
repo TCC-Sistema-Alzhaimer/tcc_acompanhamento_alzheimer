@@ -1,6 +1,13 @@
 // app/login.tsx
 
+import { useAuth } from "@/context/AuthContext";
+import {
+  AuthenticationError,
+  NetworkError,
+  NotFoundError,
+} from "@/services/errors";
 import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -13,19 +20,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { login } from "../services/authService";
-import * as SecureStore from "expo-secure-store";
-import {
-  AuthenticationError,
-  NetworkError,
-  NotFoundError,
-} from "@/services/errors";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("admin1@gmail.com");
   const [password, setPassword] = useState("senha123");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { useLogin } = useAuth();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -35,10 +36,16 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     try {
-      const response = await login(email, password);
-
+      const response = await useLogin({
+        email,
+        password,
+      });
       if (response && response.token) {
-        await SecureStore.setItemAsync("userToken", response.token);
+        if (Platform.OS === "web") {
+          localStorage.setItem("userToken", response.token);
+        } else {
+          await SecureStore.setItemAsync("userToken", response.token);
+        }
         router.replace("/home" as any);
       } else {
         throw new Error("Resposta de autenticação inválida");

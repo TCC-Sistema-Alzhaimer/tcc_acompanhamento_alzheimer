@@ -1,4 +1,7 @@
+import { LoginRequest } from "@/types/api/login";
 import { isAxiosError } from "axios";
+import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 import { api } from "./api";
 import {
   ApiError,
@@ -6,13 +9,12 @@ import {
   NetworkError,
   NotFoundError,
 } from "./errors";
-import * as SecureStore from "expo-secure-store";
 
-export const login = async (email: string, password: string) => {
+export const login = async (credential: LoginRequest) => {
   try {
-    const response = await api.post("auth/login", {
-      email,
-      password,
+    const response = await api.post("api/auth/login", {
+      email: credential.email,
+      password: credential.password,
     });
     return response.data;
   } catch (error) {
@@ -41,6 +43,11 @@ export const login = async (email: string, password: string) => {
 
 export const logout = async () => {
   try {
+    if (Platform.OS === "web") {
+      console.log("Removendo token do localStorage");
+      localStorage.removeItem("userToken");
+      return;
+    }
     await SecureStore.deleteItemAsync("userToken");
   } catch (error) {
     console.error("Erro ao remover o token:", error);
