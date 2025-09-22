@@ -12,7 +12,7 @@ export function CardIcon({ name, onPress }: CardIconProps) {
   };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={handlePress}>
+    <TouchableOpacity style={styles.container} onPress={onPress || handlePress}>
       <View style={styles.subContainer}>
         <IconSymbol name={name} size={18} weight="medium" color="#888" />
       </View>
