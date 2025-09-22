@@ -1,5 +1,9 @@
 package com.tcc.alzheimer.model.roles;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.tcc.alzheimer.model.enums.UserType;
+import com.tcc.alzheimer.model.notifications.NotificationRecipient;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,12 +14,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Data
@@ -53,4 +60,9 @@ public class User {
     @Enumerated(EnumType.STRING) 
     @Column(name = "type", nullable = false)
     private UserType type;
+
+    @OneToMany(mappedBy = "recipient")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Set<NotificationRecipient> received = new HashSet<>();
 }
