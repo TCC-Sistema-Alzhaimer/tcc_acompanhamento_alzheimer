@@ -32,13 +32,16 @@ export default function HomeNewScreen() {
           <Card.Icon name="paperplane.fill" />
         </Card.Root>
 
-        <Card.Root themed={false} onPress={() => console.log("Card pressed")}>
-          <Card.Avatar uri="https://admin.cnnbrasil.com.br/wp-content/uploads/sites/12/2025/07/Avatar-Fogo-e-Cinzas.png?w=1200&h=900&crop=0" />
+        <Card.Root themed={false} onPress={() => router.push("/conclusion")}>
+          <Card.Avatar />
           <Card.Title
-            title="Welcome Back!"
-            subtitle="Here's your summary for today."
+            title="Conclusões médicas"
+            subtitle="Visualize suas conclusões médicas."
           />
-          <Card.Icon name="paperplane.fill" />
+          <Card.Icon
+            name="paperplane.fill"
+            onPress={() => router.push("/conclusion")}
+          />
         </Card.Root>
       </View>
     </ThemedView>
@@ -54,7 +57,7 @@ const styles = StyleSheet.create({
     flex: 0.2,
     marginBottom: 16,
     justifyContent: "center",
-    borderColor: "#ddd",
+    borderColor: "#444", // cor mais sutil para fundo preto
   },
   content: {
     flex: 1,
@@ -62,7 +65,7 @@ const styles = StyleSheet.create({
     alignContent: "center",
     padding: 16,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#555",
     borderRadius: 8,
   },
 });
