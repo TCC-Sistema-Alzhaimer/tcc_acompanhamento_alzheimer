@@ -64,7 +64,6 @@ public class ExamService {
         exam.setStatus(examStatus);
         exam.setRequestDate(LocalDateTime.now());
         exam.setInstructions(dto.getInstructions());
-        exam.setResult(null);
         exam.setNote(dto.getNote());
 
         return examRepository.save(exam);
@@ -95,6 +94,8 @@ public class ExamService {
 
     public ExamResponseDTO toResponseDTO(Exam exam) {
         ExamResponseDTO dto = new ExamResponseDTO();
+
+        // Dados básicos do exame
         dto.setId(exam.getId());
         dto.setDoctorId(exam.getDoctor().getId());
         dto.setPatientId(exam.getPatient().getId());
@@ -102,10 +103,15 @@ public class ExamService {
         dto.setExamStatusId(exam.getStatus().getId());
         dto.setRequestDate(exam.getRequestDate());
         dto.setInstructions(exam.getInstructions());
-        dto.setResult(exam.getResult());
         dto.setNote(exam.getNote());
         dto.setUpdatedAt(exam.getUpdatedAt());
         dto.setUpdatedBy(exam.getUpdatedBy());
+
+        // Informações adicionais (descrições para facilitar o frontend)
+        dto.setExamTypeDescription(exam.getType().getDescription());
+        dto.setExamStatusDescription(exam.getStatus().getDescription());
+        dto.setDoctorName(exam.getDoctor().getName());
+        dto.setPatientName(exam.getPatient().getName());
         return dto;
     }
 }

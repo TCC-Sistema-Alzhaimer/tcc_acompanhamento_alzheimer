@@ -1,5 +1,6 @@
 package com.tcc.alzheimer.service.exams;
 
+import com.tcc.alzheimer.dto.exams.ExamResultDTO;
 import com.tcc.alzheimer.dto.exams.ExamResultUploadResponseDTO;
 import com.tcc.alzheimer.dto.files.FileUploadResponseDTO;
 import com.tcc.alzheimer.exception.AccessDeniedException;
@@ -18,6 +19,7 @@ import com.tcc.alzheimer.repository.files.FileRepository;
 import com.tcc.alzheimer.service.auth.AuthService;
 import com.tcc.alzheimer.service.files.FirebaseStorageService;
 import com.tcc.alzheimer.model.enums.UserType;
+import com.tcc.alzheimer.util.FileUtils;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +28,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import java.util.UUID;
 
@@ -57,6 +60,31 @@ public class ExamResultService {
         this.examResultRepository = examResultRepository;
         this.fileRepository = fileRepository;
         this.authService = authService;
+    }
+
+    /**
+     * Busca todos os resultados de um exame específico
+     * 
+     * @param examId ID do exame
+     * @return Lista de resultados do exame
+     * @throws ResourceNotFoundException se exame não for encontrado
+     * @throws AccessDeniedException     se usuário não tiver permissão
+     */
+    public List<ExamResultDTO> getExamResults(Long examId) {
+        // Buscar o exame
+        Exam exam = findExamById(examId);
+
+        // Validar acesso do usuário
+        User currentUser = authService.getCurrentUser();
+        validateUserAccess(currentUser, exam);
+
+        // Buscar resultados do exame
+        List<ExamResult> examResults = examResultRepository.findByExamIdAndIsActiveTrue(examId);
+
+        // Converter para DTOs
+        return examResults.stream()
+                .map(this::convertToExamResultDTO)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -228,11 +256,11 @@ public class ExamResultService {
         fileInfo.setId(fileEntity.getId().toString()); // ID da base de dados (PK)
         fileInfo.setName(fileEntity.getName());
         fileInfo.setSize(fileEntity.getSize());
-        fileInfo.setFormattedSize(formatFileSize(fileEntity.getSize()));
+        fileInfo.setFormattedSize(FileUtils.formatFileSize(fileEntity.getSize()));
         fileInfo.setMimeType(mimeType);
         // Gerar link dinamicamente
         fileInfo.setDownloadLink(firebaseStorageService.generateDownloadLink(fileEntity.getFilePath()));
-        fileInfo.setFileType(getFileTypeDescription(mimeType));
+        fileInfo.setFileType(FileUtils.getFileTypeDescription(mimeType));
         fileInfo.setIsImage(mimeType != null && mimeType.startsWith("image/"));
         fileInfo.setIsPdf("application/pdf".equals(mimeType));
         fileInfo.setCreatedTime(fileEntity.getCreationDate());
@@ -251,45 +279,25 @@ public class ExamResultService {
     }
 
     /**
-     * Formata o tamanho do arquivo em formato legível
+     * Converte ExamResult para ExamResultDTO
      */
-    private String formatFileSize(Long sizeInBytes) {
-        if (sizeInBytes == null || sizeInBytes == 0) {
-            return "0 B";
-        }
+    private ExamResultDTO convertToExamResultDTO(ExamResult examResult) {
+        File file = examResult.getFile();
 
-        String[] units = { "B", "KB", "MB", "GB" };
-        int unitIndex = 0;
-        double size = sizeInBytes.doubleValue();
-
-        while (size >= 1024 && unitIndex < units.length - 1) {
-            size /= 1024;
-            unitIndex++;
-        }
-
-        return String.format("%.1f %s", size, units[unitIndex]);
+        return ExamResultDTO.builder()
+                .id(examResult.getId())
+                .fileId(file.getId())
+                .fileName(file.getName())
+                .fileType(FileUtils.getFileTypeDescription(file.getMimeType()))
+                .mimeType(file.getMimeType())
+                .fileSize(file.getSize())
+                .formattedFileSize(FileUtils.formatFileSize(file.getSize()))
+                .downloadLink(firebaseStorageService.generateDownloadLink(file.getFilePath()))
+                .isImage(file.getMimeType() != null && file.getMimeType().startsWith("image/"))
+                .isPdf("application/pdf".equals(file.getMimeType()))
+                .uploadDate(file.getCreationDate())
+                .isActive(examResult.getIsActive())
+                .build();
     }
 
-    /**
-     * Retorna descrição amigável do tipo de arquivo
-     */
-    private String getFileTypeDescription(String mimeType) {
-        if (mimeType == null) {
-            return "Arquivo";
-        }
-
-        switch (mimeType) {
-            case "application/pdf":
-                return "Documento PDF";
-            case "image/jpeg":
-            case "image/jpg":
-                return "Imagem JPEG";
-            case "image/png":
-                return "Imagem PNG";
-            case "image/gif":
-                return "Imagem GIF";
-            default:
-                return "Arquivo";
-        }
-    }
 }

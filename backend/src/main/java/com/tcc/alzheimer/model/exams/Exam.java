@@ -43,9 +43,6 @@ public class Exam {
     @Column(name = "instructions", columnDefinition = "TEXT")
     private String instructions;
 
-    @Column(name = "result", columnDefinition = "TEXT")
-    private String result;
-
     @Column(name = "note", columnDefinition = "TEXT")
     private String note;
 

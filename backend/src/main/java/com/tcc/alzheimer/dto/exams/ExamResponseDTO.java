@@ -18,8 +18,13 @@ public class ExamResponseDTO {
     private String examStatusId;
     private LocalDateTime requestDate;
     private String instructions;
-    private String result;
     private String note;
     private LocalDateTime updatedAt;
     private Long updatedBy;
+
+    // Informações adicionais para facilitar o frontend
+    private String examTypeDescription;
+    private String examStatusDescription;
+    private String doctorName;
+    private String patientName;
 }
