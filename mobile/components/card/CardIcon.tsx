@@ -7,10 +7,6 @@ interface CardIconProps {
 }
 
 export function CardIcon({ name, onPress }: CardIconProps) {
-  const handlePress = () => {
-    console.log(`Icon ${name} pressed`);
-  };
-
   return (
     <TouchableOpacity style={styles.container} onPress={onPress || handlePress}>
       <View style={styles.subContainer}>

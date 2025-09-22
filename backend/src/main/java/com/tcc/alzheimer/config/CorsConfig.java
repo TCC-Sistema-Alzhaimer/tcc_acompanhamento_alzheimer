@@ -14,7 +14,7 @@ public class CorsConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration cfg = new CorsConfiguration();
-    cfg.setAllowedOrigins(List.of("http://localhost:5174", "http://127.0.0.1:5174", "https://kind-mud-06a65940f.1.azurestaticapps.net", "http://localhost:5173", "http://127.0.0.1:5173"));
+    cfg.setAllowedOrigins(List.of("http://localhost:5174", "http://127.0.0.1:5174", "https://kind-mud-06a65940f.1.azurestaticapps.net", "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8081"));
     cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
     cfg.setAllowedHeaders(List.of("*"));
     cfg.setAllowCredentials(true);
