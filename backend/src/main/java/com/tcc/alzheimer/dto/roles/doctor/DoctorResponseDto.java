@@ -1,4 +1,4 @@
-package com.tcc.alzheimer.dto.roles;import java.util.List;
+package com.tcc.alzheimer.dto.roles.doctor;import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

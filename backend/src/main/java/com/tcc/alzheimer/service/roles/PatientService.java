@@ -8,9 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tcc.alzheimer.dto.roles.PatientDto;
-import com.tcc.alzheimer.dto.roles.PatientResponseDTO;
-import com.tcc.alzheimer.dto.roles.PatientUpdateDTO;
+import com.tcc.alzheimer.dto.roles.patient.PatientPostAndUpdateDto;
+import com.tcc.alzheimer.dto.roles.patient.PatientResponseGetDTO;
 import com.tcc.alzheimer.exception.ResourceConflictException;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Caregiver;
@@ -35,16 +34,41 @@ public class PatientService {
         this.encoder = encoder;
     }
 
-    public List<Patient> findAll() {
-        return repo.findAll();
+    private PatientResponseGetDTO toDto(Patient patient) {
+        return new PatientResponseGetDTO(
+                patient.getId(),
+                patient.getName(),
+                patient.getCpf(),
+                patient.getEmail(),
+                patient.getPhone(),
+                patient.getGender(),
+                patient.getAddress(),
+                patient.getBirthdate(),
+                patient.getDoctors().stream()
+                        .map(Doctor::getEmail)
+                        .collect(Collectors.toList()),
+                patient.getCaregivers().stream()
+                        .map(Caregiver::getEmail)
+                        .collect(Collectors.toList()));
     }
 
-    public Patient findById(Long id) {
+    public List<PatientResponseGetDTO> findAll() {
+        return repo.findAll().stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    public PatientResponseGetDTO findById(Long id) {
+        Patient patient = repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente com id " + id + " não encontrado")); 
+        return toDto(patient);
+    }
+    private Patient findByIdIntern(Long id) {
         return repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente com id " + id + " não encontrado"));
     }
 
-    public Patient save(PatientDto dto) {
+    public Patient save(PatientPostAndUpdateDto dto) {
         if (repo.findByCpf(dto.getCpf()).isPresent()) {
             throw new ResourceConflictException("CPF já cadastrado!");
         }
@@ -62,7 +86,10 @@ public class PatientService {
         patient.setAddress(dto.getAddress());
         patient.setPassword(encoder.encode(dto.getPassword()));
         patient.setType(dto.getUserType());
+        patient.setDoctors(null);
+        patient.setCaregivers(null);
 
+        /*  no momento da criacao ira ser inicial sozinho medicos e cuidadores irao ser adicionados depois
         List<String> doctorEmails = dto.getDoctorEmails();
         List<String> caregiverEmails = dto.getCaregiverEmails();
 
@@ -86,13 +113,14 @@ public class PatientService {
                 caregiver.getPatients().add(patient);
             });
         }
+        */
 
         return repo.save(patient);
     }
 
     @Transactional
-    public PatientResponseDTO update(Long id, PatientUpdateDTO dto) {
-        Patient patient = findById(id);
+    public PatientResponseGetDTO update(Long id, PatientPostAndUpdateDto dto) {
+        Patient patient = findByIdIntern(id);
 
         patient.setName(dto.getName());
         patient.setCpf(dto.getCpf());
@@ -129,7 +157,7 @@ public class PatientService {
 
         Patient saved = repo.save(patient);
 
-        PatientResponseDTO response = new PatientResponseDTO();
+        PatientResponseGetDTO response = new PatientResponseGetDTO();
         response.setId(saved.getId());
         response.setName(saved.getName());
         response.setCpf(saved.getCpf());
@@ -139,21 +167,24 @@ public class PatientService {
         response.setGender(saved.getGender());
         response.setAddress(saved.getAddress());
         response.setDoctorEmails(saved.getDoctors().stream().map(Doctor::getEmail).collect(Collectors.toList()));
-        response.setCaregiverEmails(saved.getCaregivers().stream().map(Caregiver::getEmail).collect(Collectors.toList()));
+        response.setCaregiverEmails(
+                saved.getCaregivers().stream().map(Caregiver::getEmail).collect(Collectors.toList()));
 
         return response;
     }
 
     public void delete(Long id) {
-        Patient patient = findById(id);
+        Patient patient = findByIdIntern(id);
         repo.delete(patient);
     }
 
-    public List<Caregiver> getCaregivers(Patient patient) {
+    public List<Caregiver> getCaregivers(Long id) {
+        Patient patient = findByIdIntern(id);
         return new ArrayList<>(patient.getCaregivers());
     }
 
-    public List<Doctor> getDoctors(Patient patient) {
+    public List<Doctor> getDoctors(long id) {
+        Patient patient = findByIdIntern(id);
         return new ArrayList<>(patient.getDoctors());
     }
 }
