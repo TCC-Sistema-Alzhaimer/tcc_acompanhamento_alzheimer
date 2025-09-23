@@ -1,4 +1,4 @@
-package com.tcc.alzheimer.dto.roles;
+package com.tcc.alzheimer.dto.roles.patient;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PatientResponseDTO {
+public class PatientResponseGetDTO {
     private Long id;
     private String name;
     private String cpf;
@@ -20,5 +20,4 @@ public class PatientResponseDTO {
     private LocalDate birthdate;
     private List<String> doctorEmails;
     private List<String> caregiverEmails;
-
 }

@@ -1,4 +1,4 @@
-package com.tcc.alzheimer.dto.roles;
+package com.tcc.alzheimer.dto.roles.carregiver;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CaregiverDto {
+public class CaregiverPostAndPutDto {
     private String cpf;
     private String name;
     private String email;

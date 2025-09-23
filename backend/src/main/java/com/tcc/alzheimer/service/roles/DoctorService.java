@@ -1,13 +1,15 @@
 package com.tcc.alzheimer.service.roles;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tcc.alzheimer.dto.roles.BasicDtoForList;
-import com.tcc.alzheimer.dto.roles.DoctorDto;
+import com.tcc.alzheimer.dto.roles.doctor.DoctorGetDto;
+import com.tcc.alzheimer.dto.roles.doctor.DoctorPostAndPutDto;
 import com.tcc.alzheimer.exception.ResourceConflictException;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Doctor;
@@ -21,22 +23,43 @@ public class DoctorService {
     private final PatientRepository patientRepo;
     private final PasswordEncoder encoder;
 
+    private DoctorGetDto toDto(Doctor doctor) {
+        return new DoctorGetDto(
+                doctor.getCpf(),
+                doctor.getName(),
+                doctor.getEmail(),
+                doctor.getPhone(),
+                doctor.getCrm(),
+                doctor.getSpeciality(),
+                doctor.getPatients().stream()
+                        .map(Patient::getEmail)
+                        .collect(Collectors.toList()));
+    }
+
     public DoctorService(DoctorRepository repo, PatientRepository patientRepo, PasswordEncoder encoder) {
         this.repo = repo;
         this.patientRepo = patientRepo;
         this.encoder = encoder;
     }
 
-    public List<Doctor> findAll() {
-        return repo.findAll();
+    public List<DoctorGetDto> findAll() {
+        return repo.findAll().stream()
+                .map(this::toDto)
+                .toList();
     }
 
-    public Doctor findById(Long id) {
+    public DoctorGetDto findById(Long id) {
+        Doctor doctor = repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Médico com id " + id + " não encontrado"));
+        return toDto(doctor);
+    }
+
+    private Doctor findByIdIntern(Long id) {
         return repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Médico com id " + id + " não encontrado"));
     }
 
-    public Doctor save(DoctorDto dto) {
+    public Doctor save(DoctorPostAndPutDto dto) {
         // Verificar duplicidade antes de criar
         if (repo.findByCpf(dto.getCpf()).isPresent()) {
             throw new ResourceConflictException("CPF já cadastrado!");
@@ -58,25 +81,28 @@ public class DoctorService {
         doctor.setSpeciality(dto.getSpeciality());
         doctor.setPassword(encoder.encode(dto.getPassword()));
         doctor.setType(dto.getUserType());
+        doctor.setPatients(null);
 
-        // Vincular pacientes, se houver
-        List<String> patientEmails = dto.getPatientEmails();
-        if (patientEmails != null) {
-            patientEmails.forEach(email -> {
-                Patient patient = patientRepo.findByEmail(email)
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                "Paciente com email " + email + " não encontrado"));
-                doctor.getPatients().add(patient);
-                patient.getDoctors().add(doctor);
-            });
-        }
+        // No momento da criacao nao vai existir pacientes associados
+        /*
+         * List<String> patientEmails = dto.getPatientEmails();
+         * if (patientEmails != null) {
+         * patientEmails.forEach(email -> {
+         * Patient patient = patientRepo.findByEmail(email)
+         * .orElseThrow(() -> new ResourceNotFoundException(
+         * "Paciente com email " + email + " não encontrado"));
+         * doctor.getPatients().add(patient);
+         * patient.getDoctors().add(doctor);
+         * });
+         * }
+         */
 
         return repo.save(doctor);
     }
 
     @Transactional
     public Doctor update(Long id, Doctor doctor, List<String> patientEmails) {
-        Doctor existing = findById(id);
+        Doctor existing = findByIdIntern(id);
 
         existing.setName(doctor.getName());
         existing.setCpf(doctor.getCpf());
@@ -102,7 +128,7 @@ public class DoctorService {
     }
 
     public void delete(Long id) {
-        Doctor doctor = findById(id);
+        Doctor doctor = findByIdIntern(id);
         repo.delete(doctor);
     }
 
@@ -117,23 +143,24 @@ public class DoctorService {
                 .toList();
     }
 
-    public List<BasicDtoForList> searchUsersByDoc(Doctor doctor, String query, String serviceType) {
-    List<Patient> patients;
+    public List<BasicDtoForList> searchUsersByDoc(Long id, String query, String serviceType) {
+        
+        Doctor doctor = findByIdIntern(id);
+        List<Patient> patients;
 
-    // se não tiver filtro, retorna todos direto
-    if ((query == null || query.isBlank()) && (serviceType == null || serviceType.isBlank())) {
-        patients = patientRepo.findByDoctors(doctor);
-    } else {
-        patients = patientRepo.findByDoctorWithFilters(doctor.getId(), query, serviceType);
+        if ((query == null || query.isBlank()) && (serviceType == null || serviceType.isBlank())) {
+            patients = patientRepo.findByDoctors(doctor);
+        } else {
+            patients = patientRepo.findByDoctorWithFilters(doctor.getId(), query, serviceType);
+        }
+
+        return patients.stream()
+                .map(patient -> new BasicDtoForList(
+                        patient.getId(),
+                        patient.getName(),
+                        patient.getEmail(),
+                        patient.getPhone(),
+                        patient.getType()))
+                .toList();
     }
-
-    return patients.stream()
-            .map(patient -> new BasicDtoForList(
-                    patient.getId(),
-                    patient.getName(),
-                    patient.getEmail(),
-                    patient.getPhone(),
-                    patient.getType()))
-            .toList();
-}
 }

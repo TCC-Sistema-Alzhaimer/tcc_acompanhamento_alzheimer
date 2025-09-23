@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tcc.alzheimer.dto.roles.CaregiverDto;
+import com.tcc.alzheimer.dto.roles.carregiver.CaregiverPostAndPutDto;
+import com.tcc.alzheimer.dto.roles.carregiver.CarregiverGetDto;
 import com.tcc.alzheimer.model.roles.Caregiver;
 import com.tcc.alzheimer.model.roles.Patient;
 import com.tcc.alzheimer.service.roles.CaregiverService;
@@ -28,22 +29,22 @@ public class CaregiverController {
     }
 
     @GetMapping
-    public List<Caregiver> findAll() {
+    public List<CarregiverGetDto> findAll() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Caregiver> findById(@PathVariable Long id) {
+    public ResponseEntity<CarregiverGetDto> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Caregiver> create(@RequestBody CaregiverDto dto) {
+    public ResponseEntity<Caregiver> create(@RequestBody CaregiverPostAndPutDto dto) {
         return ResponseEntity.ok(service.save(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Caregiver> update(@PathVariable Long id, @RequestBody CaregiverDto dto) {
+    public ResponseEntity<Caregiver> update(@PathVariable Long id, @RequestBody CaregiverPostAndPutDto dto) {
         Caregiver caregiver = new Caregiver();
         caregiver.setCpf(dto.getCpf());
         caregiver.setName(dto.getName());
@@ -66,7 +67,6 @@ public class CaregiverController {
 
     @GetMapping("/{id}/patients")
     public ResponseEntity<List<Patient>> getPatients(@PathVariable Long id) {
-        Caregiver caregiver = service.findById(id);
-        return ResponseEntity.ok(service.getPatients(caregiver));
+        return ResponseEntity.ok(service.getPatients(id));
     }
 }

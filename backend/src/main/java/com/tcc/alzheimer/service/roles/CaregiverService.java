@@ -7,7 +7,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tcc.alzheimer.dto.roles.CaregiverDto;
+import com.tcc.alzheimer.dto.roles.carregiver.CaregiverPostAndPutDto;
+import com.tcc.alzheimer.dto.roles.carregiver.CarregiverGetDto;
 import com.tcc.alzheimer.exception.ResourceConflictException;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Caregiver;
@@ -27,16 +28,40 @@ public class CaregiverService {
         this.encoder = encoder;
     }
 
-    public List<Caregiver> findAll() {
-        return repo.findAll();
+    private CarregiverGetDto toDto(Caregiver caregiver) {
+        List<String> patientEmails = new ArrayList<>();
+        if (caregiver.getPatients() != null) {
+            caregiver.getPatients().forEach(p -> patientEmails.add(p.getEmail()));
+        }
+        return new CarregiverGetDto(
+                caregiver.getCpf(),
+                caregiver.getName(),
+                caregiver.getEmail(),
+                caregiver.getPhone(),
+                caregiver.getBirthdate(),
+                caregiver.getGender(),
+                caregiver.getAddress(),
+                patientEmails);
     }
 
-    public Caregiver findById(Long id) {
+    public List<CarregiverGetDto> findAll() {
+        return repo.findAll().stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    public CarregiverGetDto findById(Long id) {
+        Caregiver caregiver  =  repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cuidador com id " + id + " não encontrado"));
+        return toDto(caregiver);
+    }
+
+    public Caregiver findByIdIntern(Long id) {
         return repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cuidador com id " + id + " não encontrado"));
     }
 
-    public Caregiver save(CaregiverDto dto) {
+    public Caregiver save(CaregiverPostAndPutDto dto) {
         // Verificar duplicidade
         if (repo.findByCpf(dto.getCpf()).isPresent()) {
             throw new ResourceConflictException("CPF já cadastrado!");
@@ -56,7 +81,9 @@ public class CaregiverService {
         caregiver.setAddress(dto.getAddress());
         caregiver.setPassword(encoder.encode(dto.getPassword()));
         caregiver.setType(dto.getUserType());
+        caregiver.setPatients(null);
 
+        /*No inicio sera cadastrado sem pacientes 
         List<String> patientEmails = dto.getPatientEmails();
         if (patientEmails == null || patientEmails.isEmpty()) {
             throw new IllegalArgumentException("Cuidador precisa ter pelo menos 1 paciente.");
@@ -69,13 +96,14 @@ public class CaregiverService {
             caregiver.getPatients().add(patient);
             patient.getCaregivers().add(caregiver);
         });
-
+        */
         return repo.save(caregiver);
+        
     }
 
     @Transactional
     public Caregiver update(Long id, Caregiver caregiver, List<String> patientEmails) {
-        Caregiver existing = findById(id);
+        Caregiver existing = findByIdIntern(id);
 
         existing.setName(caregiver.getName());
         existing.setCpf(caregiver.getCpf());
@@ -102,11 +130,12 @@ public class CaregiverService {
     }
 
     public void delete(Long id) {
-        Caregiver caregiver = findById(id);
+        Caregiver caregiver = findByIdIntern(id);
         repo.delete(caregiver);
     }
 
-    public List<Patient> getPatients(Caregiver caregiver) {
+    public List<Patient> getPatients(Long id) {
+        Caregiver caregiver = findByIdIntern(id);
         return new ArrayList<>(caregiver.getPatients());
     }
 }

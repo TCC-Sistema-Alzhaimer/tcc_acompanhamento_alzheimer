@@ -1,6 +1,5 @@
-package com.tcc.alzheimer.dto.roles;
+package com.tcc.alzheimer.dto.roles.doctor;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import com.tcc.alzheimer.model.enums.UserType;
@@ -12,16 +11,14 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PatientDto {
+public class DoctorPostAndPutDto {
     private String cpf;
     private String name;
     private String email;
     private String phone;
     private String password;
-    private LocalDate birthdate;
-    private String gender;
-    private String address;
-    private List<String> doctorEmails;      
-    private List<String> caregiverEmails;
-    private UserType userType = UserType.PATIENT;
+    private String crm;
+    private String speciality;
+    private List<String> patientEmails;
+    private UserType userType = UserType.DOCTOR;
 }
