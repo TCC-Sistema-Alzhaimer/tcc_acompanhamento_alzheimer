@@ -1,0 +1,57 @@
+import { Card } from "@/components/card/Card";
+import { ThemedView } from "@/components/ThemedView";
+import { useState } from "react";
+import { StyleSheet } from "react-native";
+
+const aboutText = `Este aplicativo foi desenvolvido para auxiliar no monitoramento e gestão de pacientes com Alzheimer. Ele oferece funcionalidades como registro de exames, acompanhamento de conclusões médicas e notificações importantes. Nosso objetivo é proporcionar uma melhor qualidade de vida para os pacientes e facilitar o trabalho dos cuidadores e profissionais de saúde.`;
+
+export default function TabTwoScreen() {
+  const [openAbout, setOpenAbout] = useState(false);
+
+  const handleAboutPress = () => {
+    setOpenAbout(!openAbout);
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <Card.Root themed={false} onPress={() => console.log("Card pressed")}>
+        <Card.Title title="Geral" />
+      </Card.Root>
+      <Card.Root themed={false} onPress={() => console.log("Card pressed")}>
+        <Card.Title title="Notificações" />
+      </Card.Root>
+      <Card.Root themed={false} onPress={() => console.log("Card pressed")}>
+        <Card.Title title="Minha conta" />
+      </Card.Root>
+      <Card.Root
+        themed={false}
+        onPress={() => handleAboutPress()}
+        style={{ width: "100%" }}
+      >
+        <Card.Title
+          title="Sobre o aplicativo"
+          subtitle={openAbout ? aboutText : ""}
+        />
+      </Card.Root>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    padding: 16,
+    gap: 16,
+  },
+  headerImage: {
+    color: "#808080",
+    bottom: -90,
+    left: -35,
+    position: "absolute",
+  },
+  titleContainer: {
+    flexDirection: "row",
+    gap: 8,
+  },
+});

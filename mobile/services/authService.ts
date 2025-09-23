@@ -1,31 +1,56 @@
-// services/authService.ts
+import { LoginRequest } from "@/types/api/login";
+import { isAxiosError } from "axios";
+import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
+import { api } from "./api";
+import {
+  ApiError,
+  AuthenticationError,
+  NetworkError,
+  NotFoundError,
+} from "./errors";
 
-/**
- * Simula uma chamada de API para autenticar um usuário.
- * Em um aplicativo real, aqui você faria uma requisição HTTP para o seu backend.
- *
- * @param email O email do usuário.
- * @param password A senha do usuário.
- * @returns Uma Promise que resolve com um token de autenticação em caso de sucesso.
- * @throws Uma Promise que rejeita com uma mensagem de erro em caso de falha.
- */
-export const login = (email: string, password: string) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      // Lógica de validação simulada
-      if (email === "joao.silva123@mail.com" && password === "123456") {
-        console.log("Usuário autenticado com sucesso!");
-        resolve({
-          token: "fake-jwt-token-for-joao-silva",
-          user: {
-            name: "João da Silva",
-            email: "joao.silva123@mail.com",
-          },
-        });
-      } else {
-        console.error("Falha na autenticação: Credenciais inválidas.");
-        reject(new Error("E-mail ou senha inválidos."));
+export const login = async (credential: LoginRequest) => {
+  try {
+    const response = await api.post("api/auth/login", {
+      email: credential.email,
+      password: credential.password,
+    });
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      if (error.response) {
+        const status = error.response.status;
+        const message =
+          error.response.data?.message || "Ocorreu um erro no servidor.";
+
+        if (status === 401 || status === 403) {
+          throw new AuthenticationError(message);
+        }
+        if (status === 404) {
+          throw new NotFoundError(message);
+        }
+        throw new ApiError(message);
+      } else if (error.request) {
+        throw new NetworkError(
+          "Não foi possível se conectar ao servidor. Verifique sua conexão."
+        );
       }
-    }, 1500); // Simula 1.5 segundos de delay da rede
-  });
+    }
+    throw new Error("Ocorreu um erro inesperado.");
+  }
+};
+
+export const logout = async () => {
+  try {
+    if (Platform.OS === "web") {
+      console.log("Removendo token do localStorage");
+      localStorage.removeItem("userToken");
+      return;
+    }
+    await SecureStore.deleteItemAsync("userToken");
+  } catch (error) {
+    console.error("Erro ao remover o token:", error);
+    throw new Error("Não foi possível remover a sessão do dispositivo.");
+  }
 };
