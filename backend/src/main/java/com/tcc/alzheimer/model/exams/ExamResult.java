@@ -1,41 +1,44 @@
-package com.tcc.alzheimer.model;
+package com.tcc.alzheimer.model.exams;
 
-import java.time.LocalDate;
-import java.util.List;
+import com.tcc.alzheimer.model.files.File;
 
-import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 @Entity
-@Table(name = "exam_file")
 @Data
-@NoArgsConstructor
+@Table(name = "exam_results")
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class ExamFile {
+public class ExamResult {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    private Integer patientId;
-    private String file;
-    private String instructions;
-    private LocalDate date;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "exam_id", nullable = false)
+    @NotNull
     private Exam exam;
 
-    @OneToMany(mappedBy = "examFile", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Indicator> indicators;
+    @ManyToOne
+    @JoinColumn(name = "file_id", nullable = false)
+    @NotNull
+    private File file;
+
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private Boolean isActive = true;
 }

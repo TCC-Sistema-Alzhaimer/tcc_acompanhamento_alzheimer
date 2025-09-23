@@ -64,4 +64,20 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(InvalidFileException.class)
+    public ResponseEntity<ApiErrorDTO> handleInvalidFile(InvalidFileException ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(FileUploadException.class)
+    public ResponseEntity<ApiErrorDTO> handleFileUpload(FileUploadException ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(com.tcc.alzheimer.exception.AccessDeniedException.class)
+    public ResponseEntity<ApiErrorDTO> handleCustomAccessDenied(com.tcc.alzheimer.exception.AccessDeniedException ex,
+            HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
 }
