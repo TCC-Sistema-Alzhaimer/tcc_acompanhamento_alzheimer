@@ -4,7 +4,9 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.tcc.alzheimer.model.Association.AssociationRequest;
 import com.tcc.alzheimer.model.enums.NotificationType;
+import com.tcc.alzheimer.model.exams.Exam;
 import com.tcc.alzheimer.model.roles.User;
 
 import jakarta.persistence.CascadeType;
@@ -51,6 +53,14 @@ public class Notification {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "sender_id", referencedColumnName = "id", nullable = false)
     private User sender;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "association_id", referencedColumnName = "id", nullable = true)
+    private AssociationRequest association;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "exam_id", referencedColumnName = "id", nullable = true)
+    private Exam exam;
 
     @OneToMany(mappedBy = "notification", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude

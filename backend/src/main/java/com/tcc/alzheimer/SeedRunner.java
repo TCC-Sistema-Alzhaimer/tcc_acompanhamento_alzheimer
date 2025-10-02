@@ -1,0 +1,479 @@
+package com.tcc.alzheimer;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.tcc.alzheimer.model.Association.AssociationRequest;
+import com.tcc.alzheimer.model.enums.ExamStatusType;
+import com.tcc.alzheimer.model.enums.ExamTypeEnum;
+import com.tcc.alzheimer.model.enums.NotificationType;
+import com.tcc.alzheimer.model.enums.RequestStatus;
+import com.tcc.alzheimer.model.enums.RequestType;
+import com.tcc.alzheimer.model.enums.UserType;
+import com.tcc.alzheimer.model.exams.Exam;
+import com.tcc.alzheimer.model.exams.ExamResult;
+import com.tcc.alzheimer.model.exams.ExamStatus;
+import com.tcc.alzheimer.model.exams.ExamType;
+import com.tcc.alzheimer.model.files.File;
+import com.tcc.alzheimer.model.notifications.Notification;
+import com.tcc.alzheimer.model.notifications.NotificationRecipient;
+import com.tcc.alzheimer.model.roles.Administrator;
+import com.tcc.alzheimer.model.roles.Caregiver;
+import com.tcc.alzheimer.model.roles.Doctor;
+import com.tcc.alzheimer.model.roles.Patient;
+import com.tcc.alzheimer.model.roles.User;
+import com.tcc.alzheimer.repository.Association.AssociationRequestRepository;
+import com.tcc.alzheimer.repository.exams.ExamRepository;
+import com.tcc.alzheimer.repository.exams.ExamResultRepository;
+import com.tcc.alzheimer.repository.exams.ExamStatusRepository;
+import com.tcc.alzheimer.repository.exams.ExamTypeRepository;
+import com.tcc.alzheimer.repository.files.FileRepository;
+import com.tcc.alzheimer.repository.notifications.NotificationRepository;
+import com.tcc.alzheimer.repository.roles.AdministratorRepository;
+import com.tcc.alzheimer.repository.roles.CaregiverRepository;
+import com.tcc.alzheimer.repository.roles.DoctorRepository;
+import com.tcc.alzheimer.repository.roles.PatientRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Component
+@Order(3)
+@RequiredArgsConstructor
+public class SeedRunner implements CommandLineRunner {
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    private final AdministratorRepository administratorRepository;
+    private final DoctorRepository doctorRepository;
+    private final CaregiverRepository caregiverRepository;
+    private final PatientRepository patientRepository;
+    private final ExamRepository examRepository;
+    private final ExamTypeRepository examTypeRepository;
+    private final ExamStatusRepository examStatusRepository;
+    private final FileRepository fileRepository;
+    private final ExamResultRepository examResultRepository;
+    private final AssociationRequestRepository associationRequestRepository;
+    private final NotificationRepository notificationRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Override
+    @Transactional
+    public void run(String... args) {
+        System.out.println("\n>>> Starting SeedRunner...");
+
+        Administrator admin = seedAdministrator();
+        List<Doctor> doctors = seedDoctors();
+        List<Caregiver> caregivers = seedCaregivers();
+        List<Patient> patients = seedPatients(doctors, caregivers);
+
+        List<Exam> exams = seedExams(doctors, patients);
+        seedExamResults(exams);
+        List<AssociationRequest> requests = seedAssociationRequests(patients, doctors, caregivers, admin);
+        seedNotifications(admin, doctors, caregivers, patients, exams, requests);
+
+        System.out.println(">>> SeedRunner finished.\n");
+    }
+
+    private Administrator seedAdministrator() {
+        String email = "admin@alzcare.com";
+        return administratorRepository.findByEmail(email)
+                .orElseGet(() -> {
+                    Administrator admin = new Administrator();
+                    admin.setCpf("00011122233");
+                    admin.setName("Equipe AlzCare");
+                    admin.setEmail(email);
+                    admin.setPhone("41999990001");
+                    admin.setPassword(passwordEncoder.encode("admin@123"));
+                    admin.setType(UserType.ADMINISTRATOR);
+                    return administratorRepository.save(admin);
+                });
+    }
+
+    private List<Doctor> seedDoctors() {
+        List<DoctorSeed> seeds = List.of(
+                new DoctorSeed("Dr. Ana Sousa", "ana.sousa@alzcare.com", "22133455660", "41988887770", "crm-pr-12345", "Neurologia", "docAna@123"),
+                new DoctorSeed("Dr. Bruno Azevedo", "bruno.azevedo@alzcare.com", "55166788990", "41988887771", "crm-pr-67890", "Psiquiatria", "docBruno@123")
+        );
+
+        List<Doctor> result = new ArrayList<>();
+        for (DoctorSeed seed : seeds) {
+            Doctor doctor = doctorRepository.findByEmail(seed.email())
+                    .orElseGet(() -> {
+                        Doctor d = new Doctor();
+                        d.setCpf(seed.cpf());
+                        d.setName(seed.name());
+                        d.setEmail(seed.email());
+                        d.setPhone(seed.phone());
+                        d.setPassword(passwordEncoder.encode(seed.rawPassword()));
+                        d.setType(UserType.DOCTOR);
+                        d.setCrm(seed.crm());
+                        d.setSpeciality(seed.speciality());
+                        return d;
+                    });
+
+            doctor.setCrm(seed.crm());
+            doctor.setSpeciality(seed.speciality());
+            doctor.setPhone(seed.phone());
+            result.add(doctorRepository.save(doctor));
+        }
+        return result;
+    }
+
+    private List<Caregiver> seedCaregivers() {
+        List<CaregiverSeed> seeds = List.of(
+                new CaregiverSeed("Amanda Dias", "amanda.dias@alzcare.com", "77455888990", "41977776660", "careAmanda@123", LocalDate.of(1982, 5, 12), "FEMININO", "Rua das Araucarias, 45 - Curitiba"),
+                new CaregiverSeed("Rita Campos", "rita.campos@alzcare.com", "66344577880", "41977776661", "careRita@123", LocalDate.of(1978, 11, 4), "FEMININO", "Rua XV de Novembro, 501 - Curitiba")
+        );
+
+        List<Caregiver> result = new ArrayList<>();
+        for (CaregiverSeed seed : seeds) {
+            Caregiver caregiver = caregiverRepository.findByEmail(seed.email())
+                    .orElseGet(() -> {
+                        Caregiver c = new Caregiver();
+                        c.setCpf(seed.cpf());
+                        c.setName(seed.name());
+                        c.setEmail(seed.email());
+                        c.setPhone(seed.phone());
+                        c.setPassword(passwordEncoder.encode(seed.rawPassword()));
+                        c.setType(UserType.CAREGIVER);
+                        return c;
+                    });
+
+            caregiver.setBirthdate(seed.birthdate());
+            caregiver.setGender(seed.gender());
+            caregiver.setAddress(seed.address());
+            caregiver.setPhone(seed.phone());
+            result.add(caregiverRepository.save(caregiver));
+        }
+        return result;
+    }
+
+    private List<Patient> seedPatients(List<Doctor> doctors, List<Caregiver> caregivers) {
+        Map<String, Doctor> doctorByEmail = doctors.stream()
+                .collect(Collectors.toMap(Doctor::getEmail, doctor -> doctor));
+        Map<String, Caregiver> caregiverByEmail = caregivers.stream()
+                .collect(Collectors.toMap(Caregiver::getEmail, caregiver -> caregiver));
+
+        List<PatientSeed> seeds = List.of(
+                new PatientSeed("Maria da Silva", "maria.silva@alzcare.com", "99887766554", "41966665550", "patientMaria@123", LocalDate.of(1955, 3, 21), "FEMININO", "Rua das Flores, 120 - Curitiba", List.of("ana.sousa@alzcare.com"), List.of("amanda.dias@alzcare.com")),
+                new PatientSeed("Marcos Souza", "marcos.souza@alzcare.com", "11442255889", "41966665551", "patientMarcos@123", LocalDate.of(1950, 8, 9), "MASCULINO", "Rua do Bosque, 480 - Curitiba", List.of("bruno.azevedo@alzcare.com"), List.of("rita.campos@alzcare.com")),
+                new PatientSeed("Marina Melo", "marina.melo@alzcare.com", "22553377991", "41966665552", "patientMarina@123", LocalDate.of(1948, 12, 2), "FEMININO", "Rua Sete, 200 - Curitiba", List.of("ana.sousa@alzcare.com"), List.of("amanda.dias@alzcare.com", "rita.campos@alzcare.com"))
+        );
+
+        List<Patient> result = new ArrayList<>();
+        for (PatientSeed seed : seeds) {
+            Patient patient = patientRepository.findByEmail(seed.email())
+                    .orElseGet(() -> {
+                        Patient p = new Patient();
+                        p.setCpf(seed.cpf());
+                        p.setName(seed.name());
+                        p.setEmail(seed.email());
+                        p.setPhone(seed.phone());
+                        p.setPassword(passwordEncoder.encode(seed.rawPassword()));
+                        p.setType(UserType.PATIENT);
+                        return p;
+                    });
+
+            patient.setBirthdate(seed.birthdate());
+            patient.setGender(seed.gender());
+            patient.setAddress(seed.address());
+            patient.setPhone(seed.phone());
+
+            patient.getDoctors().clear();
+            for (String doctorEmail : seed.doctorEmails()) {
+                Doctor doctor = requireValue(doctorByEmail, doctorEmail, "Missing doctor for email ");
+                patient.getDoctors().add(doctor);
+                doctor.getPatients().add(patient);
+            }
+
+            patient.getCaregivers().clear();
+            for (String caregiverEmail : seed.caregiverEmails()) {
+                Caregiver caregiver = requireValue(caregiverByEmail, caregiverEmail, "Missing caregiver for email ");
+                patient.getCaregivers().add(caregiver);
+                caregiver.getPatients().add(patient);
+            }
+
+            result.add(patientRepository.save(patient));
+        }
+
+        doctorRepository.saveAll(doctors);
+        caregiverRepository.saveAll(caregivers);
+        return result;
+    }
+
+    private List<Exam> seedExams(List<Doctor> doctors, List<Patient> patients) {
+        if (examRepository.count() > 0) {
+            return examRepository.findAll();
+        }
+
+        Map<String, Doctor> doctorByEmail = doctors.stream()
+                .collect(Collectors.toMap(Doctor::getEmail, doctor -> doctor));
+        Map<String, Patient> patientByEmail = patients.stream()
+                .collect(Collectors.toMap(Patient::getEmail, patient -> patient));
+
+        ExamType cognitive = getExamType(ExamTypeEnum.COGNITIVE_TEST);
+        ExamType brainScan = getExamType(ExamTypeEnum.BRAIN_SCAN);
+        ExamType memory = getExamType(ExamTypeEnum.MEMORY_TEST);
+
+        ExamStatus scheduled = getExamStatus(ExamStatusType.SCHEDULED);
+        ExamStatus completed = getExamStatus(ExamStatusType.COMPLETED);
+        ExamStatus pendingResult = getExamStatus(ExamStatusType.PENDING_RESULT);
+
+        List<Exam> exams = new ArrayList<>();
+
+        Exam exam1 = new Exam();
+        exam1.setDoctor(requireValue(doctorByEmail, "ana.sousa@alzcare.com", "Missing doctor for email "));
+        exam1.setPatient(requireValue(patientByEmail, "maria.silva@alzcare.com", "Missing patient for email "));
+        exam1.setType(cognitive);
+        exam1.setStatus(scheduled);
+        exam1.setRequestDate(LocalDateTime.now().plusDays(7));
+        exam1.setInstructions("Patient should avoid caffeine for 12 hours and rest well the night before.");
+        exam1.setNote("Caregiver will accompany and monitor blood pressure.");
+        exams.add(exam1);
+
+        Exam exam2 = new Exam();
+        exam2.setDoctor(requireValue(doctorByEmail, "bruno.azevedo@alzcare.com", "Missing doctor for email "));
+        exam2.setPatient(requireValue(patientByEmail, "marcos.souza@alzcare.com", "Missing patient for email "));
+        exam2.setType(brainScan);
+        exam2.setStatus(completed);
+        exam2.setRequestDate(LocalDateTime.now().minusDays(20));
+        exam2.setInstructions("Bring previous imaging results and arrive 30 minutes early.");
+        exam2.setNote("Observed recurring headaches and instability while walking.");
+        exam2.setUpdatedAt(LocalDateTime.now().minusDays(3));
+        exam2.setUpdatedBy(exam2.getDoctor().getId());
+        exams.add(exam2);
+
+        Exam exam3 = new Exam();
+        exam3.setDoctor(requireValue(doctorByEmail, "ana.sousa@alzcare.com", "Missing doctor for email "));
+        exam3.setPatient(requireValue(patientByEmail, "marina.melo@alzcare.com", "Missing patient for email "));
+        exam3.setType(memory);
+        exam3.setStatus(pendingResult);
+        exam3.setRequestDate(LocalDateTime.now().minusDays(5));
+        exam3.setInstructions("Apply episodic recall protocol and compare with last evaluation.");
+        exam3.setNote("Pending feedback from caregiver about daily routine adjustments.");
+        exams.add(exam3);
+
+        List<Exam> saved = new ArrayList<>();
+        examRepository.saveAll(exams).forEach(saved::add);
+        return saved;
+    }
+
+    private void seedExamResults(List<Exam> exams) {
+        if (examResultRepository.count() > 0 || exams.isEmpty()) {
+            return;
+        }
+
+        exams.stream()
+                .filter(exam -> ExamStatusType.COMPLETED.getId().equals(exam.getStatus().getId()))
+                .findFirst()
+                .ifPresent(exam -> {
+                    File file = File.builder()
+                            .name("brain_scan_result_" + exam.getId() + ".pdf")
+                            .extension("pdf")
+                            .randomName(UUID.randomUUID().toString())
+                            .size(524288L)
+                            .creationDate(LocalDateTime.now().minusDays(2))
+                            .addedBy(exam.getDoctor())
+                            .mimeType("application/pdf")
+                            .filePath("/files/exams/" + exam.getId())
+                            .isActive(true)
+                            .build();
+
+                    File storedFile = fileRepository.save(file);
+
+                    ExamResult result = ExamResult.builder()
+                            .exam(exam)
+                            .file(storedFile)
+                            .isActive(true)
+                            .build();
+
+                    examResultRepository.save(result);
+                });
+    }
+
+    private List<AssociationRequest> seedAssociationRequests(List<Patient> patients, List<Doctor> doctors, List<Caregiver> caregivers, Administrator admin) {
+        if (associationRequestRepository.count() > 0) {
+            return associationRequestRepository.findAll();
+        }
+
+        Map<String, Patient> patientByEmail = patients.stream()
+                .collect(Collectors.toMap(Patient::getEmail, patient -> patient));
+        Map<String, Doctor> doctorByEmail = doctors.stream()
+                .collect(Collectors.toMap(Doctor::getEmail, doctor -> doctor));
+        Map<String, Caregiver> caregiverByEmail = caregivers.stream()
+                .collect(Collectors.toMap(Caregiver::getEmail, caregiver -> caregiver));
+
+        List<AssociationRequest> requests = new ArrayList<>();
+
+        Patient maria = requireValue(patientByEmail, "maria.silva@alzcare.com", "Missing patient for email ");
+        Doctor ana = requireValue(doctorByEmail, "ana.sousa@alzcare.com", "Missing doctor for email ");
+        AssociationRequest request1 = new AssociationRequest();
+        request1.setPatient(maria);
+        request1.setRelation(ana);
+        request1.setType(RequestType.PATIENT_TO_DOCTOR);
+        request1.setStatus(RequestStatus.ACEITA);
+        request1.setCreatedAt(LocalDateTime.now().minusDays(40));
+        request1.setRespondedAt(LocalDateTime.now().minusDays(37));
+        request1.setCreator(maria);
+        request1.setResponder(ana);
+        requests.add(request1);
+
+        Patient marcos = requireValue(patientByEmail, "marcos.souza@alzcare.com", "Missing patient for email ");
+        Doctor bruno = requireValue(doctorByEmail, "bruno.azevedo@alzcare.com", "Missing doctor for email ");
+        AssociationRequest request2 = new AssociationRequest();
+        request2.setPatient(marcos);
+        request2.setRelation(bruno);
+        request2.setType(RequestType.DOCTOR_TO_PATIENT);
+        request2.setStatus(RequestStatus.PENDENTE);
+        request2.setCreatedAt(LocalDateTime.now().minusDays(12));
+        request2.setCreator(bruno);
+        requests.add(request2);
+
+        Patient marina = requireValue(patientByEmail, "marina.melo@alzcare.com", "Missing patient for email ");
+        Caregiver amanda = requireValue(caregiverByEmail, "amanda.dias@alzcare.com", "Missing caregiver for email ");
+        AssociationRequest request3 = new AssociationRequest();
+        request3.setPatient(marina);
+        request3.setRelation(amanda);
+        request3.setType(RequestType.PATIENT_TO_CAREGIVER);
+        request3.setStatus(RequestStatus.ACEITA);
+        request3.setCreatedAt(LocalDateTime.now().minusDays(18));
+        request3.setRespondedAt(LocalDateTime.now().minusDays(16));
+        request3.setCreator(marina);
+        request3.setResponder(admin);
+        requests.add(request3);
+
+        List<AssociationRequest> saved = new ArrayList<>();
+        associationRequestRepository.saveAll(requests).forEach(saved::add);
+        return saved;
+    }
+
+    private void seedNotifications(
+            Administrator admin,
+            List<Doctor> doctors,
+            List<Caregiver> caregivers,
+            List<Patient> patients,
+            List<Exam> exams,
+            List<AssociationRequest> requests) {
+
+        if (notificationRepository.count() > 0) {
+            return;
+        }
+
+        Notification welcome = new Notification();
+        welcome.setType(NotificationType.RELATIONAL_UPDATE);
+        welcome.setTitle("Demo data ready");
+        welcome.setMessage("We prepared demo users, relationships and exams so you can explore the workflow.");
+        welcome.setSender(admin);
+        welcome.setCreatedAt(LocalDateTime.now().minusDays(10));
+        welcome = notificationRepository.save(welcome);
+
+        List<User> recipients = new ArrayList<>();
+        recipients.addAll(doctors);
+        recipients.addAll(caregivers);
+        recipients.addAll(patients);
+
+        for (User recipient : recipients) {
+            NotificationRecipient link = new NotificationRecipient(welcome, recipient);
+            welcome.addRecipient(link);
+            recipient.getReceived().add(link);
+        }
+        notificationRepository.save(welcome);
+
+        exams.stream()
+                .filter(exam -> ExamStatusType.SCHEDULED.getId().equals(exam.getStatus().getId()))
+                .findFirst()
+                .ifPresent(exam -> {
+                    Notification examReminder = new Notification();
+                    examReminder.setType(NotificationType.EXAM_REMINDER);
+                    examReminder.setTitle("Upcoming exam for " + exam.getPatient().getName());
+                    examReminder.setMessage("Exam " + exam.getType().getDescription()
+                            + " scheduled for " + DATE_FORMATTER.format(exam.getRequestDate().toLocalDate())
+                            + ". Please arrive 15 minutes earlier.");
+                    examReminder.setSender(exam.getDoctor());
+                    examReminder.setExam(exam);
+                    examReminder.setCreatedAt(LocalDateTime.now().minusDays(2));
+                    notificationRepository.save(examReminder);
+
+                    NotificationRecipient patientRecipient = new NotificationRecipient(examReminder, exam.getPatient());
+                    examReminder.addRecipient(patientRecipient);
+                    exam.getPatient().getReceived().add(patientRecipient);
+
+                    exam.getPatient().getCaregivers().forEach(caregiver -> {
+                        NotificationRecipient caregiverRecipient = new NotificationRecipient(examReminder, caregiver);
+                        examReminder.addRecipient(caregiverRecipient);
+                        caregiver.getReceived().add(caregiverRecipient);
+                    });
+
+                    notificationRepository.save(examReminder);
+                });
+
+        requests.stream()
+                .filter(request -> request.getStatus() == RequestStatus.ACEITA)
+                .findFirst()
+                .ifPresent(request -> {
+                    Notification relationNotice = new Notification();
+                    relationNotice.setType(NotificationType.RELATIONAL_UPDATE);
+                    relationNotice.setTitle("Connection confirmed");
+                    relationNotice.setMessage("The request between "
+                            + request.getPatient().getName()
+                            + " and "
+                            + request.getRelation().getName()
+                            + " is now active. You can manage shared information from now on.");
+                    relationNotice.setSender(admin);
+                    relationNotice.setAssociation(request);
+                    relationNotice.setCreatedAt(LocalDateTime.now().minusDays(5));
+                    relationNotice = notificationRepository.save(relationNotice);
+
+                    NotificationRecipient relationOwner = new NotificationRecipient(relationNotice, request.getRelation());
+                    relationNotice.addRecipient(relationOwner);
+                    relationOwner.setReadFlag(true);
+                    relationOwner.setReadAt(LocalDateTime.now().minusDays(4));
+                    request.getRelation().getReceived().add(relationOwner);
+
+                    NotificationRecipient relationPatient = new NotificationRecipient(relationNotice, request.getPatient());
+                    relationNotice.addRecipient(relationPatient);
+                    request.getPatient().getReceived().add(relationPatient);
+
+                    notificationRepository.save(relationNotice);
+                });
+    }
+
+    private ExamType getExamType(ExamTypeEnum type) {
+        return examTypeRepository.findById(type.getId())
+                .orElseThrow(() -> new IllegalStateException("Exam type not found: " + type.getId()));
+    }
+
+    private ExamStatus getExamStatus(ExamStatusType status) {
+        return examStatusRepository.findById(status.getId())
+                .orElseThrow(() -> new IllegalStateException("Exam status not found: " + status.getId()));
+    }
+
+    private static <T> T requireValue(Map<String, T> source, String key, String messagePrefix) {
+        T value = source.get(key);
+        if (value == null) {
+            throw new IllegalStateException(messagePrefix + key);
+        }
+        return value;
+    }
+
+    private record DoctorSeed(String name, String email, String cpf, String phone, String crm, String speciality, String rawPassword) {
+    }
+
+    private record CaregiverSeed(String name, String email, String cpf, String phone, String rawPassword, LocalDate birthdate, String gender, String address) {
+    }
+
+    private record PatientSeed(String name, String email, String cpf, String phone, String rawPassword, LocalDate birthdate, String gender, String address, List<String> doctorEmails, List<String> caregiverEmails) {
+    }
+}
