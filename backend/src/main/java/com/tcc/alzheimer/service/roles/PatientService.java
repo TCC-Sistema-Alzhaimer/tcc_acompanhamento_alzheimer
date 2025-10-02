@@ -45,35 +45,38 @@ public class PatientService {
                 patient.getAddress(),
                 patient.getBirthdate(),
                 patient.getDoctors().stream()
+                        .filter(doctor -> Boolean.TRUE.equals(doctor.getActive()))
                         .map(Doctor::getEmail)
                         .collect(Collectors.toList()),
                 patient.getCaregivers().stream()
+                        .filter(caregiver -> Boolean.TRUE.equals(caregiver.getActive()))
                         .map(Caregiver::getEmail)
                         .collect(Collectors.toList()));
     }
 
     public List<PatientResponseGetDTO> findAll() {
-        return repo.findAll().stream()
+        return repo.findAllByActiveTrue().stream()
                 .map(this::toDto)
                 .toList();
     }
 
     public PatientResponseGetDTO findById(Long id) {
-        Patient patient = repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Paciente com id " + id + " não encontrado")); 
+        Patient patient = repo.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente com id " + id + " nao encontrado"));
         return toDto(patient);
     }
+
     private Patient findByIdIntern(Long id) {
-        return repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Paciente com id " + id + " não encontrado"));
+        return repo.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente com id " + id + " nao encontrado"));
     }
 
     public Patient save(PatientPostAndUpdateDto dto) {
         if (repo.findByCpf(dto.getCpf()).isPresent()) {
-            throw new ResourceConflictException("CPF já cadastrado!");
+            throw new ResourceConflictException("CPF ja cadastrado!");
         }
         if (repo.findByEmail(dto.getEmail()).isPresent()) {
-            throw new ResourceConflictException("Email já cadastrado!");
+            throw new ResourceConflictException("Email ja cadastrado!");
         }
 
         Patient patient = new Patient();
@@ -88,32 +91,7 @@ public class PatientService {
         patient.setType(dto.getUserType());
         patient.setDoctors(null);
         patient.setCaregivers(null);
-
-        /*  no momento da criacao ira ser inicial sozinho medicos e cuidadores irao ser adicionados depois
-        List<String> doctorEmails = dto.getDoctorEmails();
-        List<String> caregiverEmails = dto.getCaregiverEmails();
-
-        if (doctorEmails == null || doctorEmails.isEmpty()) {
-            throw new IllegalArgumentException("Paciente precisa ter pelo menos 1 médico.");
-        }
-
-        doctorEmails.forEach(email -> {
-            Doctor doctor = doctorRepo.findByEmail(email)
-                    .orElseThrow(() -> new ResourceNotFoundException("Médico com email " + email + " não encontrado"));
-            patient.getDoctors().add(doctor);
-            doctor.getPatients().add(patient);
-        });
-
-        if (caregiverEmails != null) {
-            caregiverEmails.forEach(email -> {
-                Caregiver caregiver = caregiverRepo.findByEmail(email)
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                "Cuidador com email " + email + " não encontrado"));
-                patient.getCaregivers().add(caregiver);
-                caregiver.getPatients().add(patient);
-            });
-        }
-        */
+        patient.setActive(Boolean.TRUE);
 
         return repo.save(patient);
     }
@@ -135,9 +113,9 @@ public class PatientService {
             patient.getDoctors().forEach(d -> d.getPatients().remove(patient));
             patient.getDoctors().clear();
             for (String email : dto.getDoctorEmails()) {
-                Doctor doctor = doctorRepo.findByEmail(email)
+                Doctor doctor = doctorRepo.findByEmailAndActiveTrue(email)
                         .orElseThrow(() -> new ResourceNotFoundException(
-                                "Médico com email " + email + " não encontrado"));
+                                "Medico com email " + email + " nao encontrado"));
                 patient.getDoctors().add(doctor);
                 doctor.getPatients().add(patient);
             }
@@ -147,9 +125,9 @@ public class PatientService {
             patient.getCaregivers().forEach(c -> c.getPatients().remove(patient));
             patient.getCaregivers().clear();
             for (String email : dto.getCaregiverEmails()) {
-                Caregiver caregiver = caregiverRepo.findByEmail(email)
+                Caregiver caregiver = caregiverRepo.findByEmailAndActiveTrue(email)
                         .orElseThrow(() -> new ResourceNotFoundException(
-                                "Cuidador com email " + email + " não encontrado"));
+                                "Cuidador com email " + email + " nao encontrado"));
                 patient.getCaregivers().add(caregiver);
                 caregiver.getPatients().add(patient);
             }
@@ -166,25 +144,37 @@ public class PatientService {
         response.setBirthdate(saved.getBirthdate());
         response.setGender(saved.getGender());
         response.setAddress(saved.getAddress());
-        response.setDoctorEmails(saved.getDoctors().stream().map(Doctor::getEmail).collect(Collectors.toList()));
+        response.setDoctorEmails(saved.getDoctors().stream()
+                .filter(doctor -> Boolean.TRUE.equals(doctor.getActive()))
+                .map(Doctor::getEmail)
+                .collect(Collectors.toList()));
         response.setCaregiverEmails(
-                saved.getCaregivers().stream().map(Caregiver::getEmail).collect(Collectors.toList()));
+                saved.getCaregivers().stream()
+                        .filter(caregiver -> Boolean.TRUE.equals(caregiver.getActive()))
+                        .map(Caregiver::getEmail)
+                        .collect(Collectors.toList()));
 
         return response;
     }
 
     public void delete(Long id) {
         Patient patient = findByIdIntern(id);
-        repo.delete(patient);
+        patient.setActive(Boolean.FALSE);
+        repo.save(patient);
     }
 
     public List<Caregiver> getCaregivers(Long id) {
         Patient patient = findByIdIntern(id);
-        return new ArrayList<>(patient.getCaregivers());
+        return patient.getCaregivers().stream()
+                .filter(caregiver -> Boolean.TRUE.equals(caregiver.getActive()))
+                .toList();
     }
 
     public List<Doctor> getDoctors(long id) {
         Patient patient = findByIdIntern(id);
-        return new ArrayList<>(patient.getDoctors());
+        return patient.getDoctors().stream()
+                .filter(doctor -> Boolean.TRUE.equals(doctor.getActive()))
+                .toList();
     }
 }
+

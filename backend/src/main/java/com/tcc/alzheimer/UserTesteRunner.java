@@ -32,6 +32,7 @@ public class UserTesteRunner implements CommandLineRunner {
             admin.setPhone("11999999998");
             admin.setPassword(encoder.encode(rawPassword));
             admin.setType(UserType.ADMINISTRATOR);
+            admin.setActive(Boolean.TRUE);
 
             administratorRepository.save(admin);
             System.out.println("Administrador de teste criado.");
@@ -40,3 +41,4 @@ public class UserTesteRunner implements CommandLineRunner {
         }
     }
 }
+

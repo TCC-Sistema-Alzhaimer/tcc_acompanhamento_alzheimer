@@ -88,17 +88,24 @@ public class SeedRunner implements CommandLineRunner {
 
     private Administrator seedAdministrator() {
         String email = "admin@alzcare.com";
-        return administratorRepository.findByEmail(email)
+        Administrator admin = administratorRepository.findByEmail(email)
                 .orElseGet(() -> {
-                    Administrator admin = new Administrator();
-                    admin.setCpf("00011122233");
-                    admin.setName("Equipe AlzCare");
-                    admin.setEmail(email);
-                    admin.setPhone("41999990001");
-                    admin.setPassword(passwordEncoder.encode("admin@123"));
-                    admin.setType(UserType.ADMINISTRATOR);
-                    return administratorRepository.save(admin);
+                    Administrator fresh = new Administrator();
+                    fresh.setCpf("00011122233");
+                    fresh.setName("Equipe AlzCare");
+                    fresh.setEmail(email);
+                    fresh.setPhone("41999990001");
+                    fresh.setPassword(passwordEncoder.encode("admin@123"));
+                    fresh.setType(UserType.ADMINISTRATOR);
+                    fresh.setActive(Boolean.TRUE);
+                    return administratorRepository.save(fresh);
                 });
+
+        if (admin.getActive() == null) {
+            admin.setActive(Boolean.TRUE);
+            admin = administratorRepository.save(admin);
+        }
+        return admin;
     }
 
     private List<Doctor> seedDoctors() {
@@ -120,9 +127,13 @@ public class SeedRunner implements CommandLineRunner {
                         d.setType(UserType.DOCTOR);
                         d.setCrm(seed.crm());
                         d.setSpeciality(seed.speciality());
+                        d.setActive(Boolean.TRUE);
                         return d;
                     });
 
+            if (doctor.getActive() == null) {
+                doctor.setActive(Boolean.TRUE);
+            }
             doctor.setCrm(seed.crm());
             doctor.setSpeciality(seed.speciality());
             doctor.setPhone(seed.phone());
@@ -148,9 +159,13 @@ public class SeedRunner implements CommandLineRunner {
                         c.setPhone(seed.phone());
                         c.setPassword(passwordEncoder.encode(seed.rawPassword()));
                         c.setType(UserType.CAREGIVER);
+                        c.setActive(Boolean.TRUE);
                         return c;
                     });
 
+            if (caregiver.getActive() == null) {
+                caregiver.setActive(Boolean.TRUE);
+            }
             caregiver.setBirthdate(seed.birthdate());
             caregiver.setGender(seed.gender());
             caregiver.setAddress(seed.address());
@@ -183,9 +198,13 @@ public class SeedRunner implements CommandLineRunner {
                         p.setPhone(seed.phone());
                         p.setPassword(passwordEncoder.encode(seed.rawPassword()));
                         p.setType(UserType.PATIENT);
+                        p.setActive(Boolean.TRUE);
                         return p;
                     });
 
+            if (patient.getActive() == null) {
+                patient.setActive(Boolean.TRUE);
+            }
             patient.setBirthdate(seed.birthdate());
             patient.setGender(seed.gender());
             patient.setAddress(seed.address());
@@ -215,7 +234,15 @@ public class SeedRunner implements CommandLineRunner {
 
     private List<Exam> seedExams(List<Doctor> doctors, List<Patient> patients) {
         if (examRepository.count() > 0) {
-            return examRepository.findAll();
+            List<Exam> existing = examRepository.findAll();
+            List<Exam> toUpdate = existing.stream()
+                    .filter(exam -> exam.getActive() == null)
+                    .toList();
+            if (!toUpdate.isEmpty()) {
+                toUpdate.forEach(exam -> exam.setActive(Boolean.TRUE));
+                examRepository.saveAll(toUpdate);
+            }
+            return existing;
         }
 
         Map<String, Doctor> doctorByEmail = doctors.stream()
@@ -234,6 +261,7 @@ public class SeedRunner implements CommandLineRunner {
         List<Exam> exams = new ArrayList<>();
 
         Exam exam1 = new Exam();
+        exam1.setActive(Boolean.TRUE);
         exam1.setDoctor(requireValue(doctorByEmail, "ana.sousa@alzcare.com", "Missing doctor for email "));
         exam1.setPatient(requireValue(patientByEmail, "maria.silva@alzcare.com", "Missing patient for email "));
         exam1.setType(cognitive);
@@ -244,6 +272,7 @@ public class SeedRunner implements CommandLineRunner {
         exams.add(exam1);
 
         Exam exam2 = new Exam();
+        exam2.setActive(Boolean.TRUE);
         exam2.setDoctor(requireValue(doctorByEmail, "bruno.azevedo@alzcare.com", "Missing doctor for email "));
         exam2.setPatient(requireValue(patientByEmail, "marcos.souza@alzcare.com", "Missing patient for email "));
         exam2.setType(brainScan);
@@ -256,6 +285,7 @@ public class SeedRunner implements CommandLineRunner {
         exams.add(exam2);
 
         Exam exam3 = new Exam();
+        exam3.setActive(Boolean.TRUE);
         exam3.setDoctor(requireValue(doctorByEmail, "ana.sousa@alzcare.com", "Missing doctor for email "));
         exam3.setPatient(requireValue(patientByEmail, "marina.melo@alzcare.com", "Missing patient for email "));
         exam3.setType(memory);
@@ -477,3 +507,9 @@ public class SeedRunner implements CommandLineRunner {
     private record PatientSeed(String name, String email, String cpf, String phone, String rawPassword, LocalDate birthdate, String gender, String address, List<String> doctorEmails, List<String> caregiverEmails) {
     }
 }
+
+
+
+
+
+

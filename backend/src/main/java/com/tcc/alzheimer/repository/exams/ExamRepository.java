@@ -5,15 +5,20 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ExamRepository extends JpaRepository<Exam, Long> {
 
-    List<Exam> findByPatientId(Long patientId);
+    Optional<Exam> findByIdAndActiveTrue(Long id);
 
-    List<Exam> findByDoctorId(Long doctorId);
+    List<Exam> findAllByActiveTrue();
 
-    List<Exam> findByStatusId(String statusId);
+    List<Exam> findByPatientIdAndActiveTrue(Long patientId);
 
-    List<Exam> findByTypeId(String typeId);
+    List<Exam> findByDoctorIdAndActiveTrue(Long doctorId);
+
+    List<Exam> findByStatusIdAndActiveTrue(String statusId);
+
+    List<Exam> findByTypeIdAndActiveTrue(String typeId);
 }

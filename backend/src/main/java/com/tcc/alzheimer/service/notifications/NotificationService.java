@@ -1,5 +1,6 @@
 package com.tcc.alzheimer.service.notifications;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -32,7 +33,7 @@ public class NotificationService {
 
     @Transactional
     public NotificationResponse createAndSend(NotificationCreateRequest request) {
-        var sender = userRepository.findById(request.senderId())
+        var sender = userRepository.findByIdAndActiveTrue(request.senderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Remetente com id %d nao encontrado.".formatted(request.senderId())));
 
         Set<Long> recipientIds = request.recipientIds().stream()
@@ -44,7 +45,7 @@ public class NotificationService {
             throw new IllegalArgumentException("Informe ao menos um destinatario valido.");
         }
 
-        List<User> recipients = userRepository.findAllById(recipientIds);
+        List<User> recipients = userRepository.findByIdInAndActiveTrue(new ArrayList<>(recipientIds));
         if (recipients.size() != recipientIds.size()) {
             var foundIds = recipients.stream().map(User::getId).collect(Collectors.toSet());
             var missing = recipientIds.stream()
@@ -135,3 +136,6 @@ public class NotificationService {
                         sender.getEmail()));
     }
 }
+
+
+

@@ -57,7 +57,10 @@ public class User {
     @NotBlank
     private String password;
 
-    @Enumerated(EnumType.STRING) 
+    @Column(name = "active")
+    private Boolean active;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     private UserType type;
 
@@ -66,3 +69,5 @@ public class User {
     @ToString.Exclude
     private Set<NotificationRecipient> received = new HashSet<>();
 }
+
+

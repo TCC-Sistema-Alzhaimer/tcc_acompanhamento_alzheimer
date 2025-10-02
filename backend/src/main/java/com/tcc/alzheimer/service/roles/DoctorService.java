@@ -32,6 +32,7 @@ public class DoctorService {
                 doctor.getCrm(),
                 doctor.getSpeciality(),
                 doctor.getPatients().stream()
+                        .filter(patient -> Boolean.TRUE.equals(patient.getActive()))
                         .map(Patient::getEmail)
                         .collect(Collectors.toList()));
     }
@@ -43,35 +44,33 @@ public class DoctorService {
     }
 
     public List<DoctorGetDto> findAll() {
-        return repo.findAll().stream()
+        return repo.findAllByActiveTrue().stream()
                 .map(this::toDto)
                 .toList();
     }
 
     public DoctorGetDto findById(Long id) {
-        Doctor doctor = repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Médico com id " + id + " não encontrado"));
+        Doctor doctor = repo.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Medico com id " + id + " nao encontrado"));
         return toDto(doctor);
     }
 
     private Doctor findByIdIntern(Long id) {
-        return repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Médico com id " + id + " não encontrado"));
+        return repo.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Medico com id " + id + " nao encontrado"));
     }
 
     public Doctor save(DoctorPostAndPutDto dto) {
-        // Verificar duplicidade antes de criar
         if (repo.findByCpf(dto.getCpf()).isPresent()) {
-            throw new ResourceConflictException("CPF já cadastrado!");
+            throw new ResourceConflictException("CPF ja cadastrado!");
         }
         if (repo.findByEmail(dto.getEmail()).isPresent()) {
-            throw new ResourceConflictException("Email já cadastrado!");
+            throw new ResourceConflictException("Email ja cadastrado!");
         }
         if (repo.findByCrm(dto.getCrm()).isPresent()) {
-            throw new ResourceConflictException("CRM já cadastrado!");
+            throw new ResourceConflictException("CRM ja cadastrado!");
         }
 
-        // Criar novo médico
         Doctor doctor = new Doctor();
         doctor.setCpf(dto.getCpf());
         doctor.setName(dto.getName());
@@ -82,20 +81,7 @@ public class DoctorService {
         doctor.setPassword(encoder.encode(dto.getPassword()));
         doctor.setType(dto.getUserType());
         doctor.setPatients(null);
-
-        // No momento da criacao nao vai existir pacientes associados
-        /*
-         * List<String> patientEmails = dto.getPatientEmails();
-         * if (patientEmails != null) {
-         * patientEmails.forEach(email -> {
-         * Patient patient = patientRepo.findByEmail(email)
-         * .orElseThrow(() -> new ResourceNotFoundException(
-         * "Paciente com email " + email + " não encontrado"));
-         * doctor.getPatients().add(patient);
-         * patient.getDoctors().add(doctor);
-         * });
-         * }
-         */
+        doctor.setActive(Boolean.TRUE);
 
         return repo.save(doctor);
     }
@@ -116,9 +102,9 @@ public class DoctorService {
             existing.getPatients().clear();
 
             patientEmails.forEach(email -> {
-                Patient patient = patientRepo.findByEmail(email)
+                Patient patient = patientRepo.findByEmailAndActiveTrue(email)
                         .orElseThrow(() -> new ResourceNotFoundException(
-                                "Paciente com email " + email + " não encontrado"));
+                                "Paciente com email " + email + " nao encontrado"));
                 existing.getPatients().add(patient);
                 patient.getDoctors().add(existing);
             });
@@ -129,11 +115,13 @@ public class DoctorService {
 
     public void delete(Long id) {
         Doctor doctor = findByIdIntern(id);
-        repo.delete(doctor);
+        doctor.setActive(Boolean.FALSE);
+        repo.save(doctor);
     }
 
     public List<BasicDtoForList> searchUsersByDoc(Doctor doctor) {
         return doctor.getPatients().stream()
+                .filter(patient -> Boolean.TRUE.equals(patient.getActive()))
                 .map(patient -> new BasicDtoForList(
                         patient.getId(),
                         patient.getName(),
@@ -144,17 +132,18 @@ public class DoctorService {
     }
 
     public List<BasicDtoForList> searchUsersByDoc(Long id, String query, String serviceType) {
-        
+
         Doctor doctor = findByIdIntern(id);
         List<Patient> patients;
 
         if ((query == null || query.isBlank()) && (serviceType == null || serviceType.isBlank())) {
-            patients = patientRepo.findByDoctors(doctor);
+            patients = patientRepo.findByDoctorsAndActiveTrue(doctor); // already filtered by active
         } else {
             patients = patientRepo.findByDoctorWithFilters(doctor.getId(), query, serviceType);
         }
 
         return patients.stream()
+                .filter(patient -> Boolean.TRUE.equals(patient.getActive()))
                 .map(patient -> new BasicDtoForList(
                         patient.getId(),
                         patient.getName(),
@@ -164,3 +153,5 @@ public class DoctorService {
                 .toList();
     }
 }
+
+
