@@ -22,25 +22,27 @@ public class AdministratorService {
     }
 
     public List<Administrator> findAll() {
-        return repo.findAll();
+        return repo.findAllByActiveTrue();
     }
 
     public Administrator findById(Long id) {
-        return repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Administrador com id " + id + " não encontrado"));
+        return repo.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Administrador com id " + id + " nao encontrado"));
     }
 
     public Administrator save(Administrator administrator) {
-        // Não usado diretamente, usar register para criar
+        if (administrator.getActive() == null) {
+            administrator.setActive(Boolean.TRUE);
+        }
         return repo.save(administrator);
     }
 
     public Administrator register(Administrator administrator) {
         if (repo.findByCpf(administrator.getCpf()).isPresent()) {
-            throw new ResourceConflictException("CPF já cadastrado!");
+            throw new ResourceConflictException("CPF ja cadastrado!");
         }
         if (repo.findByEmail(administrator.getEmail()).isPresent()) {
-            throw new ResourceConflictException("Email já cadastrado!");
+            throw new ResourceConflictException("Email ja cadastrado!");
         }
 
         Administrator admin = new Administrator();
@@ -51,6 +53,7 @@ public class AdministratorService {
         admin.setPassword(encoder.encode(administrator.getPassword()));
         admin.setType(UserType.ADMINISTRATOR);
 
+        admin.setActive(Boolean.TRUE);
         return repo.save(admin);
     }
 
@@ -65,6 +68,8 @@ public class AdministratorService {
 
     public void delete(Long id) {
         Administrator administrator = findById(id);
-        repo.delete(administrator);
+        administrator.setActive(Boolean.FALSE);
+        repo.save(administrator);
     }
 }
+

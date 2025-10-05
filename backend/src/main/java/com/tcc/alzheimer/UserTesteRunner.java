@@ -26,12 +26,13 @@ public class UserTesteRunner implements CommandLineRunner {
 
         if (administratorRepository.findByEmail(email).isEmpty()) {
             Administrator admin = new Administrator();
-            admin.setCpf("12345678900");
-            admin.setName("Administrador do Sistema original");
+            admin.setCpf("12345678901");
+            admin.setName("Administrador do Sistema");
             admin.setEmail(email);
-            admin.setPhone("11999999999");
+            admin.setPhone("11999999998");
             admin.setPassword(encoder.encode(rawPassword));
             admin.setType(UserType.ADMINISTRATOR);
+            admin.setActive(Boolean.TRUE);
 
             administratorRepository.save(admin);
             System.out.println("Administrador de teste criado.");
@@ -40,3 +41,4 @@ public class UserTesteRunner implements CommandLineRunner {
         }
     }
 }
+
