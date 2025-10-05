@@ -7,7 +7,6 @@ import {
   NotFoundError,
 } from "@/services/errors";
 import { useRouter } from "expo-router";
-import * as SecureStore from "expo-secure-store";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -20,6 +19,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
+import * as SecureStore from "expo-secure-store";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("admin1@gmail.com");

@@ -2,7 +2,9 @@ import { login, logout as performLogout } from "@/services/auth-service"; // Aju
 import { LoginRequest, LoginResponse } from "@/types/api/login";
 import { User } from "@/types/domain/user";
 import { useRouter } from "expo-router";
-import React, { createContext, useContext, useState } from "react";
+import * as SecureStore from "expo-secure-store";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { Platform } from "react-native";
 
 export interface Session {
   user: User;
@@ -21,6 +23,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [accessToken, setAccessToken] = useState("");
   const [loading, setLoading] = useState(true);
 
   const router = useRouter();
@@ -49,8 +52,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return response;
   };
 
-  const useSession: () => Session | null = () => {
-    return user ? { user, accessToken: "" } : null;
+  useEffect(() => {
+    const fetchToken = async () => {
+      if (Platform.OS === "web") {
+        setAccessToken(localStorage.getItem("userToken") || "");
+      } else {
+        const token = await SecureStore.getItemAsync("userToken");
+        setAccessToken(token || "");
+      }
+    };
+
+    fetchToken();
+  }, []);
+
+  const useSession = () => {
+    return user ? { user, accessToken } : null;
   };
 
   return (

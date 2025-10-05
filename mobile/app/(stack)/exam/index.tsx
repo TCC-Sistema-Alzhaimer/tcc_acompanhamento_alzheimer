@@ -36,6 +36,7 @@ export default function ExamScreen() {
   const loadExams = async () => {
     if (session !== null) {
       try {
+        console.log("Carregando exames para o paciente:", session);
         const resp = await fetchExamsByPatientId({
           accessToken: session.accessToken,
           patientId: String(session.user.id),
