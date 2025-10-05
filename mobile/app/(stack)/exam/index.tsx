@@ -1,7 +1,9 @@
 import { Card } from "@/components/card/Card";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useSession } from "@/hooks/useSession";
 import { ExamMock } from "@/mocks/exam-mocks";
+import { fetchExamsByPatientId } from "@/services/exam-service";
 import { Exam } from "@/types/domain/exam";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -13,8 +15,8 @@ const PAGE_SIZE = 10;
 
 // Garante compat com ids "pending/done" OU "pendente/realizado"
 function matchesStatus(exam: Exam, filter: Exclude<Filter, "todos">) {
-  const id = (exam.status?.id || "").toLowerCase();
-  const desc = (exam.status?.description || "").toLowerCase();
+  const id = (exam.examStatusId || "").toLowerCase();
+  const desc = (exam.examStatusDescription || "").toLowerCase();
 
   if (filter === "pendente") {
     return id === "pending" || id === "pendente" || desc.includes("pendente");
@@ -29,9 +31,22 @@ export default function ExamScreen() {
   const [page, setPage] = useState(1);
 
   const router = useRouter();
+  const session = useSession();
 
-  const loadExams = () => {
-    setExams(ExamMock);
+  const loadExams = async () => {
+    if (session !== null) {
+      try {
+        const resp = await fetchExamsByPatientId({
+          accessToken: session.accessToken,
+          patientId: String(session.user.id),
+        });
+        console.log("Exames carregados:", resp);
+        setExams(resp);
+      } catch (error) {
+        console.error("Erro ao carregar exames:", error);
+        setExams(ExamMock);
+      }
+    }
   };
 
   useEffect(() => {
@@ -110,8 +125,8 @@ export default function ExamScreen() {
             onPress={() => router.push(`/exam/${exam.id}`)}
           >
             <Card.Title
-              title={exam.type?.description ?? "Exame"}
-              subtitle={`Status: ${exam.status?.description ?? "-"}`}
+              title={exam.examTypeDescription ?? "Exame"}
+              subtitle={`Status: ${exam.examStatusDescription ?? "-"}`}
             />
             <Card.Icon name="chevron.right" />
           </Card.Root>
