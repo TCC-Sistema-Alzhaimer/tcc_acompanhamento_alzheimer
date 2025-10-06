@@ -1,6 +1,12 @@
 import { Patient } from "@/types/domain/patient";
 import * as SecureStorage from "expo-secure-store";
-import { createContext, useContext, useEffect, useReducer } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
 import { Platform } from "react-native";
 
 type State = {
@@ -26,10 +32,12 @@ const SelectedPatientContext = createContext<{
   state: State;
   selectPatient: (patient: Partial<Patient>) => Promise<void>;
   clearSelection: () => Promise<void>;
+  loading: boolean;
 }>({
   state: initialState,
   selectPatient: async () => {},
   clearSelection: async () => {},
+  loading: true,
 });
 
 function reducer(state: State, action: Action): State {
@@ -79,15 +87,18 @@ async function persistPatientId(id: string | null): Promise<void> {
 export const SelectedPatientProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
+  const [loading, setLoading] = useState(true);
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
     (async () => {
+      setLoading(true);
       const id = await readStoredPatientId();
       if (id) {
         dispatch({ type: "SET_ID", patientId: id });
       }
       dispatch({ type: "HYDRATED" });
+      setLoading(false);
     })();
   }, []);
 
@@ -120,7 +131,7 @@ export const SelectedPatientProvider: React.FC<{
 
   return (
     <SelectedPatientContext.Provider
-      value={{ state, selectPatient, clearSelection }}
+      value={{ state, selectPatient, clearSelection, loading }}
     >
       {children}
     </SelectedPatientContext.Provider>

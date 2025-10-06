@@ -2,28 +2,26 @@ import { Card } from "@/components/card/Card";
 import { ThemedView } from "@/components/ThemedView";
 import { useAuth } from "@/context/AuthContext";
 import { useSelectedPatient } from "@/context/SelectedPatientContext";
+import { useSession } from "@/hooks/useSession";
+import { Roles } from "@/types/enum/roles";
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 
 export default function HomeNewScreen() {
   const router = useRouter();
 
   const { logout } = useAuth();
+  const session = useSession();
   const { state } = useSelectedPatient();
 
-  useEffect(() => {
-    console.log("Selected patient ID:", state.patientId);
-  }, [router, state.patientId]);
+  const patientName =
+    "Visualizando " + (state.cachedPatient?.name || "nenhum paciente");
 
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
         <Card.Root themed={false} onPress={() => console.log("Card pressed")}>
-          <Card.Title
-            title="Welcome Back!"
-            subtitle="Here's your summary for today."
-          />
+          <Card.Title title="Bem vindo de volta!" subtitle={patientName} />
           <Card.Icon
             name="rectangle.portrait.and.arrow.right"
             onPress={logout}
@@ -52,6 +50,25 @@ export default function HomeNewScreen() {
             onPress={() => router.push("/conclusion")}
           />
         </Card.Root>
+
+        {session?.user.role !== Roles.PATIENT && (
+          <View style={{ flex: 1, justifyContent: "flex-end" }}>
+            <Card.Root
+              themed={false}
+              onPress={() => router.push("/selecter-patient")}
+            >
+              <Card.Avatar />
+              <Card.Title
+                title="Pacientes"
+                subtitle="Selecione ou adicione um novo paciente."
+              />
+              <Card.Icon
+                name="person.2.fill"
+                onPress={() => router.push("/selecter-patient")}
+              />
+            </Card.Root>
+          </View>
+        )}
       </View>
     </ThemedView>
   );
@@ -72,6 +89,7 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 12,
     alignContent: "center",
+    justifyContent: "flex-start",
     padding: 16,
     borderWidth: 1,
     borderColor: "#555",

@@ -1,8 +1,8 @@
 import { Card } from "@/components/card/Card";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useSelectedPatient } from "@/context/SelectedPatientContext";
 import { useSession } from "@/hooks/useSession";
-import { ExamMock } from "@/mocks/exam-mocks";
 import { fetchExamsByPatientId } from "@/services/exam-service";
 import { Exam } from "@/types/domain/exam";
 import { useRouter } from "expo-router";
@@ -30,29 +30,30 @@ export default function ExamScreen() {
   const [filter, setFilter] = useState<Filter>("todos");
   const [page, setPage] = useState(1);
 
+  const { state, loading: loadingSelected } = useSelectedPatient();
   const router = useRouter();
   const session = useSession();
 
   const loadExams = async () => {
     if (session !== null) {
       try {
-        console.log("Carregando exames para o paciente:", session);
         const resp = await fetchExamsByPatientId({
           accessToken: session.accessToken,
-          patientId: String(session.user.id),
+          patientId: state.patientId!,
         });
         console.log("Exames carregados:", resp);
         setExams(resp);
       } catch (error) {
         console.error("Erro ao carregar exames:", error);
-        setExams(ExamMock);
+        setExams([]);
       }
     }
   };
 
   useEffect(() => {
+    if (loadingSelected) return;
     loadExams();
-  }, []);
+  }, [loadingSelected]);
 
   const filteredExams = useMemo(() => {
     if (filter === "todos") return exams;
@@ -117,7 +118,9 @@ export default function ExamScreen() {
         keyExtractor={(item, index) => item.id ?? `exam-${index}`}
         contentContainerStyle={{ paddingBottom: 24 }}
         ListEmptyComponent={
-          <Text style={{ padding: 16 }}>Nenhum exame disponível.</Text>
+          <ThemedText style={{ padding: 16, textAlign: "center" }} type="title">
+            Nenhum exame disponível.
+          </ThemedText>
         }
         renderItem={({ item: exam }) => (
           <Card.Root
