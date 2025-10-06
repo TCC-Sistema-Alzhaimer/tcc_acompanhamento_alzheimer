@@ -4,7 +4,6 @@ import {
   NetworkError,
   NotFoundError,
 } from "@/services/errors";
-import { Roles } from "@/types/enum/roles";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -38,17 +37,7 @@ export default function LoginScreen() {
         email,
         password,
       });
-      if (response && response.role) {
-        switch (response.role) {
-          case Roles.CAREGIVER:
-            router.replace("/selecter-patient" as any);
-            break;
-
-          default:
-            router.replace("/home" as any);
-            break;
-        }
-      }
+      router.replace("/");
     } catch (error) {
       if (error instanceof AuthenticationError) {
         Alert.alert(

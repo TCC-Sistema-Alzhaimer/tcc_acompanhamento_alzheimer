@@ -1,4 +1,4 @@
-import { login, logout as performLogout } from "@/services/auth-service"; // Ajuste o caminho se necessário
+import { login, logout as performLogout } from "@/services/auth-service";
 import { LoginRequest, LoginResponse } from "@/types/api/login";
 import { User } from "@/types/domain/user";
 import { useRouter } from "expo-router";
@@ -16,7 +16,7 @@ interface AuthContextType {
   useLogin: (credential: LoginRequest) => Promise<LoginResponse>;
   useSession: () => Session | null;
   user: User | null;
-  loading?: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -30,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const fetchToken = async () => {
+      setLoading(true);
       if (Platform.OS === "web") {
         setAccessToken(localStorage.getItem("userToken") || "");
       } else {
@@ -97,7 +98,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ logout, useLogin, useSession, user }}>
+    <AuthContext.Provider
+      value={{ logout, useLogin, useSession, user, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );

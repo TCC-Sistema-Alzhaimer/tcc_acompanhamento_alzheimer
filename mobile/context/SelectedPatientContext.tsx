@@ -1,10 +1,11 @@
 import { Patient } from "@/types/domain/patient";
 import * as SecureStorage from "expo-secure-store";
 import { createContext, useContext, useEffect, useReducer } from "react";
+import { Platform } from "react-native";
 
 type State = {
   patientId: string | null;
-  cachedPatient?: Patient | null;
+  cachedPatient?: Partial<Patient> | null;
   hydrated: boolean;
 };
 
@@ -14,16 +15,16 @@ const initialState: State = {
   hydrated: false,
 };
 
-const STORAGE_KEY = "@selected_patient_id";
+const STORAGE_KEY = "selected_patient_id";
 
 type Action =
   | { type: "SET_ID"; patientId: string | null }
-  | { type: "SET_CACHE"; patient: Patient | null }
+  | { type: "SET_CACHE"; patient: Partial<Patient> | null }
   | { type: "HYDRATED" };
 
 const SelectedPatientContext = createContext<{
   state: State;
-  selectPatient: (patient: Patient) => Promise<void>;
+  selectPatient: (patient: Partial<Patient>) => Promise<void>;
   clearSelection: () => Promise<void>;
 }>({
   state: initialState,
@@ -44,40 +45,73 @@ function reducer(state: State, action: Action): State {
   }
 }
 
+async function readStoredPatientId(): Promise<string | null> {
+  try {
+    if (Platform.OS === "web") {
+      if (typeof window === "undefined") return null;
+      return window.localStorage.getItem(STORAGE_KEY);
+    }
+    return await SecureStorage.getItemAsync(STORAGE_KEY);
+  } catch (error) {
+    console.warn("Failed to read selected patient id", error);
+    return null;
+  }
+}
+
+async function persistPatientId(id: string | null): Promise<void> {
+  if (Platform.OS === "web") {
+    if (typeof window === "undefined") return;
+    if (id) {
+      window.localStorage.setItem(STORAGE_KEY, id);
+    } else {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
+    return;
+  }
+
+  if (id) {
+    await SecureStorage.setItemAsync(STORAGE_KEY, id);
+  } else {
+    await SecureStorage.deleteItemAsync(STORAGE_KEY);
+  }
+}
+
 export const SelectedPatientProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  // Hydrate from storage on mount
   useEffect(() => {
     (async () => {
-      try {
-        const id = await SecureStorage.getItem(STORAGE_KEY);
-        if (id) dispatch({ type: "SET_ID", patientId: id });
-      } catch (e) {
-        console.warn("Failed to load selected patient id", e);
-      } finally {
-        dispatch({ type: "HYDRATED" });
+      const id = await readStoredPatientId();
+      if (id) {
+        dispatch({ type: "SET_ID", patientId: id });
       }
+      dispatch({ type: "HYDRATED" });
     })();
   }, []);
 
-  const selectPatient = async (patient: Patient) => {
+  const selectPatient = async (patient: Partial<Patient>) => {
     try {
-      await SecureStorage.setItemAsync(STORAGE_KEY, String(patient.id));
-      dispatch({ type: "SET_ID", patientId: String(patient.id) });
+      if (patient.id) {
+        const id = String(patient.id);
+        await persistPatientId(id);
+        dispatch({ type: "SET_ID", patientId: id });
+      } else {
+        await persistPatientId(null);
+        dispatch({ type: "SET_ID", patientId: null });
+      }
       dispatch({ type: "SET_CACHE", patient });
-    } catch (e) {
-      console.error("Failed to save patient id", e);
+    } catch (error) {
+      console.error("Failed to save patient id", error);
     }
   };
 
   const clearSelection = async () => {
     try {
-      await SecureStorage.deleteItemAsync(STORAGE_KEY);
-    } catch (e) {
-      console.warn("Failed to remove selected patient id", e);
+      await persistPatientId(null);
+    } catch (error) {
+      console.warn("Failed to remove selected patient id", error);
     } finally {
       dispatch({ type: "SET_ID", patientId: null });
       dispatch({ type: "SET_CACHE", patient: null });

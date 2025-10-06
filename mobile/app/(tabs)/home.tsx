@@ -1,12 +1,21 @@
 import { Card } from "@/components/card/Card";
 import { ThemedView } from "@/components/ThemedView";
 import { useAuth } from "@/context/AuthContext";
+import { useSelectedPatient } from "@/context/SelectedPatientContext";
 import { useRouter } from "expo-router";
+import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 
 export default function HomeNewScreen() {
   const router = useRouter();
+
   const { logout } = useAuth();
+  const { state } = useSelectedPatient();
+
+  useEffect(() => {
+    console.log("Selected patient ID:", state.patientId);
+  }, [router, state.patientId]);
+
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>

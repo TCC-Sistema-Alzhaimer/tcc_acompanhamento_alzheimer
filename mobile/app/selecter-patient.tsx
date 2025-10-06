@@ -1,19 +1,20 @@
 import { Card } from "@/components/card/Card";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useSelectedPatient } from "@/context/SelectedPatientContext";
 import { useSession } from "@/hooks/useSession";
 import { fetchPatientsByCaregiver } from "@/services/caregiver-service";
 import { Patient } from "@/types/domain/patient";
 import { useRouter } from "expo-router";
-import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
-import { Platform } from "react-native";
+import { StyleSheet } from "react-native";
 
 export default function SelecterPatient() {
   const [patients, setPatients] = useState<Patient[]>([]);
 
   const router = useRouter();
   const session = useSession();
+  const { selectPatient } = useSelectedPatient();
 
   useEffect(() => {
     const fetchPatient = async () => {
@@ -29,12 +30,8 @@ export default function SelecterPatient() {
     fetchPatient();
   }, [session]);
 
-  const handlePatientSelect = (patientId: string) => {
-    if (Platform.OS === "web") {
-      localStorage.setItem("selectedPatientId", patientId);
-    } else {
-      SecureStore.setItemAsync("selectedPatientId", patientId);
-    }
+  const handlePatientSelect = async (patient: Patient) => {
+    await selectPatient(patient);
     router.replace("/home");
   };
 
@@ -49,13 +46,28 @@ export default function SelecterPatient() {
   }
 
   return (
-    <ThemedView>
-      <ThemedText>Seleção de Paciente</ThemedText>
-      {patients.map((patient) => (
-        <Card.Root onPress={() => handlePatientSelect(String(patient.id))}>
-          <Card.Title title={patient.name} subtitle={patient.email} />
-        </Card.Root>
-      ))}
+    <ThemedView style={styles.container}>
+      <ThemedText style={styles.title}>
+        Escolha um paciente para continuar
+      </ThemedText>
+      <ThemedView style={styles.patientList}>
+        {patients.map((patient) => (
+          <Card.Root onPress={() => handlePatientSelect(patient)}>
+            <Card.Title title={patient.name} subtitle={patient.email} />
+          </Card.Root>
+        ))}
+      </ThemedView>
     </ThemedView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16 },
+  title: { fontSize: 24, fontWeight: "bold", marginBottom: 16 },
+  patientList: {
+    flex: 1,
+    marginTop: 16,
+    gap: 12,
+    justifyContent: "flex-start",
+  },
+});
