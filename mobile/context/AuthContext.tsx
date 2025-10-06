@@ -28,6 +28,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const router = useRouter();
 
+  useEffect(() => {
+    const fetchToken = async () => {
+      if (Platform.OS === "web") {
+        setAccessToken(localStorage.getItem("userToken") || "");
+      } else {
+        const token = await SecureStore.getItemAsync("userToken");
+        setAccessToken(token || "");
+      }
+    };
+
+    const fetchUser = async () => {
+      if (Platform.OS === "web") {
+        const userData = localStorage.getItem("user");
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
+      } else {
+        const userData = await SecureStore.getItemAsync("user");
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchToken();
+    fetchUser();
+  }, []);
+
   const logout = async () => {
     try {
       await performLogout();
@@ -47,23 +76,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: response.email,
         role: response.role,
       });
+      if (response.token) {
+        if (Platform.OS === "web") {
+          localStorage.setItem("userToken", response.token);
+          localStorage.setItem("user", JSON.stringify(response));
+        } else {
+          await SecureStore.setItemAsync("userToken", response.token);
+          await SecureStore.setItemAsync("user", JSON.stringify(response));
+        }
+      } else {
+        throw new Error("Resposta de autenticação inválida");
+      }
     }
     setLoading(false);
     return response;
   };
-
-  useEffect(() => {
-    const fetchToken = async () => {
-      if (Platform.OS === "web") {
-        setAccessToken(localStorage.getItem("userToken") || "");
-      } else {
-        const token = await SecureStore.getItemAsync("userToken");
-        setAccessToken(token || "");
-      }
-    };
-
-    fetchToken();
-  }, []);
 
   const useSession = () => {
     return user ? { user, accessToken } : null;

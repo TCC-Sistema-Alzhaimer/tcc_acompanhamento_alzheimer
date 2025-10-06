@@ -6,4 +6,9 @@ export const ROUTES = {
   EXAM_BY_ID: (examId: string) => `/exams/${examId}`,
   EXAM_BY_PATIENT_ID: (patientId: string) => `/exams/patient/${patientId}`,
   EXAM_BY_DOCTOR_ID: (doctorId: string) => `/exams/doctor/${doctorId}`,
+
+  CAREGIVER: "/caregivers",
+  CAREGIVER_BY_ID: (caregiverId: string) => `/caregivers/${caregiverId}`,
+  CAREGIVER_PATIENTS: (caregiverId: string) =>
+    `/caregivers/${caregiverId}/patients`,
 };

@@ -1,11 +1,10 @@
-// app/login.tsx
-
 import { useAuth } from "@/context/AuthContext";
 import {
   AuthenticationError,
   NetworkError,
   NotFoundError,
 } from "@/services/errors";
+import { Roles } from "@/types/enum/roles";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -19,8 +18,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-import * as SecureStore from "expo-secure-store";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("admin1@gmail.com");
@@ -41,15 +38,16 @@ export default function LoginScreen() {
         email,
         password,
       });
-      if (response && response.token) {
-        if (Platform.OS === "web") {
-          localStorage.setItem("userToken", response.token);
-        } else {
-          await SecureStore.setItemAsync("userToken", response.token);
+      if (response && response.role) {
+        switch (response.role) {
+          case Roles.CAREGIVER:
+            router.replace("/selecter-patient" as any);
+            break;
+
+          default:
+            router.replace("/home" as any);
+            break;
         }
-        router.replace("/home" as any);
-      } else {
-        throw new Error("Resposta de autenticação inválida");
       }
     } catch (error) {
       if (error instanceof AuthenticationError) {
