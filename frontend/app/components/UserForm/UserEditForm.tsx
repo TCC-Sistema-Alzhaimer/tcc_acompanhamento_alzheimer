@@ -44,22 +44,6 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
   const [caregivers, setCaregivers] = useState<BasicListModel[]>([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Carregar listas dependendo do tipo de usuário
-  useEffect(() => {
-    switch (userType) {
-      case SystemRoles.DOCTOR:
-        getAllPatients().then(res => setPatients(res.data)).catch(console.error);
-        break;
-      case SystemRoles.PATIENT:
-        getAllDoctors().then(res => setDoctors(res.data)).catch(console.error);
-        getAllCaregivers().then(res => setCaregivers(res.data)).catch(console.error);
-        break;
-      case SystemRoles.CARREGIVER:
-        getAllPatients().then(res => setPatients(res.data)).catch(console.error);
-        break;
-    }
-  }, [userType]);
-
   // Carregar dados do usuário para edição
   useEffect(() => {
     if (userId) {
@@ -74,8 +58,8 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
 
           let gender = "";
           if ("gender" in data && data.gender) {
-            if (data.gender.toUpperCase() === "M") gender = SystemGenders.M;
-            else if (data.gender.toUpperCase() === "F") gender = SystemGenders.F;
+            const g = data.gender.toUpperCase();
+            gender = g === "M" || g === "F" ? g : "";
           }
 
           let doctorEmails: string[] = [];
@@ -84,14 +68,14 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
 
           if (userType === SystemRoles.PATIENT) {
             const patientData = data as PatientModel;
-            doctorEmails = patientData.doctors?.map((d: DoctorModel) => d.email) || [];
-            caregiverEmails = patientData.caregivers?.map((c: CaregiverModel) => c.email) || [];
+            doctorEmails = patientData.doctorEmails || [];
+            caregiverEmails = patientData.caregiverEmails || [];
           } else if (userType === SystemRoles.CARREGIVER) {
             const caregiverData = data as CaregiverModel;
-            patientEmails = caregiverData.patients?.map((p: PatientModel) => p.email) || [];
+            patientEmails = caregiverData.patientEmails || [];
           } else if (userType === SystemRoles.DOCTOR) {
             const doctorData = data as DoctorModel;
-            patientEmails = doctorData.patients?.map((p: PatientModel) => p.email) || [];
+            patientEmails = doctorData.patientEmails || [];
           }
 
           setForm({
@@ -113,15 +97,28 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
   const toOptions = (list: BasicListModel[]) =>
     list.map(u => ({ value: u.email, label: u.name }));
 
-  const handleSubmit = async () => {
-    try {
-      await updateUser(userType, userId!, form);
-      setShowSuccessModal(true);
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao atualizar usuário");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+const handleSubmit = async () => {
+  setErrorMessage(null);
+  try {
+    await updateUser(userType, userId!, form);
+    setShowSuccessModal(true);
+  } catch (error: any) {
+    if (error.response) {
+      const data = error.response.data;
+      if (typeof data === "string") {
+        setErrorMessage(data);
+      } else if (data.error) {
+        setErrorMessage(data.error);
+      } else {
+        setErrorMessage("Erro ao atualizar usuário. Verifique os dados informados.");
+      }
+    } else {
+      setErrorMessage("Erro de conexão com o servidor.");
     }
-  };
+  }
+};
 
   const genderOptions = [
     { value: SystemGenders.M, label: "Masculino" },
@@ -172,7 +169,7 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
       >
         Telefone
       </Input>
-      
+
 
       {/* Campos específicos */}
       {userType === SystemRoles.DOCTOR && (
@@ -195,7 +192,8 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
           <Select
             options={toOptions(patients)}
             isMulti
-            placeholder="Selecione pacientes"
+            isDisabled={true} 
+            placeholder="Pacientes"
             value={(form.patientEmails || []).map(email => ({ value: email, label: email }))}
             onChange={(selected) => setForm({ ...form, patientEmails: selected.map(s => s.value) })}
             className="w-full"
@@ -218,7 +216,7 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
             options={genderOptions}
             placeholder="Selecione gênero"
             value={genderOptions.find(opt => opt.value === form.gender) || null}
-            onChange={(selected) => setForm({ ...form, gender: selected?.value })}
+            onChange={(selected) => setForm({ ...form, gender: selected?.value || "" })}
             className="w-full"
           />
 
@@ -237,7 +235,8 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
           <Select
             options={toOptions(doctors)}
             isMulti
-            placeholder="Selecione médicos"
+            isDisabled={true} 
+            placeholder="Médicos"
             value={(form.doctorEmails || []).map(email => ({ value: email, label: email }))}
             onChange={(selected) => setForm({ ...form, doctorEmails: selected.map(s => s.value) })}
             className="w-full"
@@ -246,7 +245,8 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
           <Select
             options={toOptions(caregivers)}
             isMulti
-            placeholder="Selecione cuidadores"
+            isDisabled={true} 
+            placeholder="Cuidadores"
             value={(form.caregiverEmails || []).map(email => ({ value: email, label: email }))}
             onChange={(selected) => setForm({ ...form, caregiverEmails: selected.map(s => s.value) })}
             className="w-full"
@@ -258,7 +258,8 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
         <Select
           options={toOptions(patients)}
           isMulti
-          placeholder="Selecione pacientes"
+          isDisabled={true} 
+          placeholder="Pacientes"
           value={(form.patientEmails || []).map(email => ({ value: email, label: email }))}
           onChange={(selected) => setForm({ ...form, patientEmails: selected.map(s => s.value) })}
           className="w-full"

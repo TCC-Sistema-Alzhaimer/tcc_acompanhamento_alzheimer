@@ -1,4 +1,4 @@
 export enum SystemGenders {
-    F = "Feminino",
-    M = "Masculino",
+  M = "M",
+  F = "F",
 }

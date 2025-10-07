@@ -19,7 +19,7 @@ export type DoctorModel = {
   password: string;
   crm: string;
   specialty: string;
-  patients?: PatientModel[];
+  patientEmails?: string[];
   type: SystemRoles.DOCTOR;
 };
 
@@ -33,8 +33,8 @@ export type PatientModel = {
   birthdate: Date;
   gender: string;
   address: string;
-  caregivers?: CaregiverModel[]; 
-  doctors?: DoctorModel[];
+  caregiverEmails?: string[]; 
+  doctorEmails?: string[];
   type: SystemRoles.PATIENT;     
 };
 
@@ -48,7 +48,7 @@ export type CaregiverModel = {
   birthdate: Date;
   gender: string;
   address: string;
-  patients?: PatientModel[]; 
+  patientEmails?: string[]; 
   type: SystemRoles.CARREGIVER;
 };
 
