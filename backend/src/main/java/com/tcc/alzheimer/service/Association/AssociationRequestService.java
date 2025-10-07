@@ -47,11 +47,11 @@ public class AssociationRequestService {
     }
 
     public AssociationRequestResponseDto create(AssociationRequestCreateDto dto) {
-        User creator = userRepo.findByEmail(dto.getCreatorEmail())
+        User creator = userRepo.findByEmailAndActiveTrue(dto.getCreatorEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Creator not found"));
-        Patient patient = patientRepo.findByEmail(dto.getPatientEmail())
+        Patient patient = patientRepo.findByEmailAndActiveTrue(dto.getPatientEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
-        User relation = userRepo.findByEmail(dto.getRelationEmail())
+        User relation = userRepo.findByEmailAndActiveTrue(dto.getRelationEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Relation not found"));
 
         AssociationRequest request = new AssociationRequest();
@@ -71,7 +71,7 @@ public class AssociationRequestService {
         AssociationRequest request = repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
-        User responder = userRepo.findByEmail(dto.getResponderEmail())
+        User responder = userRepo.findByEmailAndActiveTrue(dto.getResponderEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Responder not found"));
 
         validateResponderPermission(request, responder);
@@ -89,7 +89,7 @@ public class AssociationRequestService {
     }
 
     public List<AssociationRequestResponseDto> findAllByUser(String email) {
-        User user = userRepo.findByEmail(email)
+        User user = userRepo.findByEmailAndActiveTrue(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return repo.findAllVisibleToUser(user)
                 .stream()
@@ -98,7 +98,7 @@ public class AssociationRequestService {
     }
 
     public AssociationRequestResponseDto findByIdForUser(Long id, String email) {
-        User user = userRepo.findByEmail(email)
+        User user = userRepo.findByEmailAndActiveTrue(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         AssociationRequest request = repo.findById(id)
@@ -110,8 +110,6 @@ public class AssociationRequestService {
 
         return toDto(request);
     }
-
-    // ----------------- Helpers -----------------
 
     private void validateResponderPermission(AssociationRequest request, User responder) {
         switch (request.getType()) {
@@ -140,7 +138,7 @@ public class AssociationRequestService {
 
         switch (request.getType()) {
             case PATIENT_TO_DOCTOR, DOCTOR_TO_PATIENT -> {
-                Doctor doctor = doctorRepo.findById(request.getRelation().getId())
+                Doctor doctor = doctorRepo.findByIdAndActiveTrue(request.getRelation().getId())
                         .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
                 patient.getDoctors().add(doctor);
                 doctor.getPatients().add(patient);
@@ -148,7 +146,7 @@ public class AssociationRequestService {
                 doctorRepo.save(doctor);
             }
             case PATIENT_TO_CAREGIVER, CAREGIVER_TO_PATIENT -> {
-                Caregiver caregiver = caregiverRepo.findById(request.getRelation().getId())
+                Caregiver caregiver = caregiverRepo.findByIdAndActiveTrue(request.getRelation().getId())
                         .orElseThrow(() -> new ResourceNotFoundException("Caregiver not found"));
                 patient.getCaregivers().add(caregiver);
                 caregiver.getPatients().add(patient);

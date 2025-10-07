@@ -31,7 +31,9 @@ public class CaregiverService {
     private CarregiverGetDto toDto(Caregiver caregiver) {
         List<String> patientEmails = new ArrayList<>();
         if (caregiver.getPatients() != null) {
-            caregiver.getPatients().forEach(p -> patientEmails.add(p.getEmail()));
+            caregiver.getPatients().stream()
+                    .filter(patient -> Boolean.TRUE.equals(patient.getActive()))
+                    .forEach(p -> patientEmails.add(p.getEmail()));
         }
         return new CarregiverGetDto(
                 caregiver.getCpf(),
@@ -45,32 +47,30 @@ public class CaregiverService {
     }
 
     public List<CarregiverGetDto> findAll() {
-        return repo.findAll().stream()
+        return repo.findAllByActiveTrue().stream()
                 .map(this::toDto)
                 .toList();
     }
 
     public CarregiverGetDto findById(Long id) {
-        Caregiver caregiver  =  repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cuidador com id " + id + " não encontrado"));
+        Caregiver caregiver = repo.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cuidador com id " + id + " nao encontrado"));
         return toDto(caregiver);
     }
 
     public Caregiver findByIdIntern(Long id) {
-        return repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cuidador com id " + id + " não encontrado"));
+        return repo.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cuidador com id " + id + " nao encontrado"));
     }
 
     public Caregiver save(CaregiverPostAndPutDto dto) {
-        // Verificar duplicidade
         if (repo.findByCpf(dto.getCpf()).isPresent()) {
-            throw new ResourceConflictException("CPF já cadastrado!");
+            throw new ResourceConflictException("CPF ja cadastrado!");
         }
         if (repo.findByEmail(dto.getEmail()).isPresent()) {
-            throw new ResourceConflictException("Email já cadastrado!");
+            throw new ResourceConflictException("Email ja cadastrado!");
         }
 
-        // Criar cuidador
         Caregiver caregiver = new Caregiver();
         caregiver.setCpf(dto.getCpf());
         caregiver.setName(dto.getName());
@@ -82,23 +82,9 @@ public class CaregiverService {
         caregiver.setPassword(encoder.encode(dto.getPassword()));
         caregiver.setType(dto.getUserType());
         caregiver.setPatients(null);
+        caregiver.setActive(Boolean.TRUE);
 
-        /*No inicio sera cadastrado sem pacientes 
-        List<String> patientEmails = dto.getPatientEmails();
-        if (patientEmails == null || patientEmails.isEmpty()) {
-            throw new IllegalArgumentException("Cuidador precisa ter pelo menos 1 paciente.");
-        }
-
-        patientEmails.forEach(email -> {
-            Patient patient = patientRepo.findByEmail(email)
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Paciente com email " + email + " não encontrado"));
-            caregiver.getPatients().add(patient);
-            patient.getCaregivers().add(caregiver);
-        });
-        */
         return repo.save(caregiver);
-        
     }
 
     @Transactional
@@ -118,9 +104,9 @@ public class CaregiverService {
             existing.getPatients().clear();
 
             patientEmails.forEach(email -> {
-                Patient patient = patientRepo.findByEmail(email)
+                Patient patient = patientRepo.findByEmailAndActiveTrue(email)
                         .orElseThrow(() -> new ResourceNotFoundException(
-                                "Paciente com email " + email + " não encontrado"));
+                                "Paciente com email " + email + " nao encontrado"));
                 existing.getPatients().add(patient);
                 patient.getCaregivers().add(existing);
             });
@@ -131,11 +117,15 @@ public class CaregiverService {
 
     public void delete(Long id) {
         Caregiver caregiver = findByIdIntern(id);
-        repo.delete(caregiver);
+        caregiver.setActive(Boolean.FALSE);
+        repo.save(caregiver);
     }
 
     public List<Patient> getPatients(Long id) {
         Caregiver caregiver = findByIdIntern(id);
-        return new ArrayList<>(caregiver.getPatients());
+        return caregiver.getPatients().stream()
+                .filter(patient -> Boolean.TRUE.equals(patient.getActive()))
+                .toList();
     }
 }
+

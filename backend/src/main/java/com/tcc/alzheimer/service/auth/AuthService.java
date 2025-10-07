@@ -22,6 +22,8 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 public class AuthService {
@@ -123,5 +125,64 @@ public class AuthService {
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElseThrow(() -> new RuntimeException("Refresh token missing"));
+    }
+
+    /**
+     * Extrai o usuário atual do contexto de segurança (JWT)
+     * 
+     * @return Email do usuário logado
+     * @throws RuntimeException se não há usuário autenticado
+     */
+    public String getCurrentUserEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() ||
+                "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new RuntimeException("Usuário não autenticado");
+        }
+        return authentication.getName(); // retorna o email (subject do JWT)
+    }
+
+    /**
+     * Extrai a role do usuário atual do contexto de segurança
+     * 
+     * @return Role do usuário (DOCTOR, PATIENT, etc.)
+     * @throws RuntimeException se não há usuário autenticado ou role
+     */
+    public String getCurrentUserRole() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("Usuário não autenticado");
+        }
+
+        return authentication.getAuthorities().stream()
+                .findFirst()
+                .map(authority -> authority.getAuthority().replace("ROLE_", ""))
+                .orElseThrow(() -> new RuntimeException("Role não encontrada para o usuário"));
+    }
+
+    /**
+     * Verifica se o usuário atual tem uma role específica
+     * 
+     * @param requiredRole Role necessária (ex: "DOCTOR")
+     * @return true se o usuário tem a role
+     */
+    public boolean hasRole(String requiredRole) {
+        try {
+            String currentRole = getCurrentUserRole();
+            return requiredRole.equals(currentRole);
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Busca o usuário atual completo baseado no email do JWT
+     * 
+     * @return Usuário logado
+     * @throws RuntimeException se usuário não encontrado
+     */
+    public User getCurrentUser() {
+        String email = getCurrentUserEmail();
+        return userService.findByEmail(email);
     }
 }

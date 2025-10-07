@@ -56,28 +56,20 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiErrorDTO> handleDataIntegrityViolation(DataIntegrityViolationException ex, HttpServletRequest request) {
-        String message = ex.getMostSpecificCause().getMessage();
-
-        if (message.contains("users.cpf")) {
-            return buildErrorResponse(HttpStatus.CONFLICT, "O CPF informado já está cadastrado.", request);
-        } else if (message.contains("users.email")) {
-            return buildErrorResponse(HttpStatus.CONFLICT, "O email informado já está cadastrado.", request);
-        } else if (message.contains("doctor.crm")) {
-            return buildErrorResponse(HttpStatus.CONFLICT, "O CRM informado já está cadastrado.", request);
-        }
-
-        return buildErrorResponse(HttpStatus.CONFLICT, "Erro de integridade de dados: " + message, request);
+    @ExceptionHandler(InvalidFileException.class)
+    public ResponseEntity<ApiErrorDTO> handleInvalidFile(InvalidFileException ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ApiErrorDTO> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Violação de restrição: " + ex.getMessage(), request);
+    @ExceptionHandler(FileUploadException.class)
+    public ResponseEntity<ApiErrorDTO> handleFileUpload(FileUploadException ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorDTO> handleGeneric(Exception ex, HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno no servidor: " + ex.getMessage(), request);
+    @ExceptionHandler(com.tcc.alzheimer.exception.AccessDeniedException.class)
+    public ResponseEntity<ApiErrorDTO> handleCustomAccessDenied(com.tcc.alzheimer.exception.AccessDeniedException ex,
+            HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request);
     }
+
 }
