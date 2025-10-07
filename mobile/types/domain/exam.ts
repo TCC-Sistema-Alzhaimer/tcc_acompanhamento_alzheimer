@@ -1,15 +1,11 @@
+import { ExamStatus } from "../enum/exam-status";
+
 export enum ExamType {
   BLOOD_TEST = "BLOOD_TEST",
   URINE_TEST = "URINE_TEST",
   BRAIN_SCAN = "BRAIN_SCAN",
   COGNITIVE_ASSESSMENT = "COGNITIVE_ASSESSMENT",
   OTHER = "OTHER",
-}
-
-export enum ExamStatus {
-  PENDING = "PENDING",
-  COMPLETED = "COMPLETED",
-  CANCELED = "CANCELED",
 }
 
 export interface Exam {
