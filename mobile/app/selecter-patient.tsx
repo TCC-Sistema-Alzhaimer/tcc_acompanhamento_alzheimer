@@ -4,7 +4,9 @@ import { ThemedView } from "@/components/ThemedView";
 import { useSelectedPatient } from "@/context/SelectedPatientContext";
 import { useSession } from "@/hooks/useSession";
 import { fetchPatientsByCaregiver } from "@/services/caregiver-service";
+import { fetchPatients } from "@/services/patient-service";
 import { Patient } from "@/types/domain/patient";
+import { Roles } from "@/types/enum/roles";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
@@ -19,11 +21,18 @@ export default function SelecterPatient() {
   useEffect(() => {
     const fetchPatient = async () => {
       if (session != null) {
-        const resp = await fetchPatientsByCaregiver({
-          caregiverId: String(session.user.id),
-          accessToken: session.accessToken,
-        });
-        setPatients(resp);
+        if (session.user.role == Roles.CAREGIVER) {
+          const resp = await fetchPatientsByCaregiver({
+            caregiverId: String(session.user.id),
+            accessToken: session.accessToken,
+          });
+          setPatients(resp);
+        } else {
+          const resp = await fetchPatients({
+            accessToken: session.accessToken,
+          });
+          setPatients(resp);
+        }
       }
     };
 

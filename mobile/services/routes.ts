@@ -11,4 +11,6 @@ export const ROUTES = {
   CAREGIVER_BY_ID: (caregiverId: string) => `/caregivers/${caregiverId}`,
   CAREGIVER_PATIENTS: (caregiverId: string) =>
     `/caregivers/${caregiverId}/patients`,
+
+  PATIENTS: "/patients",
 };

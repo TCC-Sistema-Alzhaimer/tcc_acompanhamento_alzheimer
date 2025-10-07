@@ -12,7 +12,12 @@ export default function HomeNewScreen() {
 
   const { logout } = useAuth();
   const session = useSession();
-  const { state } = useSelectedPatient();
+  const { state, clearSelection } = useSelectedPatient();
+
+  const handleLogout = () => {
+    clearSelection();
+    logout();
+  };
 
   const patientName =
     "Visualizando " + (state.cachedPatient?.name || "nenhum paciente");
@@ -24,7 +29,7 @@ export default function HomeNewScreen() {
           <Card.Title title="Bem vindo de volta!" subtitle={patientName} />
           <Card.Icon
             name="rectangle.portrait.and.arrow.right"
-            onPress={logout}
+            onPress={handleLogout}
           />
         </Card.Root>
       </View>

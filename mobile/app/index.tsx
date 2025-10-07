@@ -49,7 +49,11 @@ export default function StartPage() {
       return;
     }
 
-    if (user.role === Roles.CAREGIVER) {
+    if (
+      user.role === Roles.CAREGIVER ||
+      user.role === Roles.DOCTOR ||
+      user.role === Roles.ADMINISTRATOR
+    ) {
       if (state.patientId) {
         router.replace("/home");
       } else {
