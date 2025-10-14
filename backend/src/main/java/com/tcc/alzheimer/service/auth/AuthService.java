@@ -102,7 +102,7 @@ public class AuthService {
                 .setSubject(user.getEmail())
                 .claim("role", user.getType())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1 * 60 * 1000)) // 15 minutos
+                .setExpiration(new Date(System.currentTimeMillis() + 30 * 60 * 1000)) // 30 minutos att
                 .signWith(key)
                 .compact();
     }
