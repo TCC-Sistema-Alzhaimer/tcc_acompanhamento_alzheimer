@@ -4,8 +4,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -334,10 +336,6 @@ public class SeedRunner implements CommandLineRunner {
     }
 
     private List<AssociationRequest> seedAssociationRequests(List<Patient> patients, List<Doctor> doctors, List<Caregiver> caregivers, Administrator admin) {
-        if (associationRequestRepository.count() > 0) {
-            return associationRequestRepository.findAll();
-        }
-
         Map<String, Patient> patientByEmail = patients.stream()
                 .collect(Collectors.toMap(Patient::getEmail, patient -> patient));
         Map<String, Doctor> doctorByEmail = doctors.stream()
@@ -345,11 +343,18 @@ public class SeedRunner implements CommandLineRunner {
         Map<String, Caregiver> caregiverByEmail = caregivers.stream()
                 .collect(Collectors.toMap(Caregiver::getEmail, caregiver -> caregiver));
 
-        List<AssociationRequest> requests = new ArrayList<>();
+        List<AssociationRequest> existingRequests = associationRequestRepository.findAll();
+        Map<String, AssociationRequest> requestByKey = existingRequests.stream()
+                .collect(Collectors.toMap(
+                        request -> associationKey(request.getPatient(), request.getRelation(), request.getType()),
+                        request -> request,
+                        (left, right) -> left));
+
+        List<AssociationRequest> toPersist = new ArrayList<>();
 
         Patient maria = requireValue(patientByEmail, "maria.silva@alzcare.com", "Missing patient for email ");
         Doctor ana = requireValue(doctorByEmail, "ana.sousa@alzcare.com", "Missing doctor for email ");
-        AssociationRequest request1 = new AssociationRequest();
+        AssociationRequest request1 = ensureAssociationRequest(requestByKey, toPersist, maria, ana, RequestType.PATIENT_TO_DOCTOR);
         request1.setPatient(maria);
         request1.setRelation(ana);
         request1.setType(RequestType.PATIENT_TO_DOCTOR);
@@ -358,22 +363,22 @@ public class SeedRunner implements CommandLineRunner {
         request1.setRespondedAt(LocalDateTime.now().minusDays(37));
         request1.setCreator(maria);
         request1.setResponder(ana);
-        requests.add(request1);
 
         Patient marcos = requireValue(patientByEmail, "marcos.souza@alzcare.com", "Missing patient for email ");
         Doctor bruno = requireValue(doctorByEmail, "bruno.azevedo@alzcare.com", "Missing doctor for email ");
-        AssociationRequest request2 = new AssociationRequest();
+        AssociationRequest request2 = ensureAssociationRequest(requestByKey, toPersist, marcos, bruno, RequestType.DOCTOR_TO_PATIENT);
         request2.setPatient(marcos);
         request2.setRelation(bruno);
         request2.setType(RequestType.DOCTOR_TO_PATIENT);
         request2.setStatus(RequestStatus.PENDENTE);
         request2.setCreatedAt(LocalDateTime.now().minusDays(12));
         request2.setCreator(bruno);
-        requests.add(request2);
+        request2.setRespondedAt(null);
+        request2.setResponder(null);
 
         Patient marina = requireValue(patientByEmail, "marina.melo@alzcare.com", "Missing patient for email ");
         Caregiver amanda = requireValue(caregiverByEmail, "amanda.dias@alzcare.com", "Missing caregiver for email ");
-        AssociationRequest request3 = new AssociationRequest();
+        AssociationRequest request3 = ensureAssociationRequest(requestByKey, toPersist, marina, amanda, RequestType.PATIENT_TO_CAREGIVER);
         request3.setPatient(marina);
         request3.setRelation(amanda);
         request3.setType(RequestType.PATIENT_TO_CAREGIVER);
@@ -382,11 +387,53 @@ public class SeedRunner implements CommandLineRunner {
         request3.setRespondedAt(LocalDateTime.now().minusDays(16));
         request3.setCreator(marina);
         request3.setResponder(admin);
-        requests.add(request3);
 
-        List<AssociationRequest> saved = new ArrayList<>();
-        associationRequestRepository.saveAll(requests).forEach(saved::add);
-        return saved;
+        Caregiver rita = requireValue(caregiverByEmail, "rita.campos@alzcare.com", "Missing caregiver for email ");
+
+        AssociationRequest request4 = ensureAssociationRequest(requestByKey, toPersist, maria, amanda, RequestType.CAREGIVER_TO_PATIENT);
+        request4.setPatient(maria);
+        request4.setRelation(amanda);
+        request4.setType(RequestType.CAREGIVER_TO_PATIENT);
+        request4.setStatus(RequestStatus.ACEITA);
+        request4.setCreatedAt(LocalDateTime.now().minusDays(30));
+        request4.setRespondedAt(LocalDateTime.now().minusDays(28));
+        request4.setCreator(amanda);
+        request4.setResponder(maria);
+
+        AssociationRequest request5 = ensureAssociationRequest(requestByKey, toPersist, marcos, rita, RequestType.CAREGIVER_TO_PATIENT);
+        request5.setPatient(marcos);
+        request5.setRelation(rita);
+        request5.setType(RequestType.CAREGIVER_TO_PATIENT);
+        request5.setStatus(RequestStatus.ACEITA);
+        request5.setCreatedAt(LocalDateTime.now().minusDays(24));
+        request5.setRespondedAt(LocalDateTime.now().minusDays(23));
+        request5.setCreator(rita);
+        request5.setResponder(admin);
+
+        AssociationRequest request6 = ensureAssociationRequest(requestByKey, toPersist, marina, bruno, RequestType.PATIENT_TO_DOCTOR);
+        request6.setPatient(marina);
+        request6.setRelation(bruno);
+        request6.setType(RequestType.PATIENT_TO_DOCTOR);
+        request6.setStatus(RequestStatus.RECUSADA);
+        request6.setCreatedAt(LocalDateTime.now().minusDays(14));
+        request6.setRespondedAt(LocalDateTime.now().minusDays(13));
+        request6.setCreator(marina);
+        request6.setResponder(bruno);
+
+        AssociationRequest request7 = ensureAssociationRequest(requestByKey, toPersist, marcos, ana, RequestType.DOCTOR_TO_PATIENT);
+        request7.setPatient(marcos);
+        request7.setRelation(ana);
+        request7.setType(RequestType.DOCTOR_TO_PATIENT);
+        request7.setStatus(RequestStatus.ACEITA);
+        request7.setCreatedAt(LocalDateTime.now().minusDays(8));
+        request7.setRespondedAt(LocalDateTime.now().minusDays(7));
+        request7.setCreator(ana);
+        request7.setResponder(marcos);
+
+        if (!toPersist.isEmpty()) {
+            associationRequestRepository.saveAll(toPersist);
+        }
+        return associationRequestRepository.findAll();
     }
 
     private void seedNotifications(
@@ -397,29 +444,55 @@ public class SeedRunner implements CommandLineRunner {
             List<Exam> exams,
             List<AssociationRequest> requests) {
 
-        if (notificationRepository.count() > 0) {
-            return;
-        }
+        List<Notification> existingNotifications = notificationRepository.findAll();
 
-        Notification welcome = new Notification();
-        welcome.setType(NotificationType.RELATIONAL_UPDATE);
-        welcome.setTitle("Demo data ready");
-        welcome.setMessage("We prepared demo users, relationships and exams so you can explore the workflow.");
-        welcome.setSender(admin);
-        welcome.setCreatedAt(LocalDateTime.now().minusDays(10));
-        welcome = notificationRepository.save(welcome);
+        Notification welcome = existingNotifications.stream()
+                .filter(notification -> NotificationType.RELATIONAL_UPDATE.equals(notification.getType()))
+                .filter(notification -> "Demo data ready".equals(notification.getTitle()))
+                .findFirst()
+                .orElse(null);
+
+        if (welcome == null) {
+            welcome = new Notification();
+            welcome.setType(NotificationType.RELATIONAL_UPDATE);
+            welcome.setTitle("Demo data ready");
+            welcome.setMessage("We prepared demo users, relationships and exams so you can explore the workflow.");
+            welcome.setSender(admin);
+            welcome.setCreatedAt(LocalDateTime.now().minusDays(10));
+            welcome = notificationRepository.save(welcome);
+        }
 
         List<User> recipients = new ArrayList<>();
         recipients.addAll(doctors);
         recipients.addAll(caregivers);
         recipients.addAll(patients);
 
+        Set<Long> existingWelcomeRecipients = welcome.getRecipients().stream()
+                .map(NotificationRecipient::getRecipient)
+                .filter(recipient -> recipient != null && recipient.getId() != null)
+                .map(User::getId)
+                .collect(Collectors.toSet());
+
+        boolean welcomeRecipientsAdded = false;
         for (User recipient : recipients) {
+            if (recipient.getId() == null || existingWelcomeRecipients.contains(recipient.getId())) {
+                continue;
+            }
             NotificationRecipient link = new NotificationRecipient(welcome, recipient);
             welcome.addRecipient(link);
             recipient.getReceived().add(link);
+            welcomeRecipientsAdded = true;
         }
-        notificationRepository.save(welcome);
+        if (welcomeRecipientsAdded) {
+            notificationRepository.save(welcome);
+        }
+
+        Map<Long, Boolean> notificationByAssociation = existingNotifications.stream()
+                .filter(notification -> notification.getAssociation() != null && notification.getAssociation().getId() != null)
+                .collect(Collectors.toMap(
+                        notification -> notification.getAssociation().getId(),
+                        notification -> Boolean.TRUE,
+                        (left, right) -> left));
 
         exams.stream()
                 .filter(exam -> ExamStatusType.SCHEDULED.getId().equals(exam.getStatus().getId()))
@@ -449,35 +522,71 @@ public class SeedRunner implements CommandLineRunner {
                     notificationRepository.save(examReminder);
                 });
 
+        Set<Long> processedNotificationAssociationIds = new HashSet<>(notificationByAssociation.keySet());
+
         requests.stream()
                 .filter(request -> request.getStatus() == RequestStatus.ACEITA)
-                .findFirst()
-                .ifPresent(request -> {
+                .filter(request -> request.getId() != null)
+                .filter(request -> processedNotificationAssociationIds.add(request.getId()))
+                .forEach(request -> {
                     Notification relationNotice = new Notification();
                     relationNotice.setType(NotificationType.RELATIONAL_UPDATE);
-                    relationNotice.setTitle("Connection confirmed");
-                    relationNotice.setMessage("The request between "
+                    relationNotice.setTitle("Association confirmed with " + request.getRelation().getName());
+
+                    String relationRole = request.getRelation().getType() == UserType.DOCTOR ? "doctor" : "caregiver";
+                    relationNotice.setMessage("The " + relationRole + " association between "
                             + request.getPatient().getName()
                             + " and "
                             + request.getRelation().getName()
-                            + " is now active. You can manage shared information from now on.");
-                    relationNotice.setSender(admin);
+                            + " is active. Caregivers were notified to coordinate the care plan.");
+
+                    relationNotice.setSender(request.getResponder() != null ? request.getResponder() : admin);
                     relationNotice.setAssociation(request);
-                    relationNotice.setCreatedAt(LocalDateTime.now().minusDays(5));
+
+                    LocalDateTime baseCreatedAt = request.getRespondedAt() != null
+                            ? request.getRespondedAt().plusHours(1)
+                            : request.getCreatedAt().plusHours(2);
+                    relationNotice.setCreatedAt(baseCreatedAt);
                     relationNotice = notificationRepository.save(relationNotice);
 
-                    NotificationRecipient relationOwner = new NotificationRecipient(relationNotice, request.getRelation());
-                    relationNotice.addRecipient(relationOwner);
-                    relationOwner.setReadFlag(true);
-                    relationOwner.setReadAt(LocalDateTime.now().minusDays(4));
-                    request.getRelation().getReceived().add(relationOwner);
+                    Set<Long> processedRecipients = new HashSet<>();
+                    List<User> associationRecipients = new ArrayList<>();
+                    associationRecipients.add(request.getPatient());
+                    associationRecipients.add(request.getRelation());
+                    associationRecipients.addAll(request.getPatient().getCaregivers());
 
-                    NotificationRecipient relationPatient = new NotificationRecipient(relationNotice, request.getPatient());
-                    relationNotice.addRecipient(relationPatient);
-                    request.getPatient().getReceived().add(relationPatient);
+                    for (User recipient : associationRecipients) {
+                        if (recipient == null || recipient.getId() == null || !processedRecipients.add(recipient.getId())) {
+                            continue;
+                        }
+                        NotificationRecipient link = new NotificationRecipient(relationNotice, recipient);
+                        relationNotice.addRecipient(link);
+                        recipient.getReceived().add(link);
+                    }
 
                     notificationRepository.save(relationNotice);
                 });
+    }
+
+    private AssociationRequest ensureAssociationRequest(Map<String, AssociationRequest> requestByKey, List<AssociationRequest> accumulator,
+            Patient patient, User relation, RequestType type) {
+        String key = associationKey(patient, relation, type);
+        AssociationRequest request = requestByKey.get(key);
+        if (request == null) {
+            request = new AssociationRequest();
+            requestByKey.put(key, request);
+        }
+        if (!accumulator.contains(request)) {
+            accumulator.add(request);
+        }
+        return request;
+    }
+
+    private String associationKey(Patient patient, User relation, RequestType type) {
+        String patientEmail = patient != null ? patient.getEmail() : "UNKNOWN_PATIENT";
+        String relationEmail = relation != null ? relation.getEmail() : "UNKNOWN_RELATION";
+        String typeValue = type != null ? type.name() : "UNKNOWN_TYPE";
+        return patientEmail + "|" + relationEmail + "|" + typeValue;
     }
 
     private ExamType getExamType(ExamTypeEnum type) {
