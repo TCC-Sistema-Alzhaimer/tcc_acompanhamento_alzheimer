@@ -24,6 +24,7 @@ export default [
     route(ROUTES.PRIVATE_HOME, "routes/PrivateWelcome/private_home.tsx"),
     route(ROUTES.ADMIN.MANAGEMENT, "routes/userManagement/userManagement.tsx"),
     route(ROUTES.DOCTOR.PATIENTS, "routes/Doctor/DoctorPatients.tsx"),
+    route(ROUTES.ASSOCIATION, "routes/Association/association.tsx"),
   ]),
 
 ] satisfies RouteConfig;

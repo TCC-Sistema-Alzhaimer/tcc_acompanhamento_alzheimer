@@ -4,6 +4,7 @@ export const ROUTES = {
   PROFILE: "/profile",
   USER: "/user/:id",
   PRIVATE_HOME: "/private-home",
+  ASSOCIATION: "/association",
 
   ADMIN: {
     MANAGEMENT: "/management",
