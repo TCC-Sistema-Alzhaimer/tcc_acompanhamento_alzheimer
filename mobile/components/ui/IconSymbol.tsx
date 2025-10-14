@@ -27,6 +27,14 @@ const MAPPING = {
   "rectangle.portrait.and.arrow.right": "logout",
   magnifyingglass: "search",
   "gearshape.fill": "settings",
+  "doc.fill": "description",
+  "doc.plaintext.fill": "description",
+  "doc.richtext.fill": "note",
+  "photo.on.rectangle.angled": "photo-library",
+  "tablecells.fill": "grid-view",
+  "xmark.circle.fill": "cancel",
+  "paperclip.circle.fill": "attach-file",
+  "checkmark.circle.fill": "check-circle",
 } as IconMapping;
 
 /**
