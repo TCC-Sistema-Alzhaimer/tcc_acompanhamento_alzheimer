@@ -84,6 +84,19 @@ public class NotificationService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<NotificationResponse> findByPatient(Long patientId) {
+        List<Notification> notifications = new ArrayList<>();
+        notifications = notificationRepository.findByPatientId(patientId);
+        if (!notifications.isEmpty()) {
+            return notifications.stream()
+                    .map(this::toNotificationResponse)
+                    .toList();
+        } else {
+            throw new ResourceNotFoundException("Nenhuma notificacao encontrada para o paciente com id %d.".formatted(patientId));
+        }
+    }
+
     @Transactional
     public void markAsRead(Long userId, Long notificationId) {
         int updated = notificationRecipientRepository.markAsRead(userId, notificationId);

@@ -3,6 +3,7 @@ package com.tcc.alzheimer.dto.notifications;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 public record NotificationResponse(
         Long id,
         String title,
