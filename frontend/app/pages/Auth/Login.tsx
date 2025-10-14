@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router-dom";
 import Button from "~/components/Button";
 import Form from "~/components/Form";
 import { ROUTES } from "~/routes/EnumRoutes";
@@ -8,6 +8,7 @@ import { useAuth } from "~/hooks/useAuth";
 function LoginPage() {
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     const { login } = useAuth();
     const [username, setUsername] = useState("");
@@ -18,8 +19,10 @@ function LoginPage() {
         if (username && password) {
             try {
                 const res = await login(username, password);
-                // aqui você decide rota com base no tipo de usuário retornado
-                navigate(ROUTES.PRIVATE_HOME);
+                const redirectTo = sessionStorage.getItem("redirectAfterLogin") || ROUTES.PRIVATE_HOME;
+                console.log(redirectTo)
+                sessionStorage.removeItem("redirectAfterLogin");
+                navigate(redirectTo);
             } catch (error: any) {
                 alert(error.message);
                 setUsername("");

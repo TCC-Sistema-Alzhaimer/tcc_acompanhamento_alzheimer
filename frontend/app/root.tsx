@@ -7,10 +7,9 @@ import {
   ScrollRestoration,
   Navigate
 } from "react-router";
-import { useNavigate } from "react-router";
 import type { Route } from "./+types/root";
 import "./app.css";
-import { AuthProvider } from "./hooks/useAuth";
+import { AuthProvider, useAuth } from "./hooks/useAuth";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -48,13 +47,9 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const navigate = useNavigate();
-
   if (isRouteErrorResponse(error)) {
     if (error.status === 403) {
-      // redireciona para login se houver 403
-      navigate("/login", { replace: true });
-      return null; // não renderiza nada, só redireciona
+      return <Navigate to="/login" replace />;
     }
   }
 

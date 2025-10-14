@@ -35,7 +35,6 @@ export const createCaregiver = (data: CreateCaregiverDTO) => api.post("caregiver
 export const createAdmin = (data: CreateAdminDTO) => api.post("administrators", data);
 
 export async function createUser(userType: SystemRoles, form: any) {
-  console.log(form)
   switch (userType) {
     case SystemRoles.DOCTOR:
       const doctorDto: CreateDoctorDTO = {
