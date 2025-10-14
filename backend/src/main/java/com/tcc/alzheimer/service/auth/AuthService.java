@@ -56,7 +56,7 @@ public class AuthService {
                 .secure(true)
                 .sameSite("None")
                 .path("/")
-                .maxAge(15 * 60)
+                .maxAge(60 * 60)
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());

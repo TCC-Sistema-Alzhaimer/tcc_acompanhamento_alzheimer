@@ -1,7 +1,9 @@
 import { Card } from "@/components/card/Card";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { ExamMock } from "@/mocks/exam-mocks";
+import { useSelectedPatient } from "@/context/SelectedPatientContext";
+import { useSession } from "@/hooks/useSession";
+import { fetchExamsByPatientId } from "@/services/exam-service";
 import { Exam } from "@/types/domain/exam";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -13,8 +15,8 @@ const PAGE_SIZE = 10;
 
 // Garante compat com ids "pending/done" OU "pendente/realizado"
 function matchesStatus(exam: Exam, filter: Exclude<Filter, "todos">) {
-  const id = (exam.status?.id || "").toLowerCase();
-  const desc = (exam.status?.description || "").toLowerCase();
+  const id = (exam.examStatusId || "").toLowerCase();
+  const desc = (exam.examStatusDescription || "").toLowerCase();
 
   if (filter === "pendente") {
     return id === "pending" || id === "pendente" || desc.includes("pendente");
@@ -28,15 +30,30 @@ export default function ExamScreen() {
   const [filter, setFilter] = useState<Filter>("todos");
   const [page, setPage] = useState(1);
 
+  const { state, loading: loadingSelected } = useSelectedPatient();
   const router = useRouter();
+  const session = useSession();
 
-  const loadExams = () => {
-    setExams(ExamMock);
+  const loadExams = async () => {
+    if (session !== null) {
+      try {
+        const resp = await fetchExamsByPatientId({
+          accessToken: session.accessToken,
+          patientId: state.patientId!,
+        });
+        console.log("Exames carregados:", resp);
+        setExams(resp);
+      } catch (error) {
+        console.error("Erro ao carregar exames:", error);
+        setExams([]);
+      }
+    }
   };
 
   useEffect(() => {
+    if (loadingSelected) return;
     loadExams();
-  }, []);
+  }, [loadingSelected]);
 
   const filteredExams = useMemo(() => {
     if (filter === "todos") return exams;
@@ -101,7 +118,9 @@ export default function ExamScreen() {
         keyExtractor={(item, index) => item.id ?? `exam-${index}`}
         contentContainerStyle={{ paddingBottom: 24 }}
         ListEmptyComponent={
-          <Text style={{ padding: 16 }}>Nenhum exame disponível.</Text>
+          <ThemedText style={{ padding: 16, textAlign: "center" }} type="title">
+            Nenhum exame disponível.
+          </ThemedText>
         }
         renderItem={({ item: exam }) => (
           <Card.Root
@@ -110,8 +129,8 @@ export default function ExamScreen() {
             onPress={() => router.push(`/exam/${exam.id}`)}
           >
             <Card.Title
-              title={exam.type?.description ?? "Exame"}
-              subtitle={`Status: ${exam.status?.description ?? "-"}`}
+              title={exam.examTypeDescription ?? "Exame"}
+              subtitle={`Status: ${exam.examStatusDescription ?? "-"}`}
             />
             <Card.Icon name="chevron.right" />
           </Card.Root>

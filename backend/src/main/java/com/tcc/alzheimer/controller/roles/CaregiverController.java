@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tcc.alzheimer.dto.roles.carregiver.CaregiverPostAndPutDto;
 import com.tcc.alzheimer.dto.roles.carregiver.CarregiverGetDto;
 import com.tcc.alzheimer.model.roles.Caregiver;
-import com.tcc.alzheimer.model.roles.Patient;
+import com.tcc.alzheimer.dto.roles.patient.PatientResponseGetDTO;
 import com.tcc.alzheimer.service.roles.CaregiverService;
 
 @RestController
@@ -66,7 +66,8 @@ public class CaregiverController {
     }
 
     @GetMapping("/{id}/patients")
-    public ResponseEntity<List<Patient>> getPatients(@PathVariable Long id) {
+    public ResponseEntity<List<PatientResponseGetDTO>> getPatients(@PathVariable Long id) {
         return ResponseEntity.ok(service.getPatients(id));
     }
 }
+
