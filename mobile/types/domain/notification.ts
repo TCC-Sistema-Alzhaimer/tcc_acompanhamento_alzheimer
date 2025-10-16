@@ -7,5 +7,8 @@ export interface Notification {
   sender: User;
   recipients: RecipientStatus[];
 
+  examId?: number | null;
+  associationId?: number | null;
+
   createdAt?: string;
 }

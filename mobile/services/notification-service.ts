@@ -42,8 +42,8 @@ export async function markNotificationAsRead({
       headers: { Authorization: `Bearer ${accessToken}` },
     }
   );
-  if (resp.status !== 200) {
-    throw new Error("Falha ao marcar notificação como lida.");
+  if (resp.status < 200 || resp.status >= 300) {
+    throw new Error("Falha ao marcar notificação como lida.", resp.data);
   }
   return;
 }

@@ -1,6 +1,7 @@
 import { login, logout as performLogout } from "@/services/auth-service";
 import { LoginRequest, LoginResponse } from "@/types/api/login";
 import { User } from "@/types/domain/user";
+import { isValidToken } from "@/util/valide-token";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect, useState } from "react";
@@ -74,6 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (response) {
       setUser({
         id: response.id,
+        name: response.name,
         email: response.email,
         role: response.role,
       });
@@ -94,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const useSession = () => {
-    return user ? { user, accessToken } : null;
+    return isValidToken(accessToken) && user ? { user, accessToken } : null;
   };
 
   return (
