@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -122,12 +123,18 @@ public class NotificationService {
                 .sorted(Comparator.comparing(NotificationResponse.RecipientStatus::id))
                 .toList();
 
+        var examId = notification.getExam() != null ? Optional.of(notification.getExam().getId()) : Optional.empty();
+        var associationId = notification.getAssociation() != null ? Optional.of(notification.getAssociation().getId()) : Optional.empty();
+
+
+
         return new NotificationResponse(
                 notification.getId(),
                 notification.getTitle(),
                 notification.getMessage(),
                 notification.getCreatedAt(),
-                senderSummary,
+                examId,
+                associationId, senderSummary,
                 recipients);
     }
 
