@@ -1,3 +1,6 @@
+import React from "react";
+import { cn } from "@/lib/utils";
+
 interface ActionButtonProps {
   className?: string;
   onClick?: (event: React.MouseEvent<HTMLElement>) => void;
@@ -13,7 +16,10 @@ function ActionButton({
 }: ActionButtonProps) {
   return (
     <div
-      className={`rounded-full w-[40px] h-[40px] cursor-pointer bg-white shadow-md ${className}`}
+      className={cn(
+        "rounded-full w-[40px] h-[40px] cursor-pointer bg-white shadow-md",
+        className
+      )}
       title={title || ""}
       onClick={onClick}
     >
