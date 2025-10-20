@@ -9,7 +9,5 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Conclusion() {
-  return (
-    <DoctorPatientsPage />
-  );
+  return <DoctorPatientsPage />;
 }
