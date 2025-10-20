@@ -1,7 +1,11 @@
-import { api } from "./api";
 import type { BasicListModel } from "~/types/roles/models";
+import { api } from "./api";
 
-export function getPatientsByDoctor(doctorId: number, query?: string, serviceType?: string) {
+export function getPatientsByDoctor(
+  doctorId: number,
+  query?: string,
+  serviceType?: string
+) {
   const params: any = {};
   if (query) params.query = query;
   if (serviceType) params.serviceType = serviceType;

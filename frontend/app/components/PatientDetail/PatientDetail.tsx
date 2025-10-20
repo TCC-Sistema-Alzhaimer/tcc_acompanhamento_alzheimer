@@ -5,7 +5,9 @@ interface PatientDetailProps {
 export function PatientDetail({ patientId }: PatientDetailProps) {
   return (
     <div className="p-4 border rounded-lg shadow">
-      <h2 className="text-xl font-bold mb-4">Detalhes do Paciente #{patientId}</h2>
+      <h2 className="text-xl font-bold mb-4">
+        Detalhes do Paciente #{patientId}
+      </h2>
       <p>Aqui você pode exibir informações resumidas do paciente.</p>
 
       <div className="flex gap-2 mt-4">
