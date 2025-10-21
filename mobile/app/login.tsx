@@ -37,6 +37,7 @@ export default function LoginScreen() {
         email,
         password,
       });
+
       router.replace("/");
     } catch (error) {
       if (error instanceof AuthenticationError) {

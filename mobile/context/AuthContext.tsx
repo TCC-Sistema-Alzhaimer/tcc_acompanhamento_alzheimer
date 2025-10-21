@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await performLogout();
     } catch (error) {
-      console.error("Falha ao executar logout remoto:", error);
+      console.error("Erro no logout, mas redirecionando mesmo assim:", error);
     } finally {
       setUser(null);
       setAccessToken("");
@@ -77,29 +77,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const useLogin = async (credential: LoginRequest): Promise<LoginResponse> => {
     setLoading(true);
-    try {
-      const response = await login(credential);
-      if (response) {
-        const token = response.token;
-        const nextUser: User = {
-          id: response.id,
-          email: response.email,
-          role: response.role,
-          name: response.name,
-        };
-        setUser(nextUser);
-        if (token) {
-          setAccessToken(token);
-          if (Platform.OS === "web") {
-            localStorage.setItem("userToken", token);
-            localStorage.setItem("user", JSON.stringify(nextUser));
-          } else {
-            await SecureStore.setItemAsync("userToken", token);
-            await SecureStore.setItemAsync("user", JSON.stringify(nextUser));
-          }
+    const response = await login(credential);
+    if (response) {
+      const token = response.token;
+      setUser({
+        id: response.id,
+        name: response.name,
+        email: response.email,
+        role: response.role,
+      });
+      if (token) {
+        setAccessToken(token);
+        if (Platform.OS === "web") {
+          localStorage.setItem("userToken", token);
+          localStorage.setItem("user", JSON.stringify(response));
         } else {
-          throw new Error("Resposta de autenticacao invalida");
+          await SecureStore.setItemAsync("userToken", token);
+          await SecureStore.setItemAsync("user", JSON.stringify(response));
         }
+      } else {
+        setLoading(false);
+        throw new Error("Resposta de autenticacao invalida");
       }
       return response;
     } finally {
