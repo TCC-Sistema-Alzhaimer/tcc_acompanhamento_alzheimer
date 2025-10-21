@@ -14,7 +14,11 @@ export function CardRoot({ children, style, themed, onPress }: CardRootProps) {
 
   return (
     <>
-      <TouchableOpacity onPress={onPress} activeOpacity={onPress ? 0.7 : 1}>
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={onPress ? 0.7 : 1}
+        style={{ width: "100%" }}
+      >
         {themed ? (
           <ThemedView
             style={[styles.container, style, { backgroundColor: bgColor }]}
