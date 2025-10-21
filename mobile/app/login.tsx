@@ -19,8 +19,8 @@ import {
 } from "react-native";
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState("admin1@gmail.com");
-  const [password, setPassword] = useState("senha123");
+  const [email, setEmail] = useState("amanda.dias@alzcare.com");
+  const [password, setPassword] = useState("careAmanda@123");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { useLogin } = useAuth();
@@ -33,7 +33,7 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     try {
-      const response = await useLogin({
+      await useLogin({
         email,
         password,
       });

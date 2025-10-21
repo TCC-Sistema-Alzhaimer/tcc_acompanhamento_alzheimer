@@ -38,6 +38,13 @@ export default function TabLayout() {
             headerShown: true,
           }}
         />
+        <Stack.Screen
+          name="profile/index"
+          options={{
+            title: "Perfil",
+            headerShown: true,
+          }}
+        />
       </Stack>
     </SafeAreaView>
   );
