@@ -14,22 +14,77 @@ export default function PrivateHome() {
   const actions = [];
   if (user?.role === "ADMINISTRATOR") {
     actions.push(
-      { title: "Gerenciar Usuários", icon: <PeopleIcon /> , path: ROUTES.ADMIN.MANAGEMENT},
-      { title: "Relatórios", icon: <DescriptionIcon />, path: ROUTES.PRIVATE_HOME }
+      {
+        title: "Gerenciar Usuários",
+        icon: <PeopleIcon />,
+        path: ROUTES.ADMIN.MANAGEMENT,
+      },
+      {
+        title: "Relatórios",
+        icon: <DescriptionIcon />,
+        path: ROUTES.PRIVATE_HOME,
+      },
+      //para dev:
+      {
+        title: "Registrar Exame",
+        icon: <AssignmentIcon />,
+        path: ROUTES.PRIVATE_HOME,
+      },
+      {
+        title: "Consultar Pacientes",
+        icon: <PeopleIcon />,
+        path: ROUTES.ADMIN.MANAGEMENT,
+      },
+      {
+        title: "Meus Pacientes",
+        icon: <PeopleIcon />,
+        path: ROUTES.PRIVATE_HOME,
+      },
+      {
+        title: "Agendar Exames",
+        icon: <EventAvailableIcon />,
+        path: ROUTES.PRIVATE_HOME,
+      },
+      {
+        title: "Tela Pacientes",
+        icon: <PeopleIcon />,
+        path: ROUTES.CAREGIVER.DASHBOARD,
+      },
+      {
+        title: "Tela Exames Caregiver",
+        icon: <PeopleIcon />,
+        path: ROUTES.DOCTOR.PATIENTS,
+      }
     );
   }
 
   if (user?.role === "DOCTOR") {
     actions.push(
-      { title: "Registrar Exame", icon: <AssignmentIcon />, path: ROUTES.PRIVATE_HOME },
-      { title: "Consultar Pacientes", icon: <PeopleIcon />, path: ROUTES.ADMIN.MANAGEMENT }
+      {
+        title: "Registrar Exame",
+        icon: <AssignmentIcon />,
+        path: ROUTES.PRIVATE_HOME,
+      },
+      {
+        title: "Consultar Pacientes",
+        icon: <PeopleIcon />,
+        path: ROUTES.ADMIN.MANAGEMENT,
+      }
     );
   }
 
   if (user?.role === "CAREGIVER") {
     actions.push(
-      { title: "Meus Pacientes", icon: <PeopleIcon />, path: ROUTES.PRIVATE_HOME },
-      { title: "Agendar Exames", icon: <EventAvailableIcon />, path: ROUTES.PRIVATE_HOME }
+      {
+        title: "Meus Pacientes",
+        icon: <PeopleIcon />,
+        path: ROUTES.PRIVATE_HOME,
+      },
+      {
+        title: "Agendar Exames",
+        icon: <EventAvailableIcon />,
+        path: ROUTES.PRIVATE_HOME,
+      }
     );
   }
 

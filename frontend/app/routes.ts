@@ -25,5 +25,4 @@ export default [
     route(ROUTES.ADMIN.MANAGEMENT, "routes/userManagement/userManagement.tsx"),
     route(ROUTES.DOCTOR.PATIENTS, "routes/Doctor/DoctorPatients.tsx"),
   ]),
-
 ] satisfies RouteConfig;

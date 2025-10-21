@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
-import type { BasicListModel } from "~/types/roles/models";
+import React, { useState } from "react";
 import { UserListItem } from "../UserList/UserListItem";
 import { UserSearch } from "../UserList/UserSearch";
-import { getPatientsByDoctor } from "~/services/doctorService";
 import { usePatientList } from "./hooks/patient-list";
+import Button from "~/components/Button"; // Importe seu componente Button
 
 interface PatientListProps {
   doctorId: number;
@@ -28,41 +27,49 @@ export function PatientList({
     query: searchTerm,
   });
 
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center p-8 text-gray-500">
+          Carregando pacientes...
+        </div>
+      );
+    }
+
+    if (patients.length === 0) {
+      return (
+        <div className="flex items-center justify-center p-8 text-gray-500">
+          Nenhum paciente encontrado.
+        </div>
+      );
+    }
+
+    return patients.map((p) => (
+      <UserListItem
+        key={p.id}
+        user={p}
+        selected={selectedId === p.id}
+        onClick={() => {
+          if (!p.id) return;
+          setSelectedId(p.id);
+          onSelectPatient(p.id);
+        }}
+      />
+    ));
+  };
+
   return (
-    <div className="w-1/4 border-r flex flex-col h-full bg-white">
-      <div className="flex flex-col p-3">
+    <div className="border-r flex flex-col h-full bg-white">
+      <div className="flex flex-col p-3 border-b border-gray-100">
         <UserSearch onSearch={handleSearch} />
       </div>
 
-      <div className="flex-1 overflow-y-auto pb-4">
-        {isLoading ? (
-          <div className="flex items-center justify-center p-8">
-            <div className="text-gray-500">Carregando pacientes...</div>
-          </div>
-        ) : (
-          <>
-            {patients.map((p) => (
-              <UserListItem
-                key={p.id}
-                user={p}
-                selected={selectedId === p.id}
-                onClick={() => {
-                  if (!p.id) return;
-                  setSelectedId(p.id);
-                  onSelectPatient(p.id);
-                }}
-              />
-            ))}
+      <div className="flex-1 overflow-y-auto p-2">{renderContent()}</div>
 
-            {/* Botão tracejado de gerenciar */}
-            <button
-              onClick={onCreatePatient}
-              className="mx-4 mt-4 p-4 rounded-xl border-2 border-dashed border-gray-300 text-gray-500 hover:border-teal-400 hover:text-teal-600 transition-colors w-[calc(100%-2rem)] text-center"
-            >
-              Gerenciar fontes
-            </button>
-          </>
-        )}
+      <div className="p-4 border-t border-gray-100">
+        <Button onClick={onCreatePatient} variant="dashed">
+          Gerenciar pacientes
+        </Button>
       </div>
     </div>
   );

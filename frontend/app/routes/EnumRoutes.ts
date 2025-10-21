@@ -19,6 +19,7 @@ export const ROUTES = {
 
   CAREGIVER: {
     EXAMINATION: "/caregiver/examination/:examId?",
+    DASHBOARD: "/caregiver/dashboard",
   },
 
   user: (id: string) => `/user/${id}`,
