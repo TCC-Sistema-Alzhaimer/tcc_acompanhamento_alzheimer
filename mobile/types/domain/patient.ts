@@ -1,11 +1,7 @@
 import { GENDER } from "../enum/gender";
+import { User } from "./user";
 
-export interface Patient {
-  id: Number;
-  name: string;
-  cpf: string;
-  email: string;
-  phone: string;
+export interface Patient extends User {
   gender: GENDER;
   address: string;
   birthdate: string;

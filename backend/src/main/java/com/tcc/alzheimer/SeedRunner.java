@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +37,7 @@ import com.tcc.alzheimer.model.roles.Caregiver;
 import com.tcc.alzheimer.model.roles.Doctor;
 import com.tcc.alzheimer.model.roles.Patient;
 import com.tcc.alzheimer.model.roles.User;
+import com.tcc.alzheimer.model.seed.SeedExecution;
 import com.tcc.alzheimer.repository.Association.AssociationRequestRepository;
 import com.tcc.alzheimer.repository.exams.ExamRepository;
 import com.tcc.alzheimer.repository.exams.ExamResultRepository;
@@ -47,6 +49,7 @@ import com.tcc.alzheimer.repository.roles.AdministratorRepository;
 import com.tcc.alzheimer.repository.roles.CaregiverRepository;
 import com.tcc.alzheimer.repository.roles.DoctorRepository;
 import com.tcc.alzheimer.repository.roles.PatientRepository;
+import com.tcc.alzheimer.repository.seed.SeedExecutionRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -56,6 +59,7 @@ import lombok.RequiredArgsConstructor;
 public class SeedRunner implements CommandLineRunner {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final String DEFAULT_SEED_IDENTIFIER = "DEFAULT_DATA";
 
     private final AdministratorRepository administratorRepository;
     private final DoctorRepository doctorRepository;
@@ -68,12 +72,27 @@ public class SeedRunner implements CommandLineRunner {
     private final ExamResultRepository examResultRepository;
     private final AssociationRequestRepository associationRequestRepository;
     private final NotificationRepository notificationRepository;
+    private final SeedExecutionRepository seedExecutionRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.seed.force:false}")
+    private boolean forceSeed;
 
     @Override
     @Transactional
     public void run(String... args) {
         System.out.println("\n>>> Starting SeedRunner...");
+
+        if (!forceSeed && seedExecutionRepository.existsByName(DEFAULT_SEED_IDENTIFIER)) {
+            System.out.println(">>> Seed already executed previously. Skipping.");
+            return;
+        }
+
+        if (forceSeed) {
+            System.out.println(">>> Forcing seed reset...");
+            seedExecutionRepository.deleteByName(DEFAULT_SEED_IDENTIFIER);
+            clearSeededData();
+        }
 
         Administrator admin = seedAdministrator();
         List<Doctor> doctors = seedDoctors();
@@ -84,6 +103,8 @@ public class SeedRunner implements CommandLineRunner {
         seedExamResults(exams);
         List<AssociationRequest> requests = seedAssociationRequests(patients, doctors, caregivers, admin);
         seedNotifications(admin, doctors, caregivers, patients, exams, requests);
+
+        seedExecutionRepository.save(new SeedExecution(null, DEFAULT_SEED_IDENTIFIER, LocalDateTime.now()));
 
         System.out.println(">>> SeedRunner finished.\n");
     }
@@ -587,6 +608,14 @@ public class SeedRunner implements CommandLineRunner {
         String relationEmail = relation != null ? relation.getEmail() : "UNKNOWN_RELATION";
         String typeValue = type != null ? type.name() : "UNKNOWN_TYPE";
         return patientEmail + "|" + relationEmail + "|" + typeValue;
+    }
+
+    private void clearSeededData() {
+        notificationRepository.deleteAll();
+        associationRequestRepository.deleteAll();
+        examResultRepository.deleteAll();
+        fileRepository.deleteAll();
+        examRepository.deleteAll();
     }
 
     private ExamType getExamType(ExamTypeEnum type) {

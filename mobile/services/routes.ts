@@ -14,4 +14,12 @@ export const ROUTES = {
     `/caregivers/${caregiverId}/patients`,
 
   PATIENTS: "/patients",
+
+  NOTIFICATIONS: "/notifications",
+  NOTIFICATION_BY_ID: (notificationId: string) =>
+    `/notifications/${notificationId}`,
+  NOTIFICATIONS_BY_PATIENT_ID: (patientId: string) =>
+    `/notifications/patient/${patientId}`,
+  NOTIFICATION_MARK_AS_READ: (notificationId: string, readerId: string) =>
+    `/notifications/${notificationId}/recipients/${readerId}/read`,
 };
