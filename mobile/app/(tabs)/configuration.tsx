@@ -1,5 +1,6 @@
 import { Card } from "@/components/card/Card";
 import { ThemedView } from "@/components/ThemedView";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
@@ -7,6 +8,8 @@ const aboutText = `Este aplicativo foi desenvolvido para auxiliar no monitoramen
 
 export default function TabTwoScreen() {
   const [openAbout, setOpenAbout] = useState(false);
+
+  const router = useRouter();
 
   const handleAboutPress = () => {
     setOpenAbout(!openAbout);
@@ -21,7 +24,7 @@ export default function TabTwoScreen() {
         <Card.Root themed={false} onPress={() => console.log("Card pressed")}>
           <Card.Title title="Notificações" />
         </Card.Root>
-        <Card.Root themed={false} onPress={() => console.log("Card pressed")}>
+        <Card.Root themed={false} onPress={() => router.push("/profile")}>
           <Card.Title title="Minha conta" />
         </Card.Root>
         <Card.Root

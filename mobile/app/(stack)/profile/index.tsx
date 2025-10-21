@@ -42,45 +42,54 @@ export default function ProfileScreen() {
     caregiverEmails: "",
   });
 
-  const shouldShowPatientEmails = profile?.role === Roles.DOCTOR || profile?.role === Roles.CAREGIVER;
+  const shouldShowPatientEmails = false;
   const shouldShowDoctorEmails = profile?.role === Roles.PATIENT;
   const shouldShowCaregiverEmails = profile?.role === Roles.PATIENT;
 
-  const loadProfile = useCallback(async () => {
-    if (!session) {
-      setProfile(null);
-      return;
-    }
-
-    try {
-      setLoadingProfile(true);
-      const data = await fetchProfile({
-        userId: session.user.id,
-        role: session.user.role,
-        accessToken: session.accessToken,
-      });
-
-      setProfile(data);
-      setEmailLists({
-        patientEmails: (data.patientEmails ?? []).join(`${EMAIL_SEPARATOR} `),
-        doctorEmails: (data.doctorEmails ?? []).join(`${EMAIL_SEPARATOR} `),
-        caregiverEmails: (data.caregiverEmails ?? []).join(`${EMAIL_SEPARATOR} `),
-      });
-      setErrors({});
-    } catch (error) {
-      console.error("Failed to load profile", error);
-      Alert.alert(
-        "Erro",
-        "Nao foi possivel carregar seus dados. Tente novamente."
-      );
-    } finally {
-      setLoadingProfile(false);
-    }
-  }, [session]);
-
   useEffect(() => {
-    void loadProfile();
-  }, [loadProfile]);
+    let cancelled = false;
+
+    const run = async () => {
+      if (!session) {
+        setProfile(null);
+        return;
+      }
+
+      try {
+        setLoadingProfile(true);
+        const data = await fetchProfile({
+          userId: session.user.id,
+          role: session.user.role,
+          accessToken: session.accessToken,
+        });
+
+        if (cancelled) return;
+
+        setProfile(data);
+        setEmailLists({
+          patientEmails: (data.patientEmails ?? []).join(`${EMAIL_SEPARATOR} `),
+          doctorEmails: (data.doctorEmails ?? []).join(`${EMAIL_SEPARATOR} `),
+          caregiverEmails: (data.caregiverEmails ?? []).join(
+            `${EMAIL_SEPARATOR} `
+          ),
+        });
+        setErrors({});
+      } catch (error) {
+        console.error("Failed to load profile", error);
+        Alert.alert(
+          "Erro",
+          "Nao foi possivel carregar seus dados. Tente novamente."
+        );
+      } finally {
+        if (!cancelled) setLoadingProfile(false);
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.user.id, session?.user.role, session?.accessToken]);
 
   const updateField = useCallback(
     <K extends keyof ProfileFormData>(field: K, value: ProfileFormData[K]) => {
@@ -155,14 +164,13 @@ export default function ProfileScreen() {
       Alert.alert("Sucesso", "Perfil atualizado com sucesso.");
       setNewPassword("");
       setConfirmPassword("");
-      await loadProfile();
     } catch (error) {
       console.error("Failed to update profile", error);
       Alert.alert("Erro", "Nao foi possivel salvar as alteracoes.");
     } finally {
       setSaving(false);
     }
-  }, [loadProfile, newPassword, profile, session, validate]);
+  }, [newPassword, profile, session, validate]);
 
   const formattedRole = useMemo(() => {
     if (!profile) {
@@ -194,7 +202,11 @@ export default function ProfileScreen() {
   if (!session || !profile) {
     return (
       <ThemedView style={styles.centered}>
-        <Card.Root themed onPress={() => router.push("/login")} style={styles.loginCard}>
+        <Card.Root
+          themed
+          onPress={() => router.push("/login")}
+          style={styles.loginCard}
+        >
           <Card.Title
             title="Realize o login"
             subtitle="Sua sessao expirou. Toque para retornar ao login."
@@ -311,7 +323,10 @@ export default function ProfileScreen() {
               multiline
               numberOfLines={3}
               value={emailLists.patientEmails}
-              onChangeText={(text) => handleEmailListChange("patientEmails", text)}
+              onChangeText={(text) =>
+                handleEmailListChange("patientEmails", text)
+              }
+              style={{ minHeight: 60, width: "100%" }}
               placeholder="emails separados por virgula"
             />
           </Card.Root>
@@ -324,7 +339,9 @@ export default function ProfileScreen() {
               multiline
               numberOfLines={3}
               value={emailLists.doctorEmails}
-              onChangeText={(text) => handleEmailListChange("doctorEmails", text)}
+              onChangeText={(text) =>
+                handleEmailListChange("doctorEmails", text)
+              }
               placeholder="emails separados por virgula"
             />
           </Card.Root>
@@ -337,7 +354,9 @@ export default function ProfileScreen() {
               multiline
               numberOfLines={3}
               value={emailLists.caregiverEmails}
-              onChangeText={(text) => handleEmailListChange("caregiverEmails", text)}
+              onChangeText={(text) =>
+                handleEmailListChange("caregiverEmails", text)
+              }
               placeholder="emails separados por virgula"
             />
           </Card.Root>
@@ -373,7 +392,9 @@ export default function ProfileScreen() {
           {saving ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <ThemedText style={styles.saveButtonText}>Salvar alteracoes</ThemedText>
+            <ThemedText style={styles.saveButtonText}>
+              Salvar alteracoes
+            </ThemedText>
           )}
         </TouchableOpacity>
       </ScrollView>
