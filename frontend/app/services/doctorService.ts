@@ -1,14 +1,29 @@
-import type { BasicListModel } from "~/types/roles/models";
 import { api } from "./api";
+import type { PatientModel } from "~/types/roles/models";
 
-export function getPatientsByDoctor(
-  doctorId: number,
-  query?: string,
-  serviceType?: string
-) {
-  const params: any = {};
-  if (query) params.query = query;
-  if (serviceType) params.serviceType = serviceType;
+export const getPatientsByDoctor = async (doctorId: number, query: string) => {
+  try {
+    const response = await api.get<PatientModel[]>(
+      `/doctors/${doctorId}/patients`,
+      {
+        params: {
+          query: query,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar pacientes no service:", error);
+    throw error;
+  }
+};
 
-  return api.get<BasicListModel[]>(`/doctors/${doctorId}/patients`, { params });
-}
+export const getPatientDetails = async (patientId: number) => {
+  try {
+    const response = await api.get(`/patients/${patientId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar detalhes do paciente:", error);
+    throw error;
+  }
+};

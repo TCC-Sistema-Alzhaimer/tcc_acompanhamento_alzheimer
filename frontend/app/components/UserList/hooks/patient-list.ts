@@ -1,56 +1,40 @@
-import { useEffect, useState } from "react";
-import type { BasicListModel } from "~/types/roles/models";
-import { SystemRoles } from "~/types/SystemRoles";
-import { patientList } from "../mock/patient-list";
+import { useState, useEffect } from "react";
+import { getPatientsByDoctor } from "~/services/doctorService";
+import type { PatientModel } from "~/types/roles/models";
 
-export function usePatientList({
-  doctorId,
-  query,
-}: {
+interface UsePatientListProps {
   doctorId: number;
   query: string;
-}) {
-  const [patients, setPatients] = useState<BasicListModel[]>([]);
+}
+
+export function usePatientList({ doctorId, query }: UsePatientListProps) {
+  const [patients, setPatients] = useState<PatientModel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true);
+    const fetchPatients = () => {
+      if (!doctorId) {
+        setIsLoading(false);
+        setPatients([]);
+        return;
+      }
 
-    // TODO: Implementar a lógica de busca de pacientes com o backend
-    // ? aparentemente é esta função que busca os pacientes do doctor: frontend\app\services\doctorService.ts
-    const timer = setTimeout(() => {
-      const calculateAge = (birthdate: Date) => {
-        const today = new Date();
-        const birth = new Date(birthdate);
-        let age = today.getFullYear() - birth.getFullYear();
-        const monthDiff = today.getMonth() - birth.getMonth();
-        if (
-          monthDiff < 0 ||
-          (monthDiff === 0 && today.getDate() < birth.getDate())
-        ) {
-          age--;
-        }
-        return age;
-      };
+      setIsLoading(true);
 
-      setPatients(
-        patientList
-          .filter((patient) =>
-            patient.name.toLowerCase().includes(query.toLowerCase())
-          )
-          .map((patient) => ({
-            id: patient.id,
-            name: patient.name,
-            phone: patient.phone,
-            email: patient.email,
-            userType: SystemRoles.PATIENT,
-            age: calculateAge(patient.dateOfBirth),
-          }))
-      );
-      setIsLoading(false);
-    }, 1500);
+      getPatientsByDoctor(doctorId, query)
+        .then((data) => {
+          setPatients(data);
+        })
+        .catch((error) => {
+          console.error("Erro pego no hook:", error);
+          setPatients([]);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    };
 
-    return () => clearTimeout(timer);
+    fetchPatients();
   }, [doctorId, query]);
 
   return { patients, isLoading };
