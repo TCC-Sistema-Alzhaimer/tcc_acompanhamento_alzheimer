@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PatientList } from "~/components/UserList/PatientList";
-import { PatientDetail } from "~/components/PatientDetail/PatientDetail";
+import { PatientDetail } from "~/components/PatientDetail/hook/PatientDetail";
 import { useAuth } from "~/hooks/useAuth";
 
 // ?TODO: Implementar a lógica de busca de pacientes
