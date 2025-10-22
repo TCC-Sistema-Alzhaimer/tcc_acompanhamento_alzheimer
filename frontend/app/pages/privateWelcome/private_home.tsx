@@ -68,7 +68,7 @@ export default function PrivateHome() {
       {
         title: "Consultar Pacientes",
         icon: <PeopleIcon />,
-        path: ROUTES.ADMIN.MANAGEMENT,
+        path: ROUTES.DOCTOR.PATIENTS,
       }
     );
   }

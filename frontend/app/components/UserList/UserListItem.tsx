@@ -24,7 +24,7 @@ export function UserListItem({ user, selected, onClick }: UserListItemProps) {
       {/* Info */}
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-gray-900 truncate">{user.name}</p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-700">
           ID: #{user.id?.toString().padStart(5, "0")}
           {user.age && ` • ${user.age} anos`}
         </p>

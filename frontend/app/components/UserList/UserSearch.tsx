@@ -27,7 +27,7 @@ export function UserSearch({ onSearch }: UserSearchProps) {
           className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-teal-400 focus:outline-none transition-colors"
         />
         <svg
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-800"
           fill="none"
           strokeWidth="2"
           stroke="currentColor"

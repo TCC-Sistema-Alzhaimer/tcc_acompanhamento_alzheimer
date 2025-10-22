@@ -28,7 +28,7 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
 
   if (patientId === null) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-400 p-6 rounded-lg border-2 border-dashed border-gray-300">
+      <div className="flex items-center justify-center h-full text-gray-800 p-6 rounded-lg border-2 border-dashed border-gray-300">
         <p>Selecione um paciente na lista para ver os detalhes.</p>
       </div>
     );
@@ -36,7 +36,7 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
+      <div className="flex items-center justify-center h-full text-gray-800">
         <p>Carregando dados do paciente...</p>
       </div>
     );
@@ -81,7 +81,7 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
               <strong className="text-sm font-bold text-gray-800">
                 Exame: A
               </strong>
-              <p className="text-xs text-gray-500">26/04/2025</p>
+              <p className="text-xs text-gray-800">26/04/2025</p>
             </div>
           </div>
           <div className="flex items-center gap-4 relative">
@@ -92,7 +92,7 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
               <strong className="text-sm font-bold text-gray-800">
                 Consulta Realizada
               </strong>
-              <p className="text-xs text-gray-500">20/04/2025</p>
+              <p className="text-xs text-gray-800">20/04/2025</p>
             </div>
           </div>
           <div className="flex items-center gap-4 relative">
@@ -103,7 +103,7 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
               <strong className="text-sm font-bold text-gray-800">
                 Consulta marcada
               </strong>
-              <p className="text-xs text-gray-500">05/04/2025</p>
+              <p className="text-xs text-gray-800">05/04/2025</p>
             </div>
           </div>
         </div>

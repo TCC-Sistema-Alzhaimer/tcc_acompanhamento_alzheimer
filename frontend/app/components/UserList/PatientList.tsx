@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { UserListItem } from "../UserList/UserListItem";
 import { UserSearch } from "../UserList/UserSearch";
 import { usePatientList } from "./hooks/patient-list";
-import Button from "~/components/Button"; // Importe seu componente Button
+import Button from "~/components/Button";
+import { SystemRoles } from "~/types/SystemRoles";
 
 interface PatientListProps {
   doctorId: number;
@@ -47,7 +48,7 @@ export function PatientList({
     return patients.map((p) => (
       <UserListItem
         key={p.id}
-        user={p}
+        user={{ ...p, userType: SystemRoles.PATIENT }}
         selected={selectedId === p.id}
         onClick={() => {
           if (!p.id) return;
