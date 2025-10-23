@@ -53,7 +53,7 @@ export function AssociationRequests() {
 
     const roleOptionsMap: Record<string, RequestType[]> = {
         PATIENT: ["PATIENT_TO_DOCTOR", "PATIENT_TO_CAREGIVER"],
-        DOCTOR: ["PATIENT_TO_DOCTOR", "PATIENT_TO_CAREGIVER", "DOCTOR_TO_PATIENT"],
+        DOCTOR: ["PATIENT_TO_CAREGIVER", "DOCTOR_TO_PATIENT"],
         CAREGIVER: ["CAREGIVER_TO_PATIENT", "PATIENT_TO_DOCTOR"],
         ADMIN: ["PATIENT_TO_DOCTOR", "PATIENT_TO_CAREGIVER", "DOCTOR_TO_PATIENT"],
     };

@@ -1,7 +1,9 @@
 package com.tcc.alzheimer.service.Association;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -90,11 +92,19 @@ public class AssociationRequestService {
 
     public List<AssociationRequestResponseDto> findAllByUser(String email) {
         User user = userRepo.findByEmailAndActiveTrue(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return repo.findAllVisibleToUser(user)
-                .stream()
-                .map(this::toDto)
-                .toList();
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + email));
+
+        Set<AssociationRequest> requests = new HashSet<>();
+        requests.addAll(repo.findByCreator(user));
+        requests.addAll(repo.findByResponder(user));
+        requests.addAll(repo.findByRelation(user));
+        if (user instanceof Patient) {
+            requests.addAll(repo.findByPatient((Patient) user));
+        }
+        if (user instanceof Caregiver) {
+            requests.addAll(repo.findByCaregiver((Caregiver) user));
+        }
+        return requests.stream().map(this::toDto).toList();
     }
 
     public AssociationRequestResponseDto findByIdForUser(Long id, String email) {
@@ -112,17 +122,47 @@ public class AssociationRequestService {
     }
 
     private void validateResponderPermission(AssociationRequest request, User responder) {
+        // Ninguém pode responder sua própria solicitação
+        System.out.println("Validating responder: " + responder.getEmail() + " for request ID: " + request);
+        if (request.getCreator().equals(responder)) {
+            throw new AccessDeniedException("O criador da solicitação não pode responder");
+        }
+
         switch (request.getType()) {
-            case PATIENT_TO_DOCTOR, CAREGIVER_TO_PATIENT -> {
-                if (!request.getRelation().equals(responder)) {
-                    throw new AccessDeniedException("Only the relation user can respond");
+            case PATIENT_TO_DOCTOR -> {
+                if (!(responder instanceof Doctor)) {
+                    throw new AccessDeniedException("Apenas um médico pode aceitar esta solicitação");
+                }
+                if (!responder.getId().equals(request.getRelation().getId())) {
+                    throw new AccessDeniedException("Apenas o médico relacionado pode aceitar");
                 }
             }
-            case DOCTOR_TO_PATIENT, PATIENT_TO_CAREGIVER -> {
-                if (!request.getPatient().equals(responder)) {
-                    throw new AccessDeniedException("Only the patient can respond");
+
+            case PATIENT_TO_CAREGIVER -> {
+                boolean isPatient = responder instanceof Patient
+                        && responder.getId().equals(request.getPatient().getId());
+                boolean isCaregiver = responder instanceof Caregiver && request.getPatient().getCaregivers().stream()
+                        .anyMatch(c -> c.getId().equals(responder.getId()));
+
+                if (!isPatient && !isCaregiver) {
+                    throw new AccessDeniedException(
+                            "Apenas o paciente ou um cuidador relacionado podem aceitar esta solicitação");
                 }
             }
+
+            case DOCTOR_TO_PATIENT, CAREGIVER_TO_PATIENT -> {
+                boolean isPatient = responder instanceof Patient
+                        && responder.getId().equals(request.getPatient().getId());
+                boolean isCaregiver = responder instanceof Caregiver && request.getPatient().getCaregivers().stream()
+                        .anyMatch(c -> c.getId().equals(responder.getId()));
+
+                if (!isPatient && !isCaregiver) {
+                    throw new AccessDeniedException(
+                            "Apenas o paciente ou seus cuidadores podem aceitar esta solicitação");
+                }
+            }
+
+            default -> throw new AccessDeniedException("Tipo de solicitação inválido para resposta");
         }
     }
 

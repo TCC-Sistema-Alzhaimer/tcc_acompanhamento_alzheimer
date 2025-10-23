@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   function logout() {
     Cookies.remove("token");
     setUser(null);
-    navigate("/");
+    navigate(ROUTES.LOGIN);
   }
 
   useEffect(() => {
@@ -48,12 +48,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
-        window.location.href = ROUTES.LOGIN;
+        navigate(ROUTES.LOGIN, { replace: true });
       }
     };
 
     loadUser();
-  }, [setUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, setUser }}>
