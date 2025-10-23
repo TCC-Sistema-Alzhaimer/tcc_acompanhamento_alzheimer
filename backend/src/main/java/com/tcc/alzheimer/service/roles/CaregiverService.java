@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tcc.alzheimer.dto.roles.carregiver.CaregiverPostAndPutDto;
 import com.tcc.alzheimer.dto.roles.carregiver.CarregiverGetDto;
+import com.tcc.alzheimer.dto.roles.patient.PatientResponseGetDTO;
 import com.tcc.alzheimer.exception.ResourceConflictException;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Caregiver;
@@ -46,6 +47,25 @@ public class CaregiverService {
                 patientEmails);
     }
 
+    private PatientResponseGetDTO toPatientDto(Patient patient) {
+        return new PatientResponseGetDTO(
+                patient.getId(),
+                patient.getName(),
+                patient.getCpf(),
+                patient.getEmail(),
+                patient.getPhone(),
+                patient.getGender(),
+                patient.getAddress(),
+                patient.getBirthdate(),
+                patient.getDoctors().stream()
+                        .filter(doctor -> Boolean.TRUE.equals(doctor.getActive()))
+                        .map(doctor -> doctor.getEmail())
+                        .toList(),
+                patient.getCaregivers().stream()
+                        .filter(caregiver -> Boolean.TRUE.equals(caregiver.getActive()))
+                        .map(caregiver -> caregiver.getEmail())
+                        .toList());
+    }
     public List<CarregiverGetDto> findAll() {
         return repo.findAllByActiveTrue().stream()
                 .map(this::toDto)
@@ -121,11 +141,13 @@ public class CaregiverService {
         repo.save(caregiver);
     }
 
-    public List<Patient> getPatients(Long id) {
+    @Transactional(readOnly = true)
+    public List<PatientResponseGetDTO> getPatients(Long id) {
         Caregiver caregiver = findByIdIntern(id);
-        return caregiver.getPatients().stream()
-                .filter(patient -> Boolean.TRUE.equals(patient.getActive()))
+        return patientRepo.findByCaregiversAndActiveTrue(caregiver).stream()
+                .map(this::toPatientDto)
                 .toList();
     }
+
 }
 

@@ -49,7 +49,7 @@ export type CaregiverModel = {
   gender: string;
   address: string;
   patientEmails?: string[];
-  type: SystemRoles.CARREGIVER;
+  type: SystemRoles.CAREGIVER;
 };
 
 export type BasicListModel = {

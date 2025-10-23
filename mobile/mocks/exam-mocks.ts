@@ -1,126 +1,152 @@
 import { Exam, ExamStatus, ExamType } from "@/types/domain/exam";
 
-export const EXAM_STATUSES: Record<"pendente" | "realizado", ExamStatus> = {
-  pendente: { id: "pending", description: "Pendente" },
-  realizado: { id: "done", description: "Realizado" },
+const STATUS_DESCRIPTIONS: Record<ExamStatus, string> = {
+  [ExamStatus.PENDING]: "Pendente",
+  [ExamStatus.COMPLETED]: "Realizado",
+  [ExamStatus.CANCELED]: "Cancelado",
 };
 
-// ---- Tipos de exame (exemplos) ----
-export const EXAM_TYPES: ExamType[] = [
-  { id: "blood", description: "Hemograma completo" },
-  { id: "xray", description: "Raio-X de tórax" },
-  { id: "mri", description: "Ressonância magnética" },
-  { id: "urine", description: "Urina tipo I" },
-  { id: "ecg", description: "Eletrocardiograma (ECG)" },
-];
+const TYPE_DESCRIPTIONS: Record<ExamType, string> = {
+  [ExamType.BLOOD_TEST]: "Hemograma completo",
+  [ExamType.URINE_TEST]: "Urina tipo I",
+  [ExamType.BRAIN_SCAN]: "Ressonancia magnetica",
+  [ExamType.COGNITIVE_ASSESSMENT]: "Avaliacao cognitiva",
+  [ExamType.OTHER]: "Outro exame",
+};
 
-// ---- Mocks prontos ----
+function buildExam(
+  exam: Omit<Exam, "examTypeDescription" | "examStatusDescription"> & {
+    examTypeId: ExamType;
+    examStatusId: ExamStatus;
+    examTypeDescription?: string;
+    examStatusDescription?: string;
+  }
+): Exam {
+  return {
+    ...exam,
+    examTypeDescription:
+      exam.examTypeDescription ?? TYPE_DESCRIPTIONS[exam.examTypeId],
+    examStatusDescription:
+      exam.examStatusDescription ?? STATUS_DESCRIPTIONS[exam.examStatusId],
+  };
+}
+
 export const ExamMock: Exam[] = [
-  {
+  buildExam({
     id: "exa_0001",
     doctorId: "doc_102",
     patientId: "pat_501",
-    type: EXAM_TYPES[0],
-    status: EXAM_STATUSES.pendente,
+    examTypeId: ExamType.BLOOD_TEST,
+    examStatusId: ExamStatus.PENDING,
     requestDate: "2025-09-10T09:15:00Z",
-    intructions: "Jejum de 8 horas.",
+    instructions: "Jejum de 8 horas.",
     note: "Solicitado devido a fadiga persistente.",
     updatedAt: "2025-09-10T09:16:00Z",
     updatedBy: "doc_102",
-  },
-  {
+  }),
+  buildExam({
     id: "exa_0002",
     doctorId: "doc_104",
     patientId: "pat_502",
-    type: EXAM_TYPES[1],
-    status: EXAM_STATUSES.realizado,
+    examTypeId: ExamType.BRAIN_SCAN,
+    examStatusId: ExamStatus.COMPLETED,
     requestDate: "2025-08-29T14:00:00Z",
-    result: "Sem alterações significativas.",
-    note: "Tosse há 2 semanas.",
+    result: "Sem alteracoes significativas.",
+    note: "Tosse ha duas semanas.",
     updatedAt: "2025-08-30T11:30:00Z",
     updatedBy: "lab_01",
-  },
-  {
+  }),
+  buildExam({
     id: "exa_0003",
     doctorId: "doc_103",
     patientId: "pat_503",
-    type: EXAM_TYPES[2],
-    status: EXAM_STATUSES.pendente,
+    examTypeId: ExamType.COGNITIVE_ASSESSMENT,
+    examStatusId: ExamStatus.PENDING,
     requestDate: "2025-09-15T12:40:00Z",
-    intructions: "Remover objetos metálicos. Chegar 30 min antes.",
-    note: "Dor lombar crônica.",
-  },
-  {
+    instructions: "Chegar 30 minutos antes.",
+    note: "Dor lombar cronica.",
+  }),
+  buildExam({
     id: "exa_0004",
     doctorId: "doc_101",
     patientId: "pat_504",
-    type: EXAM_TYPES[4],
-    status: EXAM_STATUSES.realizado,
+    examTypeId: ExamType.OTHER,
+    examStatusId: ExamStatus.COMPLETED,
     requestDate: "2025-07-11T08:05:00Z",
     result: "Ritmo sinusal normal.",
     note: "Check-up anual.",
     updatedAt: "2025-07-11T10:22:00Z",
     updatedBy: "lab_02",
-  },
-  {
+  }),
+  buildExam({
     id: "exa_0005",
     doctorId: "doc_105",
     patientId: "pat_505",
-    type: EXAM_TYPES[3],
-    status: EXAM_STATUSES.pendente,
+    examTypeId: ExamType.URINE_TEST,
+    examStatusId: ExamStatus.PENDING,
     requestDate: "2025-09-17T13:20:00Z",
-    intructions: "Coletar amostra matinal.",
-    note: "Avaliação pré-operatória.",
-  },
-  {
+    instructions: "Coletar amostra matinal.",
+    note: "Avaliacao pre-operatoria.",
+  }),
+  buildExam({
     id: "exa_0006",
     doctorId: "doc_102",
     patientId: "pat_506",
-    type: EXAM_TYPES[0],
-    status: EXAM_STATUSES.realizado,
+    examTypeId: ExamType.BLOOD_TEST,
+    examStatusId: ExamStatus.COMPLETED,
     requestDate: "2025-06-21T10:00:00Z",
-    result: "Hemoglobina 14.2 g/dL; leucócitos dentro da faixa.",
-    note: "Retorno pós-tratamento.",
+    result: "Hemoglobina 14.2 g/dL; leucocitos dentro da faixa.",
+    note: "Retorno pos-tratamento.",
     updatedAt: "2025-06-21T12:10:00Z",
     updatedBy: "lab_03",
-  },
+  }),
 ];
 
-// ---- Gerador opcional de mocks ----
-// Use para criar mais itens rapidamente sem libs externas.
+const EXAM_TYPE_OPTIONS: ExamType[] = [
+  ExamType.BLOOD_TEST,
+  ExamType.URINE_TEST,
+  ExamType.BRAIN_SCAN,
+  ExamType.COGNITIVE_ASSESSMENT,
+  ExamType.OTHER,
+];
+
+const STATUS_OPTIONS: ExamStatus[] = [
+  ExamStatus.PENDING,
+  ExamStatus.COMPLETED,
+];
+
 export function generateExams(count = 10): Exam[] {
   const pick = <T>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
   const pad = (n: number) => n.toString().padStart(4, "0");
 
-  const exams: Exam[] = [];
-  for (let i = 1; i <= count; i++) {
-    const type = pick(EXAM_TYPES);
-    const isDone = Math.random() < 0.5;
-    const id = `exa_${pad(1000 + i)}`;
+  return Array.from({ length: count }, (_, index) => {
+    const examTypeId = pick(EXAM_TYPE_OPTIONS);
+    const examStatusId = pick(STATUS_OPTIONS);
+    const id = `exa_${pad(1000 + index + 1)}`;
 
-    const base: Exam = {
+    const exam = buildExam({
       id,
-      doctorId: `doc_${100 + (i % 7)}`,
-      patientId: `pat_${500 + i}`,
-      type,
-      status: isDone ? EXAM_STATUSES.realizado : EXAM_STATUSES.pendente,
+      doctorId: `doc_${100 + ((index + 1) % 7)}`,
+      patientId: `pat_${500 + index + 1}`,
+      examTypeId,
+      examStatusId,
       requestDate: new Date(
         Date.now() - Math.floor(Math.random() * 60) * 24 * 60 * 60 * 1000
       ).toISOString(),
-      note: isDone
-        ? "Exame concluído e revisado."
-        : "Aguardando agendamento/execução.",
-    };
+      note:
+        examStatusId === ExamStatus.COMPLETED
+          ? "Exame concluido e revisado."
+          : "Aguardando agendamento ou execucao.",
+    });
 
-    if (isDone) {
-      base.result = "Resultado dentro dos limites de referência.";
-      base.updatedAt = new Date().toISOString();
-      base.updatedBy = "lab_auto";
+    if (examStatusId === ExamStatus.COMPLETED) {
+      exam.result = "Resultado dentro dos limites de referencia.";
+      exam.updatedAt = new Date().toISOString();
+      exam.updatedBy = "lab_auto";
     } else {
-      base.intructions = "Seguir orientações do laboratório.";
+      exam.instructions = "Seguir orientacoes do laboratorio.";
     }
 
-    exams.push(base);
-  }
-  return exams;
+    return exam;
+  });
 }

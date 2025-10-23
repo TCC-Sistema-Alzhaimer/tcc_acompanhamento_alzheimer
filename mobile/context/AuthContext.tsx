@@ -1,23 +1,62 @@
-import { login, logout as performLogout } from "@/services/authService"; // Ajuste o caminho se necessário
+import { login, logout as performLogout } from "@/services/auth-service";
 import { LoginRequest, LoginResponse } from "@/types/api/login";
 import { User } from "@/types/domain/user";
 import { useRouter } from "expo-router";
-import React, { createContext, useContext, useState } from "react";
+import * as SecureStore from "expo-secure-store";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { Platform } from "react-native";
+
+export interface Session {
+  user: User;
+  accessToken: string;
+}
 
 interface AuthContextType {
   logout: () => void;
   useLogin: (credential: LoginRequest) => Promise<LoginResponse>;
+  useSession: () => Session | null;
   user: User | null;
-  loading?: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [accessToken, setAccessToken] = useState("");
   const [loading, setLoading] = useState(true);
 
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      setLoading(true);
+      if (Platform.OS === "web") {
+        setAccessToken(localStorage.getItem("userToken") || "");
+      } else {
+        const token = await SecureStore.getItemAsync("userToken");
+        setAccessToken(token || "");
+      }
+    };
+
+    const fetchUser = async () => {
+      if (Platform.OS === "web") {
+        const userData = localStorage.getItem("user");
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
+      } else {
+        const userData = await SecureStore.getItemAsync("user");
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchToken();
+    fetchUser();
+  }, []);
 
   const logout = async () => {
     try {
@@ -38,13 +77,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: response.email,
         role: response.role,
       });
+      if (response.token) {
+        if (Platform.OS === "web") {
+          localStorage.setItem("userToken", response.token);
+          localStorage.setItem("user", JSON.stringify(response));
+        } else {
+          await SecureStore.setItemAsync("userToken", response.token);
+          await SecureStore.setItemAsync("user", JSON.stringify(response));
+        }
+      } else {
+        throw new Error("Resposta de autenticação inválida");
+      }
     }
     setLoading(false);
     return response;
   };
 
+  const useSession = () => {
+    return user ? { user, accessToken } : null;
+  };
+
   return (
-    <AuthContext.Provider value={{ logout, useLogin, user }}>
+    <AuthContext.Provider
+      value={{ logout, useLogin, useSession, user, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );

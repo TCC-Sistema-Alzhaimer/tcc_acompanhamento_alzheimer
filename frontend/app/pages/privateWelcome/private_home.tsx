@@ -24,36 +24,10 @@ export default function PrivateHome() {
         icon: <DescriptionIcon />,
         path: ROUTES.PRIVATE_HOME,
       },
-      //para dev:
       {
-        title: "Registrar Exame",
-        icon: <AssignmentIcon />,
-        path: ROUTES.PRIVATE_HOME,
-      },
-      {
-        title: "Consultar Pacientes",
+        title: "Solicitações de associação",
         icon: <PeopleIcon />,
-        path: ROUTES.ADMIN.MANAGEMENT,
-      },
-      {
-        title: "Meus Pacientes",
-        icon: <PeopleIcon />,
-        path: ROUTES.PRIVATE_HOME,
-      },
-      {
-        title: "Agendar Exames",
-        icon: <EventAvailableIcon />,
-        path: ROUTES.PRIVATE_HOME,
-      },
-      {
-        title: "Tela Pacientes",
-        icon: <PeopleIcon />,
-        path: ROUTES.CAREGIVER.DASHBOARD,
-      },
-      {
-        title: "Tela Exames Caregiver",
-        icon: <PeopleIcon />,
-        path: ROUTES.DOCTOR.PATIENTS,
+        path: ROUTES.ASSOCIATION,
       }
     );
   }
@@ -69,6 +43,11 @@ export default function PrivateHome() {
         title: "Consultar Pacientes",
         icon: <PeopleIcon />,
         path: ROUTES.DOCTOR.PATIENTS,
+      },
+      {
+        title: "Solicitações de associação",
+        icon: <PeopleIcon />,
+        path: ROUTES.ASSOCIATION,
       }
     );
   }
@@ -84,6 +63,26 @@ export default function PrivateHome() {
         title: "Agendar Exames",
         icon: <EventAvailableIcon />,
         path: ROUTES.PRIVATE_HOME,
+      },
+      {
+        title: "Solicitações de associação",
+        icon: <PeopleIcon />,
+        path: ROUTES.ASSOCIATION,
+      }
+    );
+  }
+
+  if (user?.role === "PATIENT") {
+    actions.push(
+      {
+        title: "Agendar Exames",
+        icon: <EventAvailableIcon />,
+        path: ROUTES.PRIVATE_HOME,
+      },
+      {
+        title: "Solicitações de associação",
+        icon: <PeopleIcon />,
+        path: ROUTES.ASSOCIATION,
       }
     );
   }

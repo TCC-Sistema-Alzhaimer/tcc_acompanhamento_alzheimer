@@ -46,9 +46,13 @@ export const logout = async () => {
     if (Platform.OS === "web") {
       console.log("Removendo token do localStorage");
       localStorage.removeItem("userToken");
+      localStorage.removeItem("user");
+      localStorage.removeItem("selected_patient_id");
       return;
     }
     await SecureStore.deleteItemAsync("userToken");
+    await SecureStore.deleteItemAsync("user");
+    await SecureStore.deleteItemAsync("selected_patient_id");
   } catch (error) {
     console.error("Erro ao remover o token:", error);
     throw new Error("Não foi possível remover a sessão do dispositivo.");
