@@ -14,7 +14,7 @@ export default [
   layout("./layout/Doctor/index.tsx", [
     route(ROUTES.DOCTOR.EXAMINATION, "routes/Doctor/examination.tsx"),
     route(ROUTES.DOCTOR.CONCLUSION, "routes/Doctor/conclusion.tsx"),
-    route(ROUTES.DOCTOR.PATIENTS, "routes/Doctor/DoctorPatients.tsx"),
+    // route(ROUTES.DOCTOR.PATIENTS, "routes/Doctor/DoctorPatients.tsx"),
   ]),
 
   layout("./layout/Patient/index.tsx", [
