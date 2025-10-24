@@ -1,46 +1,67 @@
-import { useState } from "react";
 import { PatientList } from "~/components/UserList/PatientList";
-import { PatientDetail } from "~/components/PatientDetail/hook/PatientDetail";
+import type { Route } from "../../+types/root";
+import React, { useState } from "react";
+import { QuickActions } from "~/components/UserList/QuickAction";
 import { useAuth } from "~/hooks/useAuth";
+import { PatientDetails } from "~/components/PatientDetail/PatientDetail";
+import { useNavigate } from "react-router";
+import { ROUTES } from "~/routes/EnumRoutes";
 
-// ?TODO: Implementar a lógica de busca de pacientes
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "Pacientes" },
+    { name: "DoctorPatients", content: "Visão geral dos pacientes" },
+  ];
+}
+
 export default function DoctorPatientsPage() {
-  const { user } = useAuth();
-  const doctorId = user?.id ? Number(user.id) : null;
-
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(
     null
   );
-  const [mode, setMode] = useState<"view" | "create">("view");
+  const { user } = useAuth();
+  const loggedDoctorId = user?.id;
+  const navigate = useNavigate();
+  const handleSelectPatient = (id: number) => {
+    setSelectedPatientId(id);
+  };
+
+  const handleCreatePatient = () => {
+    console.log("Abrir modal de gerenciamento/criação de pacientes");
+  };
+
+  const handleExamRequest = () => {
+    if (!selectedPatientId) {
+      alert("Por favor, selecione um paciente primeiro.");
+      return;
+    }
+
+    navigate(ROUTES.DOCTOR.EXAMINATION, {
+      state: { defaultPatientId: selectedPatientId },
+    });
+  };
 
   return (
-    <div className="flex h-full">
-      {doctorId && (
+    <main className="bg-white flex flex-row h-full">
+      <div className="basis-1/4 h-full">
         <PatientList
-          doctorId={doctorId}
-          onSelectPatient={(id) => {
-            setSelectedPatientId(id);
-            setMode("view");
-          }}
-          onCreatePatient={() => setMode("create")}
+          doctorId={Number(loggedDoctorId) || 0}
+          onSelectPatient={handleSelectPatient}
+          onCreatePatient={handleCreatePatient}
         />
-      )}
-
-      <div className="flex-1 p-4">
-        {mode === "view" && selectedPatientId && (
-          <PatientDetail patientId={selectedPatientId} />
-        )}
-
-        {mode === "create" && (
-          <div>
-            <h2 className="text-xl font-bold mb-4">Novo Paciente</h2>
-            <p>
-              Formulário de criação/atribuição de pacientes será implementado
-              aqui.
-            </p>
-          </div>
-        )}
       </div>
-    </div>
+
+      <div className="flex-1 h-full overflow-y-auto bg-gray-100 p-6 flex flex-row gap-6">
+        <div className="basis-7/12 h-full">
+          <PatientDetails patientId={selectedPatientId} />
+        </div>
+
+        <div className="basis-5/12 h-full">
+          <QuickActions
+            patientId={selectedPatientId}
+            onExamRequest={handleExamRequest}
+          />
+        </div>
+      </div>
+    </main>
   );
 }
