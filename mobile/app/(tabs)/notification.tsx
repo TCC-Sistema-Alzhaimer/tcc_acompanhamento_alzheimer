@@ -66,7 +66,12 @@ export default function NotificationScreen() {
       });
       router.push(`/exam/${notification.examId}`);
     } else if (notification.associationId != null) {
-      console.log("Navigate to association:", notification.associationId);
+      await markNotificationAsRead({
+        accessToken: session?.accessToken || "",
+        notificationId: String(notification.id),
+        readerId: String(user?.id || 0),
+      });
+      router.push(`/association/${notification.associationId}`);
     }
   };
   return (
