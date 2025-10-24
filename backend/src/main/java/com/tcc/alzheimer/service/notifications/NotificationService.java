@@ -27,122 +27,136 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private final NotificationRepository notificationRepository;
-    private final NotificationRecipientRepository notificationRecipientRepository;
-    private final UserRepository userRepository;
+        private final NotificationRepository notificationRepository;
+        private final NotificationRecipientRepository notificationRecipientRepository;
+        private final UserRepository userRepository;
 
-    @Transactional
-    public NotificationResponse createAndSend(NotificationCreateRequest request) {
-        var sender = userRepository.findByIdAndActiveTrue(request.senderId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Remetente com id %d nao encontrado.".formatted(request.senderId())));
+        @Transactional
+        public NotificationResponse createAndSend(NotificationCreateRequest request) {
+                var sender = userRepository.findByIdAndActiveTrue(request.senderId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Remetente com id %d nao encontrado.".formatted(request.senderId())));
 
-        Set<Long> recipientIds = request.recipientIds().stream()
-                .filter(Objects::nonNull)
-                .filter(id -> !Objects.equals(id, sender.getId()))
-                .collect(Collectors.toSet());
+                Set<Long> recipientIds = request.recipientIds().stream()
+                                .filter(Objects::nonNull)
+                                .filter(id -> !Objects.equals(id, sender.getId()))
+                                .collect(Collectors.toSet());
 
-        if (recipientIds.isEmpty()) {
-            throw new IllegalArgumentException("Informe ao menos um destinatario valido.");
+                if (recipientIds.isEmpty()) {
+                        throw new IllegalArgumentException("Informe ao menos um destinatario valido.");
+                }
+
+                List<User> recipients = userRepository.findByIdInAndActiveTrue(new ArrayList<>(recipientIds));
+                if (recipients.size() != recipientIds.size()) {
+                        var foundIds = recipients.stream().map(User::getId).collect(Collectors.toSet());
+                        var missing = recipientIds.stream()
+                                        .filter(id -> !foundIds.contains(id))
+                                        .sorted()
+                                        .toList();
+                        throw new ResourceNotFoundException("Destinatarios nao encontrados: " + missing);
+                }
+
+                var notification = new Notification();
+                notification.setSender(sender);
+                notification.setTitle(request.title());
+                notification.setMessage(request.message());
+                notification.setType(request.type());
+
+                if (request.associationId() != null) {
+                        var association = new com.tcc.alzheimer.model.Association.AssociationRequest();
+                        association.setId(request.associationId());
+                        notification.setAssociation(association);
+                }
+
+                notification = notificationRepository.save(notification);
+
+                for (User recipient : recipients) {
+                        var link = new NotificationRecipient(notification, recipient);
+                        notification.addRecipient(link);
+                        recipient.getReceived().add(link);
+                }
+
+                notification = notificationRepository.save(notification);
+
+                return toNotificationResponse(notification);
         }
 
-        List<User> recipients = userRepository.findByIdInAndActiveTrue(new ArrayList<>(recipientIds));
-        if (recipients.size() != recipientIds.size()) {
-            var foundIds = recipients.stream().map(User::getId).collect(Collectors.toSet());
-            var missing = recipientIds.stream()
-                    .filter(id -> !foundIds.contains(id))
-                    .sorted()
-                    .toList();
-            throw new ResourceNotFoundException("Destinatarios nao encontrados: " + missing);
+        @Transactional(readOnly = true)
+        public List<NotificationRecipientResponse> findByRecipient(Long userId, boolean unreadOnly) {
+                var results = unreadOnly
+                                ? notificationRecipientRepository.findUnreadByRecipient(userId)
+                                : notificationRecipientRepository.findAllByRecipient(userId);
+
+                return results.stream()
+                                .map(this::toRecipientResponse)
+                                .toList();
         }
 
-        var notification = new Notification();
-        notification.setSender(sender);
-        notification.setTitle(request.title());
-        notification.setMessage(request.message());
-        notification.setType(request.type());
-
-        if (request.associationId() != null) {
-            var association = new com.tcc.alzheimer.model.Association.AssociationRequest();
-            association.setId(request.associationId());
-            notification.setAssociation(association);
+        @Transactional
+        public void markAsRead(Long userId, Long notificationId) {
+                int updated = notificationRecipientRepository.markAsRead(userId, notificationId);
+                if (updated == 0) {
+                        throw new ResourceNotFoundException(
+                                        "Nao foi possivel marcar a notificacao como lida. Verifique os identificadores informados.");
+                }
         }
 
-        notification = notificationRepository.save(notification);
+        private NotificationResponse toNotificationResponse(Notification notification) {
+                var sender = notification.getSender();
+                var senderSummary = new NotificationResponse.UserSummary(
+                                sender.getId(),
+                                sender.getName(),
+                                sender.getEmail());
 
-        for (User recipient : recipients) {
-            var link = new NotificationRecipient(notification, recipient);
-            notification.addRecipient(link);
-            recipient.getReceived().add(link);
+                var recipients = notification.getRecipients().stream()
+                                .map(link -> new NotificationResponse.RecipientStatus(
+                                                link.getRecipient().getId(),
+                                                link.getRecipient().getName(),
+                                                link.getRecipient().getEmail(),
+                                                link.isReadFlag(),
+                                                link.getReadAt()))
+                                .sorted(Comparator.comparing(NotificationResponse.RecipientStatus::id))
+                                .toList();
+
+                return new NotificationResponse(
+                                notification.getId(),
+                                notification.getTitle(),
+                                notification.getMessage(),
+                                notification.getCreatedAt(),
+                                senderSummary,
+                                recipients);
         }
 
-        notification = notificationRepository.save(notification);
+        private NotificationRecipientResponse toRecipientResponse(NotificationRecipient link) {
+                var notification = link.getNotification();
+                var sender = notification.getSender();
 
-        return toNotificationResponse(notification);
-    }
-
-    @Transactional(readOnly = true)
-    public List<NotificationRecipientResponse> findByRecipient(Long userId, boolean unreadOnly) {
-        var results = unreadOnly
-                ? notificationRecipientRepository.findUnreadByRecipient(userId)
-                : notificationRecipientRepository.findAllByRecipient(userId);
-
-        return results.stream()
-                .map(this::toRecipientResponse)
-                .toList();
-    }
-
-    @Transactional
-    public void markAsRead(Long userId, Long notificationId) {
-        int updated = notificationRecipientRepository.markAsRead(userId, notificationId);
-        if (updated == 0) {
-            throw new ResourceNotFoundException(
-                    "Nao foi possivel marcar a notificacao como lida. Verifique os identificadores informados.");
+                return new NotificationRecipientResponse(
+                                notification.getId(),
+                                link.getRecipient().getId(),
+                                notification.getTitle(),
+                                notification.getMessage(),
+                                notification.getCreatedAt(),
+                                notification.getType().name(),
+                                notification.getExam() != null ? notification.getExam().getId() : null,
+                                notification.getAssociation() != null ? notification.getAssociation().getId() : null,
+                                link.isReadFlag(),
+                                link.getReadAt(),
+                                new NotificationRecipientResponse.UserSummary(
+                                                sender.getId(),
+                                                sender.getName(),
+                                                sender.getEmail()));
         }
-    }
 
-    private NotificationResponse toNotificationResponse(Notification notification) {
-        var sender = notification.getSender();
-        var senderSummary = new NotificationResponse.UserSummary(
-                sender.getId(),
-                sender.getName(),
-                sender.getEmail());
-
-        var recipients = notification.getRecipients().stream()
-                .map(link -> new NotificationResponse.RecipientStatus(
-                        link.getRecipient().getId(),
-                        link.getRecipient().getName(),
-                        link.getRecipient().getEmail(),
-                        link.isReadFlag(),
-                        link.getReadAt()))
-                .sorted(Comparator.comparing(NotificationResponse.RecipientStatus::id))
-                .toList();
-
-        return new NotificationResponse(
-                notification.getId(),
-                notification.getTitle(),
-                notification.getMessage(),
-                notification.getCreatedAt(),
-                senderSummary,
-                recipients);
-    }
-
-    private NotificationRecipientResponse toRecipientResponse(NotificationRecipient link) {
-        var notification = link.getNotification();
-        var sender = notification.getSender();
-
-        return new NotificationRecipientResponse(
-                notification.getId(),
-                link.getRecipient().getId(),
-                notification.getTitle(),
-                notification.getMessage(),
-                notification.getCreatedAt(),
-                notification.getType().name(),
-                link.isReadFlag(),
-                link.getReadAt(),
-                new NotificationRecipientResponse.UserSummary(
-                        sender.getId(),
-                        sender.getName(),
-                        sender.getEmail()));
-    }
+        @Transactional(readOnly = true)
+        public List<NotificationRecipientResponse> findByPatient(Long patientId, boolean unreadOnly) {
+                var patient = userRepository.findById(patientId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado."));
+                var results = unreadOnly
+                                ? notificationRecipientRepository.findUnreadByRecipient(patient.getId())
+                                : notificationRecipientRepository.findAllByRecipient(patient.getId());
+                return results.stream()
+                                .map(this::toRecipientResponse)
+                                .toList();
+        }
 }

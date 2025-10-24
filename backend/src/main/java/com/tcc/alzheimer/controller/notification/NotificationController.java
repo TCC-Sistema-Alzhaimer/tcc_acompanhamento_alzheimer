@@ -41,13 +41,12 @@ public class NotificationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 🔹 Lista notificações do usuário autenticado
-    @GetMapping
+    @GetMapping // get que ira trazer as informacoes das notificacoes do usuario logado
     public ResponseEntity<List<NotificationRecipientResponse>> listUserNotifications(
             @RequestParam(name = "unreadOnly", defaultValue = "false") boolean unreadOnly) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = (String) authentication.getPrincipal(); // o e-mail vem do token JWT
+        String email = (String) authentication.getPrincipal();
 
         var user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
@@ -55,8 +54,16 @@ public class NotificationController {
         var responses = notificationService.findByRecipient(user.getId(), unreadOnly);
         return ResponseEntity.ok(responses);
     }
+    
+    @GetMapping("/patient/{patientId}")
+    public ResponseEntity<List<NotificationRecipientResponse>> listNotificationsByPatient(
+            @PathVariable Long patientId,
+            @RequestParam(name = "unreadOnly", defaultValue = "false") boolean unreadOnly) {
 
-    // 🔹 Marca uma notificação como lida (para o usuário autenticado)
+        var responses = notificationService.findByPatient(patientId, unreadOnly);
+        return ResponseEntity.ok(responses);
+    }
+
     @PatchMapping("/{notificationId}/read")
     public ResponseEntity<Void> markAsRead(@PathVariable Long notificationId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

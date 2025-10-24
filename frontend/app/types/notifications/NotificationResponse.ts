@@ -6,6 +6,9 @@ export interface NotificationRecipientResponse {
   title: string;
   message: string;
   createdAt: string;
+  type?: NotificationType;
+  examId?: number | null;
+  associationId?: number | null;
   read: boolean;
   readAt?: string | null;
   sender: {
@@ -13,6 +16,4 @@ export interface NotificationRecipientResponse {
     name: string;
     email: string;
   };
-  type?: NotificationType;
-  associationId?: number | null;
 }
