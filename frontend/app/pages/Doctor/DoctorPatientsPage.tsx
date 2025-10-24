@@ -34,6 +34,13 @@ export default function DoctorPatientsPage() {
       alert("Por favor, selecione um paciente primeiro.");
       return;
     }
+  };
+
+  const handleRegisterConclusion = () => {
+    if (!selectedPatientId) {
+      alert("Por favor, selecione um paciente primeiro.");
+      return;
+    }
 
     navigate(ROUTES.DOCTOR.EXAMINATION, {
       state: { defaultPatientId: selectedPatientId },
@@ -59,6 +66,7 @@ export default function DoctorPatientsPage() {
           <QuickActions
             patientId={selectedPatientId}
             onExamRequest={handleExamRequest}
+            onRegisterConclusion={handleRegisterConclusion}
           />
         </div>
       </div>
