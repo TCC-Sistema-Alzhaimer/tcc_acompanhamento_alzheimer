@@ -8,6 +8,7 @@ public record NotificationRecipientResponse(
         String title,
         String message,
         LocalDateTime createdAt,
+        String type,
         boolean read,
         LocalDateTime readAt,
         UserSummary sender) {

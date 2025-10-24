@@ -17,9 +17,6 @@ export default function PrivateLayout() {
         <ActionButton title="Mensagens">
           <ForumIcon />
         </ActionButton>
-        <ActionButton title="Notificações">
-          <NotificationsIcon />
-        </ActionButton>
         <AccountMenu />
       </Topbar>
       <div className="flex flex-1 overflow-hidden">

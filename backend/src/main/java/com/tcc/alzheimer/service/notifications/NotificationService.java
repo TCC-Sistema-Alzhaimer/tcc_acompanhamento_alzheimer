@@ -137,6 +137,7 @@ public class NotificationService {
                 notification.getTitle(),
                 notification.getMessage(),
                 notification.getCreatedAt(),
+                notification.getType().name(),
                 link.isReadFlag(),
                 link.getReadAt(),
                 new NotificationRecipientResponse.UserSummary(
