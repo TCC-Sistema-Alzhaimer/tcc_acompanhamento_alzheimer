@@ -1,12 +1,9 @@
 import { Stack } from "expo-router";
 import React from "react";
 
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
       <Stack>
@@ -42,6 +39,13 @@ export default function TabLayout() {
           name="profile/index"
           options={{
             title: "Perfil",
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="association/index"
+          options={{
+            title: "Associações",
             headerShown: true,
           }}
         />
