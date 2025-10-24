@@ -7,12 +7,15 @@ import java.util.Set;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tcc.alzheimer.dto.Association.AssociationRequestCreateDto;
 import com.tcc.alzheimer.dto.Association.AssociationRequestRespondDto;
 import com.tcc.alzheimer.dto.Association.AssociationRequestResponseDto;
+import com.tcc.alzheimer.dto.notifications.NotificationCreateRequest;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.Association.AssociationRequest;
+import com.tcc.alzheimer.model.enums.NotificationType;
 import com.tcc.alzheimer.model.enums.RequestStatus;
 import com.tcc.alzheimer.model.roles.Caregiver;
 import com.tcc.alzheimer.model.roles.Doctor;
@@ -23,10 +26,12 @@ import com.tcc.alzheimer.repository.roles.CaregiverRepository;
 import com.tcc.alzheimer.repository.roles.DoctorRepository;
 import com.tcc.alzheimer.repository.roles.PatientRepository;
 import com.tcc.alzheimer.repository.roles.UserRepository;
+import com.tcc.alzheimer.service.notifications.NotificationService;
 
-import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class AssociationRequestService {
 
     private final AssociationRequestRepository repo;
@@ -34,19 +39,7 @@ public class AssociationRequestService {
     private final PatientRepository patientRepo;
     private final DoctorRepository doctorRepo;
     private final CaregiverRepository caregiverRepo;
-
-    public AssociationRequestService(
-            AssociationRequestRepository repo,
-            UserRepository userRepo,
-            PatientRepository patientRepo,
-            DoctorRepository doctorRepo,
-            CaregiverRepository caregiverRepo) {
-        this.repo = repo;
-        this.userRepo = userRepo;
-        this.patientRepo = patientRepo;
-        this.doctorRepo = doctorRepo;
-        this.caregiverRepo = caregiverRepo;
-    }
+    private final NotificationService notificationService;
 
     public AssociationRequestResponseDto create(AssociationRequestCreateDto dto) {
         User creator = userRepo.findByEmailAndActiveTrue(dto.getCreatorEmail())
@@ -65,6 +58,7 @@ public class AssociationRequestService {
         request.setCreatedAt(LocalDateTime.now());
 
         repo.save(request);
+        sendCreationNotification(request);
         return toDto(request);
     }
 
@@ -84,6 +78,7 @@ public class AssociationRequestService {
 
         if (dto.getStatus() == RequestStatus.ACEITA) {
             applyAssociation(request);
+            sendAcceptedNotification(request);
         }
 
         repo.save(request);
@@ -122,20 +117,16 @@ public class AssociationRequestService {
     }
 
     private void validateResponderPermission(AssociationRequest request, User responder) {
-        // Ninguém pode responder sua própria solicitação
-        System.out.println("Validating responder: " + responder.getEmail() + " for request ID: " + request);
         if (request.getCreator().equals(responder)) {
             throw new AccessDeniedException("O criador da solicitação não pode responder");
         }
 
         switch (request.getType()) {
             case PATIENT_TO_DOCTOR -> {
-                if (!(responder instanceof Doctor)) {
+                if (!(responder instanceof Doctor))
                     throw new AccessDeniedException("Apenas um médico pode aceitar esta solicitação");
-                }
-                if (!responder.getId().equals(request.getRelation().getId())) {
+                if (!responder.getId().equals(request.getRelation().getId()))
                     throw new AccessDeniedException("Apenas o médico relacionado pode aceitar");
-                }
             }
 
             case PATIENT_TO_CAREGIVER -> {
@@ -144,10 +135,9 @@ public class AssociationRequestService {
                 boolean isCaregiver = responder instanceof Caregiver && request.getPatient().getCaregivers().stream()
                         .anyMatch(c -> c.getId().equals(responder.getId()));
 
-                if (!isPatient && !isCaregiver) {
+                if (!isPatient && !isCaregiver)
                     throw new AccessDeniedException(
                             "Apenas o paciente ou um cuidador relacionado podem aceitar esta solicitação");
-                }
             }
 
             case DOCTOR_TO_PATIENT, CAREGIVER_TO_PATIENT -> {
@@ -156,10 +146,9 @@ public class AssociationRequestService {
                 boolean isCaregiver = responder instanceof Caregiver && request.getPatient().getCaregivers().stream()
                         .anyMatch(c -> c.getId().equals(responder.getId()));
 
-                if (!isPatient && !isCaregiver) {
+                if (!isPatient && !isCaregiver)
                     throw new AccessDeniedException(
                             "Apenas o paciente ou seus cuidadores podem aceitar esta solicitação");
-                }
             }
 
             default -> throw new AccessDeniedException("Tipo de solicitação inválido para resposta");
@@ -195,6 +184,41 @@ public class AssociationRequestService {
             }
         }
     }
+
+    private void sendCreationNotification(AssociationRequest request) {
+        String title = "Nova solicitação de associação";
+        String message = String.format("%s enviou uma solicitação de associação para você.",
+                request.getCreator().getName());
+
+        NotificationCreateRequest notification = new NotificationCreateRequest(
+                request.getCreator().getId(),
+                NotificationType.RELATIONAL_UPDATE,
+                title,
+                message,
+                List.of(request.getRelation().getId()),
+                request.getId()
+        );
+
+        notificationService.createAndSend(notification);
+    }
+
+    
+    private void sendAcceptedNotification(AssociationRequest request) {
+        String title = "Solicitação de associação aceita";
+        String message = String.format("%s aceitou a solicitação de associação.", request.getResponder().getName());
+
+        NotificationCreateRequest notification = new NotificationCreateRequest(
+                request.getResponder().getId(),
+                NotificationType.RELATIONAL_UPDATE,
+                title,
+                message,
+                List.of(request.getCreator().getId(), request.getPatient().getId()),
+                request.getId() // 🔗 <--- 
+        );
+
+        notificationService.createAndSend(notification);
+    }
+
 
     private AssociationRequestResponseDto toDto(AssociationRequest r) {
         AssociationRequestResponseDto dto = new AssociationRequestResponseDto();

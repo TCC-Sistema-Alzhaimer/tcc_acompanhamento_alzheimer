@@ -34,7 +34,8 @@ public class NotificationService {
     @Transactional
     public NotificationResponse createAndSend(NotificationCreateRequest request) {
         var sender = userRepository.findByIdAndActiveTrue(request.senderId())
-                .orElseThrow(() -> new ResourceNotFoundException("Remetente com id %d nao encontrado.".formatted(request.senderId())));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Remetente com id %d nao encontrado.".formatted(request.senderId())));
 
         Set<Long> recipientIds = request.recipientIds().stream()
                 .filter(Objects::nonNull)
@@ -59,6 +60,13 @@ public class NotificationService {
         notification.setSender(sender);
         notification.setTitle(request.title());
         notification.setMessage(request.message());
+        notification.setType(request.type());
+
+        if (request.associationId() != null) {
+            var association = new com.tcc.alzheimer.model.Association.AssociationRequest();
+            association.setId(request.associationId());
+            notification.setAssociation(association);
+        }
 
         notification = notificationRepository.save(notification);
 
@@ -88,7 +96,8 @@ public class NotificationService {
     public void markAsRead(Long userId, Long notificationId) {
         int updated = notificationRecipientRepository.markAsRead(userId, notificationId);
         if (updated == 0) {
-            throw new ResourceNotFoundException("Nao foi possivel marcar a notificacao como lida. Verifique os identificadores informados.");
+            throw new ResourceNotFoundException(
+                    "Nao foi possivel marcar a notificacao como lida. Verifique os identificadores informados.");
         }
     }
 
@@ -136,6 +145,3 @@ public class NotificationService {
                         sender.getEmail()));
     }
 }
-
-
-
