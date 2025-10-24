@@ -49,6 +49,13 @@ export default function TabLayout() {
             headerShown: true,
           }}
         />
+        <Stack.Screen
+          name="association/[id]"
+          options={{
+            title: "Associação",
+            headerShown: true,
+          }}
+        />
       </Stack>
     </SafeAreaView>
   );
