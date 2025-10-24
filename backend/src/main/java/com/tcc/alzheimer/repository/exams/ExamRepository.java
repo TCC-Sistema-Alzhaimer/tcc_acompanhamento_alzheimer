@@ -7,10 +7,13 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+
 @Repository
 public interface ExamRepository extends JpaRepository<Exam, Long> {
 
     Optional<Exam> findByIdAndActiveTrue(Long id);
+
+    List<Exam> findByPatientId(Long patientId);
 
     List<Exam> findAllByActiveTrue();
 

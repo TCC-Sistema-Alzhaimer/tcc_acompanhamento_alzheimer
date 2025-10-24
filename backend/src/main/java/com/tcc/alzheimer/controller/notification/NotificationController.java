@@ -44,6 +44,18 @@ public class NotificationController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/patient/{patientId}")
+    public ResponseEntity<List<NotificationResponse>> listByPatient(@PathVariable Long patientId) {
+        
+        List<NotificationResponse> responses = notificationService.findByPatient(patientId);
+        if (responses.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(responses);
+        }
+    }
+    
+
     @PatchMapping("/{notificationId}/recipients/{recipientId}/read")
     public ResponseEntity<Void> markAsRead(
             @PathVariable Long notificationId,

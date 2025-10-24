@@ -10,6 +10,8 @@ import com.tcc.alzheimer.model.roles.User;
 
 public interface AssociationRequestRepository extends JpaRepository<AssociationRequest, Long> {
 
+    List<AssociationRequest> findByPatientId(Long patientId);
+
     @Query("SELECT r FROM AssociationRequest r " +
            "WHERE r.creator = :user OR r.responder = :user OR r.patient = :user OR r.relation = :user")
     List<AssociationRequest> findAllVisibleToUser(@Param("user") User user);
