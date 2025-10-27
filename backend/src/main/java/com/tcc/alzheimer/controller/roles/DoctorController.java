@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tcc.alzheimer.dto.roles.BasicDtoForList;
 import com.tcc.alzheimer.dto.roles.doctor.DoctorPostAndPutDto;
+import com.tcc.alzheimer.dto.roles.doctor.DoctorResponseDto;
 import com.tcc.alzheimer.dto.roles.doctor.DoctorGetDto;
 import com.tcc.alzheimer.model.roles.Doctor;
 import com.tcc.alzheimer.service.roles.DoctorService;
@@ -45,18 +46,10 @@ public class DoctorController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Doctor> update(@PathVariable Long id, @RequestBody DoctorPostAndPutDto dto) {
-        Doctor doctor = new Doctor();
-        doctor.setCpf(dto.getCpf());
-        doctor.setName(dto.getName());
-        doctor.setEmail(dto.getEmail());
-        doctor.setPhone(dto.getPhone());
-        doctor.setCrm(dto.getCrm());
-        doctor.setPassword(dto.getPassword());
-        doctor.setSpeciality(dto.getSpeciality());
-        doctor.setType(dto.getUserType());
-
-        return ResponseEntity.ok(service.update(id, doctor, dto.getPatientEmails()));
+    public ResponseEntity<DoctorGetDto> update(
+            @PathVariable Long id,
+            @RequestBody DoctorPostAndPutDto dto) {
+        return ResponseEntity.ok(service.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
@@ -70,7 +63,7 @@ public class DoctorController {
             @PathVariable Long id,
             @RequestParam(required = false) String query,
             @RequestParam(required = false) String serviceType) {
-        
+
         return ResponseEntity.ok(service.searchUsersByDoc(id, query, serviceType));
     }
 }

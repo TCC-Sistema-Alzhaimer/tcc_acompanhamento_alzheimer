@@ -44,19 +44,10 @@ public class CaregiverController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Caregiver> update(@PathVariable Long id, @RequestBody CaregiverPostAndPutDto dto) {
-        Caregiver caregiver = new Caregiver();
-        caregiver.setCpf(dto.getCpf());
-        caregiver.setName(dto.getName());
-        caregiver.setEmail(dto.getEmail());
-        caregiver.setPhone(dto.getPhone());
-        caregiver.setBirthdate(dto.getBirthdate());
-        caregiver.setGender(dto.getGender());
-        caregiver.setAddress(dto.getAddress());
-        caregiver.setPassword(dto.getPassword());
-        caregiver.setType(dto.getUserType());
-
-        return ResponseEntity.ok(service.update(id, caregiver, dto.getPatientEmails()));
+    public ResponseEntity<CarregiverGetDto> update(
+            @PathVariable Long id,
+            @RequestBody CaregiverPostAndPutDto dto) {
+        return ResponseEntity.ok(service.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
@@ -70,4 +61,3 @@ public class CaregiverController {
         return ResponseEntity.ok(service.getPatients(id));
     }
 }
-
