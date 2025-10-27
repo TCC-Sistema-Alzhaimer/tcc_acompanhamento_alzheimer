@@ -27,5 +27,6 @@ export default [
     route(ROUTES.ASSOCIATION, "routes/Association/association.tsx"),
     route(ROUTES.DOCTOR.EXAMINATION, "routes/Doctor/examination.tsx"),
     route(ROUTES.DOCTOR.CONCLUSION, "routes/Doctor/conclusion.tsx"),
+    route(ROUTES.DOCTOR.PATIENTS, "routes/Doctor/DoctorPatients.tsx"),
   ]),
 ] satisfies RouteConfig;

@@ -59,7 +59,10 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col bg-white gap-4 p-6 rounded-lg"
+    >
       <Form.Header title="Solicitar exames" />
 
       <Form.Select
