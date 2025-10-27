@@ -1,8 +1,8 @@
 import React from "react";
-import { usePatientDetails } from "./hook/usePatientDetail";
+import { usePatientDetails } from "./hooks/usePatientDetail";
 import { FileText, CalendarCheck, Calendar } from "lucide-react";
 import Button from "~/components/Button";
-import { usePatientHistory } from "./hook/usePatientHistory";
+import { usePatientHistory } from "./hooks/usePatientHistory";
 
 interface PatientDetailsProps {
   patientId: number | null;

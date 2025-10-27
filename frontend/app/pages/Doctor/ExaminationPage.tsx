@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useAuth } from "~/hooks/useAuth";
 import { useLocation } from "react-router-dom";
 import { ExamRequest } from "~/components/Exam/ExamRequest";
-import { usePatientDetails } from "~/components/PatientDetail/hook/usePatientDetail";
+import { usePatientDetails } from "~/components/PatientDetail/hooks/usePatientDetail";
 
 const PatientInfoCard = ({ patientId }: { patientId: number | null }) => {
   const { patient, isLoading } = usePatientDetails(patientId);

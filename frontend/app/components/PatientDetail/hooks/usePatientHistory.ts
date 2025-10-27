@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getPatientExams } from "~/services/doctorService";
-import type { ExamResponse } from "~/types/examResponse";
+import type { ExamResponse } from "~/types/exam/examResponse";
 
 export function usePatientHistory(patientId: number | null) {
   const [exams, setExams] = useState<ExamResponse[]>([]);
