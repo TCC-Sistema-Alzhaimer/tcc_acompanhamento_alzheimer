@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const apiEndpoint = "https://backend-tcc-alzheimer-springboot.azurewebsites.net";
+const apiEndpoint = "http://localhost:8080";
 
 export const api = axios.create({
   baseURL: apiEndpoint,

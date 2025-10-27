@@ -1,3 +1,4 @@
+import { useThemeColor } from "@/hooks/useThemeColor";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { ThemedView } from "../ThemedView";
 
@@ -8,17 +9,18 @@ interface CardRootProps {
   onPress?: () => void;
 }
 
-export function CardRoot({
-  children,
-  style,
-  themed = true,
-  onPress,
-}: CardRootProps) {
+export function CardRoot({ children, style, themed, onPress }: CardRootProps) {
+  const bgColor = useThemeColor({}, "secondaryBackground");
+
   return (
     <>
       <TouchableOpacity onPress={onPress} activeOpacity={onPress ? 0.7 : 1}>
         {themed ? (
-          <ThemedView style={[styles.container, style]}>{children}</ThemedView>
+          <ThemedView
+            style={[styles.container, style, { backgroundColor: bgColor }]}
+          >
+            {children}
+          </ThemedView>
         ) : (
           <View style={[styles.container, style]}>{children}</View>
         )}
@@ -37,7 +39,7 @@ const styles = StyleSheet.create({
     padding: 16,
     shadowColor: "#666",
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#555",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     width: "100%",

@@ -37,32 +37,9 @@ export function UserCreateForm() {
 
   const [userType, setUserType] = useState<SystemRoles | "">("");
   const [form, setForm] = useState<UserForm>({});
-  const [doctors, setDoctors] = useState<BasicListModel[]>([]);
-  const [patients, setPatients] = useState<BasicListModel[]>([]);
-  const [caregivers, setCaregivers] = useState<BasicListModel[]>([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Carregar listas de acordo com o tipo selecionado
-  useEffect(() => {
-    switch (userType) {
-      case SystemRoles.DOCTOR:
-        getAllPatients().then(res => setPatients(res.data)).catch(console.error);
-        break;
-      case SystemRoles.PATIENT:
-        getAllDoctors().then(res => setDoctors(res.data)).catch(console.error);
-        getAllCaregivers().then(res => setCaregivers(res.data)).catch(console.error);
-        break;
-      case SystemRoles.CARREGIVER:
-        getAllPatients().then(res => setPatients(res.data)).catch(console.error);
-        break;
-      default:
-        setDoctors([]);
-        setPatients([]);
-        setCaregivers([]);
-        break;
-    }
-  }, [userType]);
 
   const toOptions = (list: BasicListModel[]) =>
     list.map(u => ({ value: u.email, label: u.name }));
@@ -72,15 +49,21 @@ export function UserCreateForm() {
     try {
       await createUser(userType as SystemRoles, form);
       setShowSuccessModal(true);
-      setForm({});
     } catch (error: any) {
-      console.error(error);
-      const msg =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        error.message ||
-        "Erro ao criar usuário";
-      setErrorMessage(msg);
+      if (error.response) {
+        const data = error.response.data;
+        if (data?.message) {
+          setErrorMessage(data.message);
+        } else if (typeof data === "string") {
+          setErrorMessage(data);
+        } else if (data?.error) {
+          setErrorMessage(data.error);
+        } else {
+          setErrorMessage("Erro ao criar usuário. Verifique os dados informados.");
+        }
+      } else {
+        setErrorMessage("Erro de conexão com o servidor.");
+      }
     }
   };
 
@@ -180,15 +163,6 @@ export function UserCreateForm() {
           >
             Especialidade
           </Input>
-
-          <Select
-            options={toOptions(patients)}
-            isMulti
-            placeholder="Selecione pacientes"
-            value={(form.patientEmails || []).map(email => ({ value: email, label: email }))}
-            onChange={(selected) => setForm({ ...form, patientEmails: selected.map(s => s.value) })}
-            className="w-full"
-          />
         </>
       )}
 
@@ -219,39 +193,6 @@ export function UserCreateForm() {
             Endereço
           </Input>
         </>
-      )}
-
-      {userType === SystemRoles.PATIENT && (
-        <>
-          <Select
-            options={toOptions(doctors)}
-            isMulti
-            placeholder="Selecione médicos"
-            value={(form.doctorEmails || []).map(email => ({ value: email, label: email }))}
-            onChange={(selected) => setForm({ ...form, doctorEmails: selected.map(s => s.value) })}
-            className="w-full"
-          />
-
-          <Select
-            options={toOptions(caregivers)}
-            isMulti
-            placeholder="Selecione cuidadores"
-            value={(form.caregiverEmails || []).map(email => ({ value: email, label: email }))}
-            onChange={(selected) => setForm({ ...form, caregiverEmails: selected.map(s => s.value) })}
-            className="w-full"
-          />
-        </>
-      )}
-
-      {userType === SystemRoles.CARREGIVER && (
-        <Select
-          options={toOptions(patients)}
-          isMulti
-          placeholder="Selecione pacientes"
-          value={(form.patientEmails || []).map(email => ({ value: email, label: email }))}
-          onChange={(selected) => setForm({ ...form, patientEmails: selected.map(s => s.value) })}
-          className="w-full"
-        />
       )}
 
       {errorMessage && (

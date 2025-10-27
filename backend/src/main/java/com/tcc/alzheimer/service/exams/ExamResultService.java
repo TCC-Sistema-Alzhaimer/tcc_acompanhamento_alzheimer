@@ -149,8 +149,8 @@ public class ExamResultService {
      * Busca o exame por ID
      */
     private Exam findExamById(Long examId) {
-        return examRepository.findById(examId)
-                .orElseThrow(() -> new ResourceNotFoundException("Exame não encontrado com ID: " + examId));
+        return examRepository.findByIdAndActiveTrue(examId)
+                .orElseThrow(() -> new ResourceNotFoundException("Exame nao encontrado com ID: " + examId));
     }
 
     /**
@@ -301,3 +301,7 @@ public class ExamResultService {
     }
 
 }
+
+
+
+

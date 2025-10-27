@@ -19,13 +19,13 @@ public class UserService {
         private final UserRepository repo;
 
         public User findByEmail(String email) {
-                return repo.findByEmail(email)
+                return repo.findByEmailAndActiveTrue(email)
                                 .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Usuário com email '" + email + "' não encontrado"));
+                                                "Usuario com email '" + email + "' nao encontrado"));
         }
 
         public List<BasicDtoForList> getAllUsers() {
-                return repo.findAll().stream()
+                return repo.findAllByActiveTrue().stream()
                                 .map(user -> new BasicDtoForList(
                                                 user.getId(),
                                                 user.getName(),
@@ -36,7 +36,7 @@ public class UserService {
         }
 
         public List<BasicDtoForList> searchUsers(String query) {
-                return repo.searchByNameOrEmail(query).stream()
+                return repo.searchActiveByNameOrEmail(query).stream()
                                 .map(user -> new BasicDtoForList(
                                                 user.getId(),
                                                 user.getName(),
@@ -47,7 +47,7 @@ public class UserService {
         }
 
         public List<BasicDtoForList> getPatientsAndCaregivers() {
-                return repo.findByTypeIn(List.of(UserType.PATIENT.name(), UserType.CAREGIVER.name())).stream()
+                return repo.findByTypeInAndActiveTrue(List.of(UserType.PATIENT.name(), UserType.CAREGIVER.name())).stream()
                                 .map(user -> new BasicDtoForList(
                                                 user.getId(),
                                                 user.getName(),

@@ -41,22 +41,19 @@ public class ExamService {
 
     @Transactional
     public Exam createExam(ExamCreateDTO dto) {
-        // Buscar as entidades relacionadas
-        Doctor doctor = doctorRepository.findById(dto.getDoctorId())
+        Doctor doctor = doctorRepository.findByIdAndActiveTrue(dto.getDoctorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + dto.getDoctorId()));
 
-        Patient patient = patientRepository.findById(dto.getPatientId())
+        Patient patient = patientRepository.findByIdAndActiveTrue(dto.getPatientId())
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + dto.getPatientId()));
 
         ExamType examType = examTypeRepository.findById(dto.getExamTypeId())
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Exam Type not found with id: " + dto.getExamTypeId()));
 
-        // Status sempre será REQUESTED quando um exame for criado
         ExamStatus examStatus = examStatusRepository.findById(ExamStatusType.REQUESTED.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Default exam status REQUESTED not found"));
 
-        // Criar o exame
         Exam exam = new Exam();
         exam.setDoctor(doctor);
         exam.setPatient(patient);
@@ -65,37 +62,46 @@ public class ExamService {
         exam.setRequestDate(LocalDateTime.now());
         exam.setInstructions(dto.getInstructions());
         exam.setNote(dto.getNote());
+        exam.setActive(Boolean.TRUE);
 
         return examRepository.save(exam);
     }
 
     public List<Exam> findAll() {
-        return examRepository.findAll();
+        return examRepository.findAllByActiveTrue();
     }
 
     public Exam findById(Long id) {
-        return examRepository.findById(id)
+        return examRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Exam not found with id: " + id));
     }
 
     public List<Exam> findByPatientId(Long patientId) {
-        return examRepository.findByPatientId(patientId);
+        return examRepository.findByPatientIdAndActiveTrue(patientId);
     }
 
     public List<Exam> findByDoctorId(Long doctorId) {
-        return examRepository.findByDoctorId(doctorId);
+        return examRepository.findByDoctorIdAndActiveTrue(doctorId);
+    }
+
+    public List<Exam> findByStatusId(String statusId) {
+        return examRepository.findByStatusIdAndActiveTrue(statusId);
+    }
+
+    public List<Exam> findByTypeId(String typeId) {
+        return examRepository.findByTypeIdAndActiveTrue(typeId);
     }
 
     @Transactional
     public void deleteById(Long id) {
         Exam exam = findById(id);
-        examRepository.delete(exam);
+        exam.setActive(Boolean.FALSE);
+        examRepository.save(exam);
     }
 
     public ExamResponseDTO toResponseDTO(Exam exam) {
         ExamResponseDTO dto = new ExamResponseDTO();
 
-        // Dados básicos do exame
         dto.setId(exam.getId());
         dto.setDoctorId(exam.getDoctor().getId());
         dto.setPatientId(exam.getPatient().getId());
@@ -107,7 +113,6 @@ public class ExamService {
         dto.setUpdatedAt(exam.getUpdatedAt());
         dto.setUpdatedBy(exam.getUpdatedBy());
 
-        // Informações adicionais (descrições para facilitar o frontend)
         dto.setExamTypeDescription(exam.getType().getDescription());
         dto.setExamStatusDescription(exam.getStatus().getDescription());
         dto.setDoctorName(exam.getDoctor().getName());
@@ -115,3 +120,4 @@ public class ExamService {
         return dto;
     }
 }
+

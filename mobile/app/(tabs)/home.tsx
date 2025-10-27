@@ -1,21 +1,36 @@
 import { Card } from "@/components/card/Card";
 import { ThemedView } from "@/components/ThemedView";
+import { useAuth } from "@/context/AuthContext";
+import { useSelectedPatient } from "@/context/SelectedPatientContext";
+import { useSession } from "@/hooks/useSession";
+import { Roles } from "@/types/enum/roles";
 import { useRouter } from "expo-router";
 import { StyleSheet, View } from "react-native";
 
 export default function HomeNewScreen() {
-  // You can access the navigation prop like so:
   const router = useRouter();
+
+  const { logout } = useAuth();
+  const session = useSession();
+  const { state, clearSelection } = useSelectedPatient();
+
+  const handleLogout = () => {
+    clearSelection();
+    logout();
+  };
+
+  const patientName =
+    "Visualizando " + (state.cachedPatient?.name || "nenhum paciente");
 
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
         <Card.Root themed={false} onPress={() => console.log("Card pressed")}>
-          <Card.Title
-            title="Welcome Back!"
-            subtitle="Here's your summary for today."
+          <Card.Title title="Bem vindo de volta!" subtitle={patientName} />
+          <Card.Icon
+            name="rectangle.portrait.and.arrow.right"
+            onPress={handleLogout}
           />
-          <Card.Icon name="rectangle.portrait.and.arrow.right" />
         </Card.Root>
       </View>
 
@@ -29,14 +44,36 @@ export default function HomeNewScreen() {
           <Card.Icon name="paperplane.fill" />
         </Card.Root>
 
-        <Card.Root themed={false} onPress={() => console.log("Card pressed")}>
-          <Card.Avatar uri="https://admin.cnnbrasil.com.br/wp-content/uploads/sites/12/2025/07/Avatar-Fogo-e-Cinzas.png?w=1200&h=900&crop=0" />
+        <Card.Root themed={false} onPress={() => router.push("/conclusion")}>
+          <Card.Avatar />
           <Card.Title
-            title="Welcome Back!"
-            subtitle="Here's your summary for today."
+            title="Conclusões médicas"
+            subtitle="Visualize suas conclusões médicas."
           />
-          <Card.Icon name="paperplane.fill" />
+          <Card.Icon
+            name="paperplane.fill"
+            onPress={() => router.push("/conclusion")}
+          />
         </Card.Root>
+
+        {session?.user.role !== Roles.PATIENT && (
+          <View style={{ flex: 1, justifyContent: "flex-end" }}>
+            <Card.Root
+              themed={false}
+              onPress={() => router.push("/selecter-patient")}
+            >
+              <Card.Avatar />
+              <Card.Title
+                title="Pacientes"
+                subtitle="Selecione ou adicione um novo paciente."
+              />
+              <Card.Icon
+                name="person.2.fill"
+                onPress={() => router.push("/selecter-patient")}
+              />
+            </Card.Root>
+          </View>
+        )}
       </View>
     </ThemedView>
   );
@@ -51,15 +88,16 @@ const styles = StyleSheet.create({
     flex: 0.2,
     marginBottom: 16,
     justifyContent: "center",
-    borderColor: "#ddd",
+    borderColor: "#444", // cor mais sutil para fundo preto
   },
   content: {
     flex: 1,
     gap: 12,
     alignContent: "center",
+    justifyContent: "flex-start",
     padding: 16,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#555",
     borderRadius: 8,
   },
 });

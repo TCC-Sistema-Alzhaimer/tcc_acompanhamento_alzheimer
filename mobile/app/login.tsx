@@ -1,5 +1,9 @@
-// app/login.tsx
-
+import { useAuth } from "@/context/AuthContext";
+import {
+  AuthenticationError,
+  NetworkError,
+  NotFoundError,
+} from "@/services/errors";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -13,13 +17,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { login } from "../services/authService";
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState("joao.silva123@mail.com");
-  const [password, setPassword] = useState("123456");
+  const [email, setEmail] = useState("admin1@gmail.com");
+  const [password, setPassword] = useState("senha123");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { useLogin } = useAuth();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -29,10 +33,33 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     try {
-      await login(email, password);
-      router.replace("/home" as any);
-    } catch (error: any) {
-      Alert.alert("Erro no Login", error.message);
+      const response = await useLogin({
+        email,
+        password,
+      });
+      router.replace("/");
+    } catch (error) {
+      if (error instanceof AuthenticationError) {
+        Alert.alert(
+          "Erro de Autenticação",
+          "A senha está incorreta. Tente novamente"
+        );
+      } else if (error instanceof NotFoundError) {
+        Alert.alert(
+          "Usuário não Encontrado",
+          "Este e-mail não está cadastrado em nosso sistema"
+        );
+      } else if (error instanceof NetworkError) {
+        Alert.alert(
+          "Erro de Conexão",
+          "Não foi possível conectar ao servidor. Verifique sua internet"
+        );
+      } else {
+        Alert.alert(
+          "Erro",
+          "Ocorreu um erro inesperado. Tente novamente mais tarde"
+        );
+      }
     } finally {
       setIsLoading(false);
     }
