@@ -5,6 +5,7 @@ import { api } from "~/services/api";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "~/routes/EnumRoutes";
 import type { SelectChangeEvent } from "@mui/material";
+import { useExamTypes } from "./hooks/useExamTypes";
 
 interface SolicitarExameFormProps {
   patientId: number;
@@ -20,6 +21,7 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
     anotacoes: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { examTypes, isLoading: isLoadingTypes } = useExamTypes();
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -59,7 +61,10 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col bg-white gap-4 p-6 rounded-lg"
+    >
       <Form.Header title="Solicitar exames" />
 
       <Form.Select
@@ -67,11 +72,13 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
         name="tipo"
         value={formData.tipo}
         onChange={handleSelectChange}
-        options={[
-          { value: "SANGUE", label: "Sangue" },
-          { value: "IMAGEM", label: "Imagem" },
-        ]}
-        placeholder="Selecione o Tipo"
+        options={examTypes.map((type) => ({
+          value: type.id,
+          label: type.description,
+        }))}
+        placeholder={
+          isLoadingTypes ? "Carregando tipos..." : "Selecione o Tipo"
+        }
       />
 
       <Form.Select

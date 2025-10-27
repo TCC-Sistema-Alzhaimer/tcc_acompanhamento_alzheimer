@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useAuth } from "~/hooks/useAuth";
 import { useLocation } from "react-router-dom";
 import { ExamRequest } from "~/components/Exam/ExamRequest";
-import { usePatientDetails } from "~/components/PatientDetail/hook/usePatientDetail";
+import { usePatientDetails } from "~/components/PatientDetail/hooks/usePatientDetail";
 
 const PatientInfoCard = ({ patientId }: { patientId: number | null }) => {
   const { patient, isLoading } = usePatientDetails(patientId);
@@ -85,9 +85,9 @@ export default function DoctorExaminationPage() {
         />
       </div>
 
-      <div className="flex-1 h-full overflow-y-auto bg-white p-6 flex flex-col gap-6">
+      <div className="flex-1 h-full overflow-y-auto bg-gray-100 p-6 flex flex-col gap-6">
         {selectedPatientId === null ? (
-          <div className="flex items-center justify-center h-full text-gray-400 p-6 rounded-lg border-2 border-dashed border-gray-300">
+          <div className="flex items-center justify-center h-full text-gray-800 p-6 rounded-lg border-2 border-dashed border-gray-300">
             <p>Selecione um paciente na lista para solicitar um exame.</p>
           </div>
         ) : (

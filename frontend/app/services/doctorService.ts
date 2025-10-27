@@ -1,6 +1,7 @@
-import type { ExamResponse } from "~/types/examResponse";
+import type { ExamResponse } from "~/types/exam/examResponse";
 import { api } from "./api";
 import type { PatientModel } from "~/types/roles/models";
+import type { ExamType } from "~/types/exam/examType";
 
 export const getPatientsByDoctor = async (doctorId: number, query: string) => {
   try {
@@ -31,13 +32,22 @@ export const getPatientDetails = async (patientId: number) => {
 
 export const getPatientExams = async (patientId: number) => {
   try {
-    // 3. Chame o endpoint do seu ExamController
     const response = await api.get<ExamResponse[]>(
       `/exams/patient/${patientId}`
     );
     return response.data;
   } catch (error) {
     console.error("Erro ao buscar exames do paciente:", error);
+    throw error;
+  }
+};
+
+export const getExamTypes = async () => {
+  try {
+    const response = await api.get<ExamType[]>("/exams/types");
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar tipos de exame no service:", error);
     throw error;
   }
 };
