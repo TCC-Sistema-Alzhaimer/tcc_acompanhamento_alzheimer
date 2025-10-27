@@ -1,7 +1,7 @@
 import { Link, type LinkProps } from "react-router-dom";
 import React from "react";
 
-type ButtonVariant = "primary" | "secondary" | "dashed";
+type ButtonVariant = "primary" | "secondary" | "dashed" | "danger";
 
 interface ButtonProps {
   to?: LinkProps["to"];
@@ -39,6 +39,12 @@ function Button({
       variantClasses = `
         bg-white border-2 border-dashed border-teal-600 text-teal-600 
         ${!disabled ? "hover:bg-teal-50" : ""}
+      `;
+      break;
+    case "danger":
+      variantClasses = `
+        bg-red-600 text-white border-2 border-red-700
+        ${!disabled ? "hover:bg-red-700" : ""}
       `;
       break;
     case "primary":

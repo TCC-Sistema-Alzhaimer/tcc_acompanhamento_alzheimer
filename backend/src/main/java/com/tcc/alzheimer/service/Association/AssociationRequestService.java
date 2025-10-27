@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tcc.alzheimer.dto.Association.AssociationRequestCreateDto;
 import com.tcc.alzheimer.dto.Association.AssociationRequestRespondDto;
-import com.tcc.alzheimer.dto.Association.AssociationRequestResponseDto;
+import com.tcc.alzheimer.dto.Association.AssociationResponseDto;
 import com.tcc.alzheimer.dto.notifications.NotificationCreateRequest;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.Association.AssociationRequest;
@@ -41,7 +41,7 @@ public class AssociationRequestService {
     private final CaregiverRepository caregiverRepo;
     private final NotificationService notificationService;
 
-    public AssociationRequestResponseDto create(AssociationRequestCreateDto dto) {
+    public AssociationResponseDto create(AssociationRequestCreateDto dto) {
         User creator = userRepo.findByEmailAndActiveTrue(dto.getCreatorEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Creator not found"));
         Patient patient = patientRepo.findByEmailAndActiveTrue(dto.getPatientEmail())
@@ -59,11 +59,11 @@ public class AssociationRequestService {
 
         repo.save(request);
         sendCreationNotification(request);
-        return toDto(request);
+        return AssociationResponseDto.from(request);
     }
 
     @Transactional
-    public AssociationRequestResponseDto respond(Long id, AssociationRequestRespondDto dto) {
+    public AssociationResponseDto respond(Long id, AssociationRequestRespondDto dto) {
         AssociationRequest request = repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
@@ -82,10 +82,10 @@ public class AssociationRequestService {
         }
 
         repo.save(request);
-        return toDto(request);
+        return AssociationResponseDto.from(request);
     }
 
-    public List<AssociationRequestResponseDto> findAllByUser(String email) {
+    public List<AssociationResponseDto> findAllByUser(String email) {
         User user = userRepo.findByEmailAndActiveTrue(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + email));
 
@@ -94,15 +94,19 @@ public class AssociationRequestService {
         requests.addAll(repo.findByResponder(user));
         requests.addAll(repo.findByRelation(user));
         if (user instanceof Patient) {
-            requests.addAll(repo.findByPatient((Patient) user));
+            requests.addAll(repo.findByPatient(user));
         }
         if (user instanceof Caregiver) {
-            requests.addAll(repo.findByCaregiver((Caregiver) user));
+            requests.addAll(repo.findByCaregiver(user));
         }
-        return requests.stream().map(this::toDto).toList();
+
+        return requests.stream()
+                .distinct()
+                .map(AssociationResponseDto::from)
+                .toList();
     }
 
-    public AssociationRequestResponseDto findByIdForUser(Long id, String email) {
+    public AssociationResponseDto findByIdForUser(Long id, String email) {
         User user = userRepo.findByEmailAndActiveTrue(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -113,9 +117,10 @@ public class AssociationRequestService {
             throw new AccessDeniedException("User not authorized to view this request");
         }
 
-        return toDto(request);
+        return AssociationResponseDto.from(request);
     }
 
+    // --- métodos auxiliares: validateResponderPermission, applyAssociation, send notifications, isUserRelated ---
     private void validateResponderPermission(AssociationRequest request, User responder) {
         if (request.getCreator().equals(responder)) {
             throw new AccessDeniedException("O criador da solicitação não pode responder");
@@ -128,29 +133,24 @@ public class AssociationRequestService {
                 if (!responder.getId().equals(request.getRelation().getId()))
                     throw new AccessDeniedException("Apenas o médico relacionado pode aceitar");
             }
-
             case PATIENT_TO_CAREGIVER -> {
                 boolean isPatient = responder instanceof Patient
                         && responder.getId().equals(request.getPatient().getId());
                 boolean isCaregiver = responder instanceof Caregiver && request.getPatient().getCaregivers().stream()
                         .anyMatch(c -> c.getId().equals(responder.getId()));
-
                 if (!isPatient && !isCaregiver)
                     throw new AccessDeniedException(
                             "Apenas o paciente ou um cuidador relacionado podem aceitar esta solicitação");
             }
-
             case DOCTOR_TO_PATIENT, CAREGIVER_TO_PATIENT -> {
                 boolean isPatient = responder instanceof Patient
                         && responder.getId().equals(request.getPatient().getId());
                 boolean isCaregiver = responder instanceof Caregiver && request.getPatient().getCaregivers().stream()
                         .anyMatch(c -> c.getId().equals(responder.getId()));
-
                 if (!isPatient && !isCaregiver)
                     throw new AccessDeniedException(
                             "Apenas o paciente ou seus cuidadores podem aceitar esta solicitação");
             }
-
             default -> throw new AccessDeniedException("Tipo de solicitação inválido para resposta");
         }
     }
@@ -202,7 +202,6 @@ public class AssociationRequestService {
         notificationService.createAndSend(notification);
     }
 
-    
     private void sendAcceptedNotification(AssociationRequest request) {
         String title = "Solicitação de associação aceita";
         String message = String.format("%s aceitou a solicitação de associação.", request.getResponder().getName());
@@ -213,24 +212,9 @@ public class AssociationRequestService {
                 title,
                 message,
                 List.of(request.getCreator().getId(), request.getPatient().getId()),
-                request.getId() // 🔗 <--- 
+                request.getId()
         );
 
         notificationService.createAndSend(notification);
-    }
-
-
-    private AssociationRequestResponseDto toDto(AssociationRequest r) {
-        AssociationRequestResponseDto dto = new AssociationRequestResponseDto();
-        dto.setId(r.getId());
-        dto.setPatientEmail(r.getPatient().getEmail());
-        dto.setRelationEmail(r.getRelation().getEmail());
-        dto.setType(r.getType());
-        dto.setStatus(r.getStatus());
-        dto.setCreatedAt(r.getCreatedAt());
-        dto.setRespondedAt(r.getRespondedAt());
-        dto.setCreatorEmail(r.getCreator().getEmail());
-        dto.setResponderEmail(r.getResponder() != null ? r.getResponder().getEmail() : null);
-        return dto;
     }
 }

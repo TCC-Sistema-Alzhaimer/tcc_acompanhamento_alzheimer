@@ -22,6 +22,7 @@ export const respondToRequest = async (
 };
 
 export const createRequest = async (payload: { creatorEmail: string, patientEmail: string, relationEmail: string, type: RequestType }) => {
+    console.log("Creating request with payload:", payload);
     const res = await api.post('/requests', payload);
     return res.data;
 };
