@@ -2,6 +2,7 @@ import React from "react";
 import { usePatientDetails } from "./hook/usePatientDetail";
 import { FileText, CalendarCheck, Calendar } from "lucide-react";
 import Button from "~/components/Button";
+import { usePatientHistory } from "./hook/usePatientHistory";
 
 interface PatientDetailsProps {
   patientId: number | null;
@@ -24,7 +25,8 @@ const calculateAge = (birthdate: Date | string) => {
 };
 
 export function PatientDetails({ patientId }: PatientDetailsProps) {
-  const { patient, isLoading } = usePatientDetails(patientId);
+  const { patient, isLoading: isLoadingPatient } = usePatientDetails(patientId);
+  const { exams, isLoading: isLoadingHistory } = usePatientHistory(patientId);
 
   if (patientId === null) {
     return (
@@ -34,7 +36,7 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
     );
   }
 
-  if (isLoading) {
+  if (isLoadingPatient) {
     return (
       <div className="flex items-center justify-center h-full text-gray-800">
         <p>Carregando dados do paciente...</p>
@@ -72,41 +74,32 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
       <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col gap-5">
         <h3 className="text-lg font-bold text-gray-800">Histórico resumido</h3>
 
-        <div className="flex flex-col gap-4 border-l-2 border-gray-200 pl-6 ml-3">
-          <div className="flex items-center gap-4 relative">
-            <div className="absolute -left-[1.65rem] top-1 w-6 h-6 rounded-full bg-teal-300 flex items-center justify-center text-white">
-              <FileText size={12} />
-            </div>
-            <div>
-              <strong className="text-sm font-bold text-gray-800">
-                Exame: A
-              </strong>
-              <p className="text-xs text-gray-800">26/04/2025</p>
-            </div>
+        {isLoadingHistory ? (
+          <div className="text-sm text-gray-800">Carregando histórico...</div>
+        ) : (
+          <div className="flex flex-col gap-4 border-l-2 border-gray-200 pl-6 ml-3">
+            {exams.map((exam) => (
+              <div key={exam.id} className="flex items-center gap-4 relative">
+                <div className="absolute -left-[1.65rem] top-1 w-6 h-6 rounded-full bg-teal-300 flex items-center justify-center text-white">
+                  <FileText size={12} />
+                </div>
+                <div>
+                  <strong className="text-sm font-bold text-gray-800">
+                    Exame: {exam.examTypeDescription}
+                  </strong>
+                  <p className="text-xs text-gray-800">
+                    {/* Formate a data */}
+                    {new Date(exam.requestDate).toLocaleDateString("pt-BR")}
+                  </p>
+                </div>
+              </div>
+            ))}
+
+            {exams.length === 0 && !isLoadingHistory && (
+              <p className="text-xs text-gray-800">Nenhum exame encontrado.</p>
+            )}
           </div>
-          <div className="flex items-center gap-4 relative">
-            <div className="absolute -left-[1.65rem] top-1 w-6 h-6 rounded-full bg-teal-600 flex items-center justify-center text-white">
-              <CalendarCheck size={12} />
-            </div>
-            <div>
-              <strong className="text-sm font-bold text-gray-800">
-                Consulta Realizada
-              </strong>
-              <p className="text-xs text-gray-800">20/04/2025</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 relative">
-            <div className="absolute -left-[1.65rem] top-1 w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-gray-700">
-              <Calendar size={12} />
-            </div>
-            <div>
-              <strong className="text-sm font-bold text-gray-800">
-                Consulta marcada
-              </strong>
-              <p className="text-xs text-gray-800">05/04/2025</p>
-            </div>
-          </div>
-        </div>
+        )}
 
         <Button
           variant="primary"

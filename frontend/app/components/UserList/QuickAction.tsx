@@ -1,11 +1,16 @@
-import React from "react";
 import Button from "~/components/Button";
 
 interface QuickActionsProps {
   patientId: number | null;
+  onExamRequest: () => void;
+  onRegisterConclusion: () => void;
 }
 
-export function QuickActions({ patientId }: QuickActionsProps) {
+export function QuickActions({
+  patientId,
+  onExamRequest,
+  onRegisterConclusion,
+}: QuickActionsProps) {
   const isDisabled = patientId === null;
 
   return (
@@ -14,8 +19,8 @@ export function QuickActions({ patientId }: QuickActionsProps) {
         <h3 className="text-lg font-bold text-gray-800">Ações Rápidas</h3>
 
         <div className="flex flex-col gap-3">
-          <Button disabled={isDisabled}>Solicitar Exame</Button>
-          <Button variant="secondary" disabled={isDisabled}>
+          <Button onClick={onExamRequest}>Solicitar Exame</Button>
+          <Button variant="secondary" onClick={onRegisterConclusion}>
             Registrar Conclusão
           </Button>
 
@@ -28,8 +33,7 @@ export function QuickActions({ patientId }: QuickActionsProps) {
             </Button>
           </div>
 
-          {/* Dashboard pode ser uma ação global, então talvez não precise ser desabilitado */}
-          <Button>Dashboard</Button>
+          <Button disabled={isDisabled}>Dashboard</Button>
         </div>
       </div>
     </section>
