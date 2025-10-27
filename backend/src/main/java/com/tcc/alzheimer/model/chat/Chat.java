@@ -2,9 +2,7 @@ package com.tcc.alzheimer.model.chat;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -51,7 +49,7 @@ public class Chat {
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     @Builder.Default
-    private Set<ChatUser> participants = new HashSet<>();
+    private List<ChatUser> participants = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {
