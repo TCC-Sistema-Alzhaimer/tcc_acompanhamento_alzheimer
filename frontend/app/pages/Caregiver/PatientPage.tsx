@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { PatientDetails } from "~/components/PatientDetail/hook/PatientDetail";
+import { PatientDetails } from "~/components/PatientDetail/PatientDetail";
 import { PatientList } from "~/components/UserList/PatientList";
 import { QuickActions } from "~/components/UserList/QuickAction";
 

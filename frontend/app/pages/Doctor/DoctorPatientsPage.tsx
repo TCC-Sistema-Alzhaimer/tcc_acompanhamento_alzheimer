@@ -34,6 +34,9 @@ export default function DoctorPatientsPage() {
       alert("Por favor, selecione um paciente primeiro.");
       return;
     }
+    navigate(ROUTES.DOCTOR.EXAMINATION, {
+      state: { defaultPatientId: selectedPatientId },
+    });
   };
 
   const handleRegisterConclusion = () => {
@@ -42,7 +45,7 @@ export default function DoctorPatientsPage() {
       return;
     }
 
-    navigate(ROUTES.DOCTOR.EXAMINATION, {
+    navigate(ROUTES.DOCTOR.CONCLUSION, {
       state: { defaultPatientId: selectedPatientId },
     });
   };

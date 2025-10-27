@@ -19,8 +19,14 @@ export function QuickActions({
         <h3 className="text-lg font-bold text-gray-800">Ações Rápidas</h3>
 
         <div className="flex flex-col gap-3">
-          <Button onClick={onExamRequest}>Solicitar Exame</Button>
-          <Button variant="secondary" onClick={onRegisterConclusion}>
+          <Button disabled={isDisabled} onClick={onExamRequest}>
+            Solicitar Exame
+          </Button>
+          <Button
+            disabled={isDisabled}
+            variant="secondary"
+            onClick={onRegisterConclusion}
+          >
             Registrar Conclusão
           </Button>
 
