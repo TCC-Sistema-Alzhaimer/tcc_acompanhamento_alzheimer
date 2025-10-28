@@ -16,6 +16,7 @@ export const ROUTES = {
     APPOINTMENTS: "/doctor/appointments",
     EXAMINATION: "/doctor/examination",
     CONCLUSION: "/doctor/conclusion",
+    HISTORY: "/doctor/history",
   },
 
   CAREGIVER: {

@@ -2,6 +2,7 @@ import type { ExamResponse } from "~/types/exam/examResponse";
 import { api } from "./api";
 import type { PatientModel } from "~/types/roles/models";
 import type { ExamType } from "~/types/exam/examType";
+import type { MedicalHistoryResponse } from "~/types/exam/medicalHistoryResponse";
 
 export const getPatientsByDoctor = async (doctorId: number, query: string) => {
   try {
@@ -48,6 +49,18 @@ export const getExamTypes = async () => {
     return response.data;
   } catch (error) {
     console.error("Erro ao buscar tipos de exame no service:", error);
+    throw error;
+  }
+};
+
+export const getPatientHistory = async (patientId: number) => {
+  try {
+    const response = await api.get<MedicalHistoryResponse[]>(
+      `/medical-history/patient/${patientId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar histórico médico do paciente:", error);
     throw error;
   }
 };

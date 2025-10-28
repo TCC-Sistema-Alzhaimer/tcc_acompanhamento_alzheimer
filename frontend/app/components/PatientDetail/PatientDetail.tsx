@@ -3,6 +3,8 @@ import { usePatientDetails } from "./hooks/usePatientDetail";
 import { FileText, CalendarCheck, Calendar } from "lucide-react";
 import Button from "~/components/Button";
 import { usePatientHistory } from "./hooks/usePatientHistory";
+import { ROUTES } from "~/routes/EnumRoutes";
+import { useNavigate } from "react-router";
 
 interface PatientDetailsProps {
   patientId: number | null;
@@ -27,6 +29,7 @@ const calculateAge = (birthdate: Date | string) => {
 export function PatientDetails({ patientId }: PatientDetailsProps) {
   const { patient, isLoading: isLoadingPatient } = usePatientDetails(patientId);
   const { exams, isLoading: isLoadingHistory } = usePatientHistory(patientId);
+  const navigate = useNavigate();
 
   if (patientId === null) {
     return (
@@ -51,6 +54,20 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
       </div>
     );
   }
+
+  const handleShowCompleteHistory = () => {
+    if (patientId) {
+      const historyPath = ROUTES.DOCTOR.HISTORY;
+
+      navigate(historyPath, {
+        state: { defaultPatientId: patientId },
+      });
+    } else {
+      console.error(
+        "Não é possível navegar para o histórico sem um ID de paciente."
+      );
+    }
+  };
 
   return (
     <section className="flex flex-col gap-6 h-full">
@@ -101,10 +118,7 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
           </div>
         )}
 
-        <Button
-          variant="primary"
-          onClick={() => console.log("Ver histórico completo")}
-        >
+        <Button variant="primary" onClick={handleShowCompleteHistory}>
           Ver histórico completo
         </Button>
       </div>

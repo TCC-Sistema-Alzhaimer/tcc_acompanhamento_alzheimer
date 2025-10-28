@@ -5,7 +5,7 @@ import { useAuth } from "~/hooks/useAuth";
 import { useLocation } from "react-router-dom";
 
 import { usePatientDetails } from "~/components/PatientDetail/hooks/usePatientDetail";
-import { ConclusionForm } from "~/components/Conclusion/ConclusionForm";
+import { ConclusionForm } from "~/components/conclusion/ConclusionForm";
 
 const PatientInfoCard = ({ patientId }: { patientId: number | null }) => {
   const { patient, isLoading } = usePatientDetails(patientId);

@@ -64,23 +64,15 @@ public class NotificationController {
         return ResponseEntity.ok(responses);
     }
 
-    @GetMapping("/patient/{patientId}")
-    public ResponseEntity<List<NotificationResponse>> listByPatient(@PathVariable Long patientId) {
-        
-        List<NotificationResponse> responses = notificationService.findByPatient(patientId);
-        if (responses.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.ok(responses);
-        }
-    }
-    
+    @PatchMapping("/{notificationId}/read")
+    public ResponseEntity<Void> markAsRead(@PathVariable Long notificationId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = (String) authentication.getPrincipal();
 
-    @PatchMapping("/{notificationId}/recipients/{recipientId}/read")
-    public ResponseEntity<Void> markAsRead(
-            @PathVariable Long notificationId,
-            @PathVariable Long recipientId) {
-        notificationService.markAsRead(recipientId, notificationId);
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+
+        notificationService.markAsRead(user.getId(), notificationId);
         return ResponseEntity.noContent().build();
     }
 }

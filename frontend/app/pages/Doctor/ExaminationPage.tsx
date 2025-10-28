@@ -3,7 +3,7 @@ import type { Route } from "../../+types/root";
 import React, { useState } from "react";
 import { useAuth } from "~/hooks/useAuth";
 import { useLocation } from "react-router-dom";
-import { ExamRequest } from "~/components/Exam/ExamRequest";
+import { ExamRequest } from "~/components/exam/ExamRequest";
 import { usePatientDetails } from "~/components/PatientDetail/hooks/usePatientDetail";
 
 const PatientInfoCard = ({ patientId }: { patientId: number | null }) => {

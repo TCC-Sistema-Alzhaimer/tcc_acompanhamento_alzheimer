@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import Button from "~/components/Button";
-import Form from "~/components/Form";
 import { api } from "~/services/api";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "~/routes/EnumRoutes";
 import type { SelectChangeEvent } from "@mui/material";
 import { useExamTypes } from "./hooks/useExamTypes";
+import Form from "../form";
 
 interface SolicitarExameFormProps {
   patientId: number;
