@@ -23,9 +23,17 @@ public class UserTesteRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
         String email = "admin1@gmail.com";
         String rawPassword = "senha123";
+        String cpf = "12345678900";
+
+        if (administratorRepository.findByCpf(cpf).isPresent()) {
+            System.out.println("Administrador de teste já existe. Não será recriado.");
+            return;
+        }
 
         if (administratorRepository.findByEmail(email).isEmpty()) {
             Administrator admin = new Administrator();
+            admin.setCpf(cpf);
+            admin.setName("Administrador do Sistema original");
             admin.setCpf("12345678901");
             admin.setName("Administrador do Sistema");
             admin.setEmail(email);
@@ -37,7 +45,7 @@ public class UserTesteRunner implements CommandLineRunner {
             administratorRepository.save(admin);
             System.out.println("Administrador de teste criado.");
         } else {
-            System.out.println("Administrador já existe. Não será recriado.");
+            System.out.println("Administrador já existe com outro CPF. Não será recriado.");
         }
     }
 }

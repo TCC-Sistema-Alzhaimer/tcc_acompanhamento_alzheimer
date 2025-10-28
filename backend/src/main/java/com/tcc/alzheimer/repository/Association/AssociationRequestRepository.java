@@ -16,4 +16,8 @@ public interface AssociationRequestRepository extends JpaRepository<AssociationR
     List<AssociationRequest> findByRelation(User user);
     @Query("SELECT DISTINCT r FROM AssociationRequest r JOIN r.patient.caregivers c WHERE c = :user")
     List<AssociationRequest> findByCaregiver(@Param("user") User user);
+    List<AssociationRequest> findByPatientId(Long patientId);
+    @Query("SELECT r FROM AssociationRequest r " +
+           "WHERE r.creator = :user OR r.responder = :user OR r.patient = :user OR r.relation = :user")
+    List<AssociationRequest> findAllVisibleToUser(@Param("user") User user);
 }

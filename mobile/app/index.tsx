@@ -16,7 +16,6 @@ export default function StartPage() {
     if (authLoading || !state.hydrated) {
       return;
     }
-
     if (user == null) {
       router.replace("/login");
       return;

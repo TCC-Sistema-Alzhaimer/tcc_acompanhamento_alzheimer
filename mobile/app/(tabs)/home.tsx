@@ -56,6 +56,18 @@ export default function HomeNewScreen() {
           />
         </Card.Root>
 
+        <Card.Root themed={false} onPress={() => router.push("/association")}>
+          <Card.Avatar />
+          <Card.Title
+            title="Pedidos de Associações"
+            subtitle="Visualize os pedidos referente ao paciente."
+          />
+          <Card.Icon
+            name="paperplane.fill"
+            onPress={() => router.push("/association")}
+          />
+        </Card.Root>
+
         {session?.user.role !== Roles.PATIENT && (
           <View style={{ flex: 1, justifyContent: "flex-end" }}>
             <Card.Root

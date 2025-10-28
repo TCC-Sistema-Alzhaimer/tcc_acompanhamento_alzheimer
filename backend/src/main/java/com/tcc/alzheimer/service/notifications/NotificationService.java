@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -118,6 +119,7 @@ public class NotificationService {
                                 .sorted(Comparator.comparing(NotificationResponse.RecipientStatus::id))
                                 .toList();
 
+<<<<<<< HEAD
                 return new NotificationResponse(
                                 notification.getId(),
                                 notification.getTitle(),
@@ -125,6 +127,37 @@ public class NotificationService {
                                 notification.getCreatedAt(),
                                 senderSummary,
                                 recipients);
+=======
+    @Transactional(readOnly = true)
+    public List<NotificationRecipientResponse> findByRecipient(Long userId, boolean unreadOnly) {
+        var results = unreadOnly
+                ? notificationRecipientRepository.findUnreadByRecipient(userId)
+                : notificationRecipientRepository.findAllByRecipient(userId);
+
+        return results.stream()
+                .map(this::toRecipientResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<NotificationResponse> findByPatient(Long patientId) {
+        List<Notification> notifications = new ArrayList<>();
+        notifications = notificationRepository.findByPatientId(patientId);
+        if (!notifications.isEmpty()) {
+            return notifications.stream()
+                    .map(this::toNotificationResponse)
+                    .toList();
+        } else {
+            throw new ResourceNotFoundException("Nenhuma notificacao encontrada para o paciente com id %d.".formatted(patientId));
+        }
+    }
+
+    @Transactional
+    public void markAsRead(Long userId, Long notificationId) {
+        int updated = notificationRecipientRepository.markAsRead(userId, notificationId);
+        if (updated == 0) {
+            throw new ResourceNotFoundException("Nao foi possivel marcar a notificacao como lida. Verifique os identificadores informados.");
+>>>>>>> origin/dev
         }
 
         private NotificationRecipientResponse toRecipientResponse(NotificationRecipient link) {
@@ -148,6 +181,7 @@ public class NotificationService {
                                                 sender.getEmail()));
         }
 
+<<<<<<< HEAD
         @Transactional(readOnly = true)
         public List<NotificationRecipientResponse> findByPatient(Long patientId, boolean unreadOnly) {
                 var patient = userRepository.findById(patientId)
@@ -159,4 +193,38 @@ public class NotificationService {
                                 .map(this::toRecipientResponse)
                                 .toList();
         }
+=======
+        var examId = notification.getExam() != null ? Optional.of(notification.getExam().getId()) : Optional.empty();
+        var associationId = notification.getAssociation() != null ? Optional.of(notification.getAssociation().getId()) : Optional.empty();
+
+
+
+        return new NotificationResponse(
+                notification.getId(),
+                notification.getTitle(),
+                notification.getMessage(),
+                notification.getCreatedAt(),
+                examId,
+                associationId, senderSummary,
+                recipients);
+    }
+
+    private NotificationRecipientResponse toRecipientResponse(NotificationRecipient link) {
+        var notification = link.getNotification();
+        var sender = notification.getSender();
+
+        return new NotificationRecipientResponse(
+                notification.getId(),
+                link.getRecipient().getId(),
+                notification.getTitle(),
+                notification.getMessage(),
+                notification.getCreatedAt(),
+                link.isReadFlag(),
+                link.getReadAt(),
+                new NotificationRecipientResponse.UserSummary(
+                        sender.getId(),
+                        sender.getName(),
+                        sender.getEmail()));
+    }
+>>>>>>> origin/dev
 }
