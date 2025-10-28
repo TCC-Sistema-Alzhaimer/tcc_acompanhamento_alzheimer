@@ -13,7 +13,7 @@ export interface Session {
 }
 
 interface AuthContextType {
-  logout: () => void;
+  logout: () => Promise<void>;
   useLogin: (credential: LoginRequest) => Promise<LoginResponse>;
   useSession: () => Session | null;
   user: User | null;
@@ -30,69 +30,81 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchToken = async () => {
+    const bootstrapAuth = async () => {
       setLoading(true);
-      if (Platform.OS === "web") {
-        setAccessToken(localStorage.getItem("userToken") || "");
-      } else {
-        const token = await SecureStore.getItemAsync("userToken");
-        setAccessToken(token || "");
+      try {
+        if (Platform.OS === "web") {
+          const storedToken = localStorage.getItem("userToken") || "";
+          const storedUser = localStorage.getItem("user");
+          setAccessToken(storedToken);
+          if (storedUser) {
+            setUser(JSON.parse(storedUser));
+          }
+        } else {
+          const storedToken = await SecureStore.getItemAsync("userToken");
+          const storedUser = await SecureStore.getItemAsync("user");
+          setAccessToken(storedToken || "");
+          if (storedUser) {
+            setUser(JSON.parse(storedUser));
+          }
+        }
+      } finally {
+        setLoading(false);
       }
     };
 
-    const fetchUser = async () => {
-      if (Platform.OS === "web") {
-        const userData = localStorage.getItem("user");
-        if (userData) {
-          setUser(JSON.parse(userData));
-        }
-      } else {
-        const userData = await SecureStore.getItemAsync("user");
-        if (userData) {
-          setUser(JSON.parse(userData));
-        }
-      }
-      setLoading(false);
-    };
-
-    fetchToken();
-    fetchUser();
+    void bootstrapAuth();
   }, []);
 
   const logout = async () => {
     try {
       await performLogout();
-      router.replace("/login");
     } catch (error) {
-      console.error("Erro no logout, mas redirecionando mesmo assim:", error);
+      console.error("Falha ao executar logout remoto:", error);
+    } finally {
+      setUser(null);
+      setAccessToken("");
+      if (Platform.OS === "web") {
+        localStorage.removeItem("userToken");
+        localStorage.removeItem("user");
+      } else {
+        await SecureStore.deleteItemAsync("userToken");
+        await SecureStore.deleteItemAsync("user");
+      }
       router.replace("/login");
     }
   };
 
   const useLogin = async (credential: LoginRequest): Promise<LoginResponse> => {
     setLoading(true);
-    const response = await login(credential);
-    if (response) {
-      setUser({
-        id: response.id,
-        name: response.name,
-        email: response.email,
-        role: response.role,
-      });
-      if (response.token) {
-        if (Platform.OS === "web") {
-          localStorage.setItem("userToken", response.token);
-          localStorage.setItem("user", JSON.stringify(response));
+    try {
+      const response = await login(credential);
+      if (response) {
+        const token = response.token;
+        const nextUser: User = {
+          id: response.id,
+          email: response.email,
+          role: response.role,
+          name: response.name,
+        };
+        setUser(nextUser);
+        if (token) {
+          setAccessToken(token);
+          if (Platform.OS === "web") {
+            localStorage.setItem("userToken", token);
+            localStorage.setItem("user", JSON.stringify(nextUser));
+          } else {
+            await SecureStore.setItemAsync("userToken", token);
+            await SecureStore.setItemAsync("user", JSON.stringify(nextUser));
+          }
         } else {
-          await SecureStore.setItemAsync("userToken", response.token);
-          await SecureStore.setItemAsync("user", JSON.stringify(response));
+          throw new Error("Resposta de autenticacao invalida");
         }
-      } else {
-        throw new Error("Resposta de autenticação inválida");
       }
+      return response;
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    return response;
   };
 
   const useSession = () => {
