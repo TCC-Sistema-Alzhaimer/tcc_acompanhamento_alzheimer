@@ -1,29 +1,28 @@
-interface OptionBarProps {
-  children: string;
-  onClick: () => void;
-  isActive?: boolean;
+import { NavLink } from "react-router-dom";
+import type { LinkProps } from "react-router-dom";
+import React from "react";
+
+export interface SidebarOptionProps {
+  to: LinkProps["to"];
+  children: React.ReactNode;
 }
 
-function SidebarOption({ children, onClick, isActive }: OptionBarProps) {
+export function SidebarOption({ to, children }: SidebarOptionProps) {
+  const activeClasses = "bg-teal-600 text-white shadow-lg";
+  const inactiveClasses = "text-gray-600 hover:bg-gray-100";
+
   return (
-    <div
-      onClick={onClick}
-      className={`flex items-center gap-4 p-3 px-5 cursor-pointer rounded-xl mb-2 text-black shadow-md ${
-        !isActive ? "bg-white" : "bg-green-500"
-      }`}
+    <NavLink
+      to={to}
+      end
+      className={({ isActive }) =>
+        `flex items-center w-full px-6 py-4 transition-colors duration-200
+        font-semibold text-left
+        ${isActive ? activeClasses : inactiveClasses}
+      `
+      }
     >
-      <div>
-        <div
-          className={`shadow-md rounded-full w-[24px] h-[24px] ${
-            !isActive ? "bg-green-500" : "bg-white"
-          }`}
-        ></div>
-      </div>
-      <p className={`font-bold text-lg ${!isActive ? "text-gray-800" : "text-white"}`}>
-        {children}
-      </p>
-    </div>
+      {children}
+    </NavLink>
   );
 }
-
-export default SidebarOption;

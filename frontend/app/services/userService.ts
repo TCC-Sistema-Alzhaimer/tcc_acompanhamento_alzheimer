@@ -35,7 +35,6 @@ export const createCaregiver = (data: CreateCaregiverDTO) => api.post("caregiver
 export const createAdmin = (data: CreateAdminDTO) => api.post("administrators", data);
 
 export async function createUser(userType: SystemRoles, form: any) {
-  console.log(form)
   switch (userType) {
     case SystemRoles.DOCTOR:
       const doctorDto: CreateDoctorDTO = {
@@ -65,7 +64,7 @@ export async function createUser(userType: SystemRoles, form: any) {
       };
       return createPatient(patientDto);
 
-    case SystemRoles.CARREGIVER:
+    case SystemRoles.CAREGIVER:
       const caregiverDto: CreateCaregiverDTO = {
         cpf: form.cpf,
         name: form.name,
@@ -100,7 +99,7 @@ export async function getUserById(userType: SystemRoles, id: number) {
       return api.get<DoctorModel>(`doctors/${id}`);
     case SystemRoles.PATIENT:
       return api.get<PatientModel>(`patients/${id}`);
-    case SystemRoles.CARREGIVER:
+    case SystemRoles.CAREGIVER:
       return api.get<CaregiverModel>(`caregivers/${id}`);
     case SystemRoles.ADMIN:
       return api.get<AdminModel>(`administrators/${id}`);
@@ -110,12 +109,14 @@ export async function getUserById(userType: SystemRoles, id: number) {
 }
 
 export async function updateUser(userType: SystemRoles, id: number, data: any) {
+  console.log(userType)
+  console.log(data)
   switch (userType) {
     case SystemRoles.DOCTOR:
       return api.put(`doctors/${id}`, data);
     case SystemRoles.PATIENT:
       return api.put(`patients/${id}`, data);
-    case SystemRoles.CARREGIVER:
+    case SystemRoles.CAREGIVER:
       return api.put(`caregivers/${id}`, data);
     case SystemRoles.ADMIN:
       return api.put(`administrators/${id}`, data);

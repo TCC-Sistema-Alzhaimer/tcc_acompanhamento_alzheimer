@@ -5,11 +5,8 @@ import Input from "~/components/Input";
 import Modal from "~/components/modals/ModalSucess";
 
 import {
-  getAllDoctors,
-  getAllPatients,
-  getAllCaregivers,
   updateUser,
-  getUserById // <- você precisa criar esse método no service
+  getUserById
 } from "~/services/userService";
 import type { BasicListModel } from "~/types/roles/models";
 import { SystemRoles } from "~/types/SystemRoles";
@@ -33,7 +30,7 @@ type UserForm = {
 };
 
 interface UserEditFormProps {
-  userId: number | null;
+  userId: number | null ;
   userType: SystemRoles;
 }
 
@@ -70,7 +67,7 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
             const patientData = data as PatientModel;
             doctorEmails = patientData.doctorEmails || [];
             caregiverEmails = patientData.caregiverEmails || [];
-          } else if (userType === SystemRoles.CARREGIVER) {
+          } else if (userType === SystemRoles.CAREGIVER) {
             const caregiverData = data as CaregiverModel;
             patientEmails = caregiverData.patientEmails || [];
           } else if (userType === SystemRoles.DOCTOR) {
@@ -201,7 +198,7 @@ const handleSubmit = async () => {
         </>
       )}
 
-      {(userType === SystemRoles.PATIENT || userType === SystemRoles.CARREGIVER) && (
+      {(userType === SystemRoles.PATIENT || userType === SystemRoles.CAREGIVER) && (
         <>
           <Input
             type="date"
@@ -254,7 +251,7 @@ const handleSubmit = async () => {
         </>
       )}
 
-      {userType === SystemRoles.CARREGIVER && (
+      {userType === SystemRoles.CAREGIVER && (
         <Select
           options={toOptions(patients)}
           isMulti

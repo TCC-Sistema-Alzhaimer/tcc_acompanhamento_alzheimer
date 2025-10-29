@@ -1,15 +1,15 @@
 import Cookies from "js-cookie";
 import { createContext, useContext, useState, type ReactNode, useEffect } from "react";
-import { api } from "~/services/api";
 import { useNavigate } from "react-router";
-import { ROUTES } from "~/routes/EnumRoutes";
 import { loginRequest, refreshRequest } from "~/services/auth";
 import type { LoginResponse } from "~/types/api/auth/LoginResponse";
+import { ROUTES } from "~/routes/EnumRoutes";
 
 export interface AuthContextType {
   user: LoginResponse | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  setUser: React.Dispatch<React.SetStateAction<LoginResponse | null>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,41 +20,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function login(username: string, password: string) {
     const loginResult = await loginRequest({ email: username, password });
-    if (loginResult.status === 200) {
+    if (loginResult.status === 200 && loginResult.data) {
       const foundUser: LoginResponse = loginResult.data;
-
       setUser(foundUser);
+      const redirectTo = sessionStorage.getItem("redirectAfterLogin") || ROUTES.PRIVATE_HOME;
+      sessionStorage.removeItem("redirectAfterLogin");
+      navigate(redirectTo);
       return Promise.resolve();
     }
     return Promise.reject(new Error("Usuário ou senha inválidos"));
   }
 
   function logout() {
-    //localStorage.removeItem("token"); -> removido para usar cookies HttpOnly
     Cookies.remove("token");
     setUser(null);
-    navigate("/");
+    navigate(ROUTES.LOGIN);
   }
 
   useEffect(() => {
     const loadUser = async () => {
       try {
-        console.log("Tentando atualizar o usuário com refresh token...");
         const refreshResult = await refreshRequest();
-        if (refreshResult.status === 200) {
+        if (refreshResult.status === 200 && refreshResult.data) {
           setUser(refreshResult.data);
+        } else {
+          throw new Error("Refresh falhou");
         }
       } catch (error) {
-        console.log("Não foi possível atualizar o usuário:", error);
-        setUser(null);
+        sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+        navigate(ROUTES.LOGIN, { replace: true });
       }
     };
 
     loadUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );
