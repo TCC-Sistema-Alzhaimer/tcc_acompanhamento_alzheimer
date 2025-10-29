@@ -1,14 +1,14 @@
-import { RecipientStatus, User } from "./user";
+import { User } from "./user";
 
 export interface Notification {
   id?: Number;
+  recipientId: number;
   title: string;
   message: string;
   sender: User;
-  recipients: RecipientStatus[];
+  read: boolean;
 
   examId?: number | null;
   associationId?: number | null;
-
   createdAt?: string;
 }

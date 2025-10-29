@@ -24,6 +24,9 @@ export const ROUTES = {
     `/notifications/${notificationId}`,
   NOTIFICATIONS_BY_PATIENT_ID: (patientId: string) =>
     `/notifications/patient/${patientId}`,
-  NOTIFICATION_MARK_AS_READ: (notificationId: string, readerId: string) =>
-    `/notifications/${notificationId}/recipients/${readerId}/read`,
+  NOTIFICATION_MARK_AS_READ: (notificationId: string) =>
+    `/notifications/${notificationId}/read`,
+
+  ASSOCIATIONS: "/requests",
+  ASSOCIATION_BY_ID: (associationId: string) => `/requests/${associationId}`,
 };

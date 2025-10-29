@@ -4,6 +4,7 @@ import { useSession } from "@/hooks/useSession";
 import { fetchAssociationById } from "@/services/association-service";
 import { AssociationResponseDto } from "@/types/api/association";
 import { Roles } from "@/types/enum/roles";
+import { formatAssociationType } from "@/util/format";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -215,7 +216,7 @@ export default function AssociationDetailScreen() {
           <ThemedText type="title">Detalhes da associação</ThemedText>
           <View style={styles.statusWrapper}>
             <ThemedText style={styles.subtitle}>
-              Tipo: {association.type.replace(/_/g, " ")}
+              Tipo: {formatAssociationType(association.type)}
             </ThemedText>
             <View style={[styles.statusChip, { backgroundColor: statusColor }]}>
               <ThemedText style={styles.statusChipText}>

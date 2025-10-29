@@ -1,5 +1,6 @@
-import { associationListMock } from "@/mocks/association-mock";
 import { AssociationResponseDto } from "@/types/api/association";
+import { api } from "./api";
+import { ROUTES } from "./routes";
 
 interface FetchAssociationsParams {
   accessToken: string;
@@ -12,16 +13,19 @@ export async function fetchAssociations({
   patientId,
 }: FetchAssociationsParams): Promise<AssociationResponseDto[]> {
   try {
-    const response = await new Promise<AssociationResponseDto[]>((resolve) => {
-      setTimeout(() => {
-        resolve(
-          associationListMock.filter((association) =>
-            patientId ? association.patient.id === Number(patientId) : true
-          )
-        );
-      }, 500);
+    const endpoint = ROUTES.ASSOCIATIONS;
+    const response = await api.get<AssociationResponseDto[]>(endpoint, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      params: patientId ? { patientId } : {},
     });
-    return response;
+
+    if (response.status !== 200) {
+      throw new Error("Failed to fetch associations");
+    }
+
+    return response.data;
   } catch (error) {
     throw new Error("Failed to fetch associations");
   }
@@ -32,17 +36,17 @@ export async function fetchAssociationById({
   associationId,
 }: FetchAssociationsParams): Promise<AssociationResponseDto | null> {
   try {
-    const response = await new Promise<AssociationResponseDto | null>(
-      (resolve) => {
-        setTimeout(() => {
-          const association = associationListMock.find(
-            (assoc) => assoc.id === Number(associationId)
-          );
-          resolve(association || null);
-        }, 500);
-      }
-    );
-    return response;
+    const endpoint = ROUTES.ASSOCIATION_BY_ID(associationId!);
+    console.log("Fetching association from endpoint:", endpoint);
+    const response = await api.get<AssociationResponseDto>(endpoint, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error("Failed to fetch association by ID");
+    }
+    return response.data;
   } catch (error) {
     throw new Error("Failed to fetch association by ID");
   }
