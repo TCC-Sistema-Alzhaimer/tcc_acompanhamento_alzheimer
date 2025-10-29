@@ -1,12 +1,12 @@
 package com.tcc.alzheimer.service.roles;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.ValidationUtils;
 
 import com.tcc.alzheimer.dto.roles.patient.PatientPostAndUpdateDto;
 import com.tcc.alzheimer.dto.roles.patient.PatientResponseGetDTO;
@@ -98,63 +98,23 @@ public class PatientService {
 
     @Transactional
     public PatientResponseGetDTO update(Long id, PatientPostAndUpdateDto dto) {
-        Patient patient = findByIdIntern(id);
+        Patient existing = findByIdIntern(id);
 
-        patient.setName(dto.getName());
-        patient.setCpf(dto.getCpf());
-        patient.setEmail(dto.getEmail());
-        patient.setPhone(dto.getPhone());
-        patient.setBirthdate(dto.getBirthdate());
-        patient.setGender(dto.getGender());
-        patient.setAddress(dto.getAddress());
-        patient.setPassword(dto.getPassword());
+        existing.setName(dto.getName());
+        existing.setEmail(dto.getEmail());
+        existing.setPhone(dto.getPhone());
+        existing.setBirthdate(dto.getBirthdate());
+        existing.setGender(dto.getGender());
+        existing.setAddress(dto.getAddress());
 
-        if (dto.getDoctorEmails() != null) {
-            patient.getDoctors().forEach(d -> d.getPatients().remove(patient));
-            patient.getDoctors().clear();
-            for (String email : dto.getDoctorEmails()) {
-                Doctor doctor = doctorRepo.findByEmailAndActiveTrue(email)
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                "Medico com email " + email + " nao encontrado"));
-                patient.getDoctors().add(doctor);
-                doctor.getPatients().add(patient);
-            }
+        // ✅ Atualiza senha somente se enviada
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            existing.setPassword(encoder.encode(dto.getPassword()));
         }
 
-        if (dto.getCaregiverEmails() != null) {
-            patient.getCaregivers().forEach(c -> c.getPatients().remove(patient));
-            patient.getCaregivers().clear();
-            for (String email : dto.getCaregiverEmails()) {
-                Caregiver caregiver = caregiverRepo.findByEmailAndActiveTrue(email)
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                "Cuidador com email " + email + " nao encontrado"));
-                patient.getCaregivers().add(caregiver);
-                caregiver.getPatients().add(patient);
-            }
-        }
+        repo.save(existing);
 
-        Patient saved = repo.save(patient);
-
-        PatientResponseGetDTO response = new PatientResponseGetDTO();
-        response.setId(saved.getId());
-        response.setName(saved.getName());
-        response.setCpf(saved.getCpf());
-        response.setEmail(saved.getEmail());
-        response.setPhone(saved.getPhone());
-        response.setBirthdate(saved.getBirthdate());
-        response.setGender(saved.getGender());
-        response.setAddress(saved.getAddress());
-        response.setDoctorEmails(saved.getDoctors().stream()
-                .filter(doctor -> Boolean.TRUE.equals(doctor.getActive()))
-                .map(Doctor::getEmail)
-                .collect(Collectors.toList()));
-        response.setCaregiverEmails(
-                saved.getCaregivers().stream()
-                        .filter(caregiver -> Boolean.TRUE.equals(caregiver.getActive()))
-                        .map(Caregiver::getEmail)
-                        .collect(Collectors.toList()));
-
-        return response;
+        return toDto(existing);
     }
 
     public void delete(Long id) {
@@ -177,4 +137,3 @@ public class PatientService {
                 .toList();
     }
 }
-

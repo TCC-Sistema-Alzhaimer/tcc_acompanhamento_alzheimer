@@ -1,0 +1,1 @@
+export type RequestStatus = "PENDENTE" | "ACEITA" | "REJEITADA";

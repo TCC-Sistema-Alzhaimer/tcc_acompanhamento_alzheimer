@@ -1,0 +1,4 @@
+export enum NotificationType {
+  EXAM_REMINDER = "EXAM_REMINDER",
+  RELATIONAL_UPDATE = "RELATIONAL_UPDATE"
+}

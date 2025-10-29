@@ -1,4 +1,4 @@
-import {SystemRoles} from "~/types/SystemRoles";
+import { SystemRoles } from "~/types/SystemRoles";
 
 export type AdminModel = {
   id?: number;
@@ -33,9 +33,9 @@ export type PatientModel = {
   birthdate: Date;
   gender: string;
   address: string;
-  caregiverEmails?: string[]; 
+  caregiverEmails?: string[];
   doctorEmails?: string[];
-  type: SystemRoles.PATIENT;     
+  type: SystemRoles.PATIENT;
 };
 
 export type CaregiverModel = {
@@ -48,8 +48,8 @@ export type CaregiverModel = {
   birthdate: Date;
   gender: string;
   address: string;
-  patientEmails?: string[]; 
-  type: SystemRoles.CARREGIVER;
+  patientEmails?: string[];
+  type: SystemRoles.CAREGIVER;
 };
 
 export type BasicListModel = {
@@ -58,4 +58,5 @@ export type BasicListModel = {
   phone: string;
   email: string;
   userType: SystemRoles;
+  age?: number;
 };

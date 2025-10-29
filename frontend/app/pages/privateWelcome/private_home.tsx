@@ -14,22 +14,76 @@ export default function PrivateHome() {
   const actions = [];
   if (user?.role === "ADMINISTRATOR") {
     actions.push(
-      { title: "Gerenciar Usuários", icon: <PeopleIcon /> , path: ROUTES.ADMIN.MANAGEMENT},
-      { title: "Relatórios", icon: <DescriptionIcon />, path: ROUTES.PRIVATE_HOME }
+      {
+        title: "Gerenciar Usuários",
+        icon: <PeopleIcon />,
+        path: ROUTES.ADMIN.MANAGEMENT,
+      },
+      {
+        title: "Relatórios",
+        icon: <DescriptionIcon />,
+        path: ROUTES.PRIVATE_HOME,
+      },
+      {
+        title: "Solicitações de associação",
+        icon: <PeopleIcon />,
+        path: ROUTES.ASSOCIATION,
+      }
     );
   }
 
   if (user?.role === "DOCTOR") {
     actions.push(
-      { title: "Registrar Exame", icon: <AssignmentIcon />, path: ROUTES.PRIVATE_HOME },
-      { title: "Consultar Pacientes", icon: <PeopleIcon />, path: ROUTES.ADMIN.MANAGEMENT }
+      {
+        title: "Registrar Exame",
+        icon: <AssignmentIcon />,
+        path: ROUTES.PRIVATE_HOME,
+      },
+      {
+        title: "Consultar Pacientes",
+        icon: <PeopleIcon />,
+        path: ROUTES.DOCTOR.PATIENTS,
+      },
+      {
+        title: "Solicitações de associação",
+        icon: <PeopleIcon />,
+        path: ROUTES.ASSOCIATION,
+      }
     );
   }
 
   if (user?.role === "CAREGIVER") {
     actions.push(
-      { title: "Meus Pacientes", icon: <PeopleIcon />, path: ROUTES.PRIVATE_HOME },
-      { title: "Agendar Exames", icon: <EventAvailableIcon />, path: ROUTES.PRIVATE_HOME }
+      {
+        title: "Meus Pacientes",
+        icon: <PeopleIcon />,
+        path: ROUTES.PRIVATE_HOME,
+      },
+      {
+        title: "Agendar Exames",
+        icon: <EventAvailableIcon />,
+        path: ROUTES.PRIVATE_HOME,
+      },
+      {
+        title: "Solicitações de associação",
+        icon: <PeopleIcon />,
+        path: ROUTES.ASSOCIATION,
+      }
+    );
+  }
+
+  if (user?.role === "PATIENT") {
+    actions.push(
+      {
+        title: "Agendar Exames",
+        icon: <EventAvailableIcon />,
+        path: ROUTES.PRIVATE_HOME,
+      },
+      {
+        title: "Solicitações de associação",
+        icon: <PeopleIcon />,
+        path: ROUTES.ASSOCIATION,
+      }
     );
   }
 

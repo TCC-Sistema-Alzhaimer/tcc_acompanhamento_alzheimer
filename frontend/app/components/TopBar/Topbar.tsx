@@ -1,22 +1,23 @@
-import Input from "~/components/Input";
-import { useAuth } from "~/hooks/useAuth";
+// src/components/topbar/Topbar.tsx
+import { useAuth } from "@/hooks/useAuth";
+import SearchUser from "./search-user";
+import NotificationBell from "~/components/notifications/NotificationBell";
 
 interface TopbarProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export function Topbar({ children }: TopbarProps) {
-
-  const { user } = useAuth();
-
   return (
-    <div className="flex items-center justify-between bg-primary">
+    <div className="flex items-center justify-between bg-green-500 px-6 py-2 shadow-md">
       <div className="flex items-center gap-4">
-        <h2 className="text-xl font-bold text-white pl-16">
-          <p>Perfil: {user?.role}</p>
-        </h2>
+        <SearchUser />
       </div>
-      <div className="flex flex-row items-center justify-end gap-3 pr-16 py-2">{children}</div>
+
+      <div className="flex flex-row items-center gap-3">
+        <NotificationBell />
+        {children}
+      </div>
     </div>
   );
 }

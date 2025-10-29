@@ -1,8 +1,7 @@
+import config from "@/config/config";
 import axios from "axios";
 
-const apiEndpoint = "http://localhost:8080";
-
 export const api = axios.create({
-  baseURL: apiEndpoint,
-  withCredentials: true, 
+  baseURL: config.apiUrl,
+  withCredentials: true,
 });

@@ -8,6 +8,9 @@ public record NotificationRecipientResponse(
         String title,
         String message,
         LocalDateTime createdAt,
+        String type,
+        Number examId,
+        Number associationId,
         boolean read,
         LocalDateTime readAt,
         UserSummary sender) {
