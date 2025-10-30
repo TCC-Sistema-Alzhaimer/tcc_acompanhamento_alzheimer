@@ -5,6 +5,7 @@ import { useSelectedPatient } from "@/context/SelectedPatientContext";
 import { useSession } from "@/hooks/useSession";
 import { fetchAssociations } from "@/services/association-service";
 import { AssociationResponseDto } from "@/types/api/association";
+import { formatAssociationType } from "@/util/format";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
@@ -47,7 +48,7 @@ export default function AssociationListScreen() {
           onPress={() => router.push(`/association/${association.id}`)}
         >
           <Card.Title
-            title={association.type}
+            title={formatAssociationType(association.type)}
             subtitle={association.creatorEmail}
           />
           <Card.Icon name="person.2.fill" />
