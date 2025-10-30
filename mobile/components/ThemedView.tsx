@@ -15,7 +15,7 @@ export function ThemedView({
   ...otherProps
 }: ThemedViewProps) {
   const token = type === "secondary" ? "secondaryBackground" : "background";
-  const backgroundColor = useThemeColor(
+  const backgroundColor: any = useThemeColor(
     { light: lightColor, dark: darkColor },
     token
   );

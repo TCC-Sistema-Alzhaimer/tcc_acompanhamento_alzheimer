@@ -68,6 +68,18 @@ export default function HomeNewScreen() {
           />
         </Card.Root>
 
+        <Card.Root themed={false} onPress={() => router.push("/historic")}>
+          <Card.Avatar />
+          <Card.Title
+            title="Histórico de Exames"
+            subtitle="Visualize e anexe os exames antigos do paciente."
+          />
+          <Card.Icon
+            name="paperplane.fill"
+            onPress={() => router.push("/historic")}
+          />
+        </Card.Root>
+
         {session?.user.role !== Roles.PATIENT && (
           <View style={{ flex: 1, justifyContent: "flex-end" }}>
             <Card.Root

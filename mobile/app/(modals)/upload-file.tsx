@@ -4,9 +4,9 @@ import { useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
+import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { useSession } from "@/hooks/useSession";
 import { FileUploadResponse } from "@/types/api/files";
 
@@ -15,9 +15,11 @@ interface UploadFileModalProps {
   relatedLabel?: string;
   onClose: () => void;
   upload: (
-    file: DocumentPicker.DocumentPickerAsset
+    file: DocumentPicker.DocumentPickerAsset,
+    description?: string
   ) => Promise<FileUploadResponse | undefined>;
   onUploaded?: (response: FileUploadResponse) => void;
+  descriptionEnable?: boolean;
 }
 
 type UploadState = "idle" | "uploading" | "success";
@@ -45,11 +47,9 @@ export default function UploadFileModal({
   onClose,
   upload,
   onUploaded,
+  descriptionEnable = false,
 }: UploadFileModalProps) {
   const session = useSession();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-
   const [selectedAsset, setSelectedAsset] =
     useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [state, setState] = useState<UploadState>("idle");
@@ -58,6 +58,7 @@ export default function UploadFileModal({
   const [lastResponse, setLastResponse] = useState<FileUploadResponse | null>(
     null
   );
+  const [description, setDescription] = useState<string>("");
 
   const iconName = useMemo(() => {
     const mimeType = selectedAsset?.mimeType ?? "";
@@ -136,7 +137,7 @@ export default function UploadFileModal({
     setProgress(0);
 
     try {
-      const response = await upload(selectedAsset);
+      const response = await upload(selectedAsset, description);
 
       setLastResponse(response ?? null);
       setState("success");
@@ -203,6 +204,19 @@ export default function UploadFileModal({
             </ThemedText>
           </View>
         </Pressable>
+
+        {descriptionEnable ? (
+          <View style={styles.inputGroup}>
+            <ThemedText style={styles.inputLabel}>
+              Descricao (opcional)
+            </ThemedText>
+            <ThemedTextInput
+              onChangeText={setDescription}
+              value={description}
+              placeholder="Descricao"
+            />
+          </View>
+        ) : null}
 
         {state === "uploading" ? (
           <View style={styles.progressContainer}>

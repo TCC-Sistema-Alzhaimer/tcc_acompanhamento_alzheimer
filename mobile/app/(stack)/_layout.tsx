@@ -56,6 +56,13 @@ export default function TabLayout() {
             headerShown: true,
           }}
         />
+        <Stack.Screen
+          name="historic/index"
+          options={{
+            title: "Historico de Exames",
+            headerShown: true,
+          }}
+        />
       </Stack>
     </SafeAreaView>
   );

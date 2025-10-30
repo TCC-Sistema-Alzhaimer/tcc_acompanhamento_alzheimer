@@ -7,6 +7,7 @@ export const ROUTES = {
   EXAM_BY_PATIENT_ID: (patientId: string) => `/exams/patient/${patientId}`,
   EXAM_BY_DOCTOR_ID: (doctorId: string) => `/exams/doctor/${doctorId}`,
   EXAM_ATTACHMENTS: (examId: string) => `/exams/${examId}/results/upload`,
+  UPLOAD_HISTORIC_EXAM_ATTACHMENT: "/medical-history",
 
   CAREGIVER: "/caregivers",
   CAREGIVER_BY_ID: (caregiverId: string) => `/caregivers/${caregiverId}`,
