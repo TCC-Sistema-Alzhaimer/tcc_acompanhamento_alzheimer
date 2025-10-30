@@ -1,4 +1,4 @@
-import { ExamResponse } from "@/types/api/exam";
+import { ExamResponse, HistoricExamResponse } from "@/types/api/exam";
 import { appendAssetToFormData } from "@/util/parser";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { api } from "./api";
@@ -55,11 +55,6 @@ export async function uploadHistoricExamAttachment({
   try {
     const endpoint = ROUTES.UPLOAD_HISTORIC_EXAM_ATTACHMENT;
     const formData = new FormData();
-    console.log("Preparing to upload historic exam attachment", {
-      patientId,
-      description,
-      file,
-    });
 
     const payload = {
       patientId: Number(patientId),
@@ -87,5 +82,25 @@ export async function uploadHistoricExamAttachment({
     return response.data;
   } catch (error) {
     throw new Error("Failed to upload historic exam attachment");
+  }
+}
+
+export async function fetchHistoricExamsByPatientId({
+  accessToken,
+  patientId,
+}: {
+  accessToken: string;
+  patientId: string;
+}): Promise<HistoricExamResponse[]> {
+  try {
+    const res = await api.get(ROUTES.HISTORIC_EXAMS_BY_PATIENT_ID(patientId), {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (res.status !== 200) {
+      throw new Error("Failed to fetch historic exams");
+    }
+    return res.data;
+  } catch (error) {
+    throw new Error("Failed to fetch historic exams");
   }
 }

@@ -1,19 +1,40 @@
 import UploadFileModal from "@/app/(modals)/upload-file";
+import { PreviewFile } from "@/components/files/PreviewFile";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useSelectedPatient } from "@/context/SelectedPatientContext";
 import { useSession } from "@/hooks/useSession";
-import { uploadHistoricExamAttachment } from "@/services/exam-service";
+import {
+  fetchHistoricExamsByPatientId,
+  uploadHistoricExamAttachment,
+} from "@/services/exam-service";
+import { HistoricExamResponse } from "@/types/api/exam";
 import { DocumentPickerAsset } from "expo-document-picker";
-import { useState } from "react";
-import { Modal, StyleSheet } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Modal, ScrollView, StyleSheet } from "react-native";
 
 export default function ExamHistoricScreen() {
   const [openModal, setOpenModal] = useState(false);
+  const [historicExams, setHistoricExams] = useState<HistoricExamResponse[]>(
+    []
+  );
+  const [loading, setLoading] = useState(true);
 
   const session = useSession();
   const { state } = useSelectedPatient();
+
+  const loadHistoricExams = async () => {
+    if (!session?.accessToken) return;
+    if (!state.patientId) return;
+
+    const resp: HistoricExamResponse[] = await fetchHistoricExamsByPatientId({
+      accessToken: session.accessToken,
+      patientId: state.patientId,
+    });
+    setLoading(false);
+    setHistoricExams(resp);
+  };
 
   const handleUpload = async (
     file: DocumentPickerAsset,
@@ -29,9 +50,13 @@ export default function ExamHistoricScreen() {
       description: description || "",
       file: file,
     });
-    console.log("Upload response:", resp);
-    return undefined;
+
+    return resp;
   };
+
+  useEffect(() => {
+    loadHistoricExams();
+  }, [session?.accessToken, state.patientId]);
 
   return (
     <ThemedView style={styles.container}>
@@ -43,6 +68,22 @@ export default function ExamHistoricScreen() {
           onPress={() => setOpenModal(true)}
         />
       </ThemedView>
+
+      {loading ? (
+        <ActivityIndicator size="large" />
+      ) : (
+        <ScrollView style={styles.scrollView}>
+          <ThemedView style={styles.gallery}>
+            {historicExams.map((exam) => (
+              <PreviewFile
+                key={exam.id}
+                description={exam.description}
+                file={exam.files[0]}
+              />
+            ))}
+          </ThemedView>
+        </ScrollView>
+      )}
 
       <Modal visible={openModal} animationType="fade" transparent={true}>
         <UploadFileModal
@@ -66,5 +107,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
+  },
+  scrollView: {
+    flex: 1,
+    marginBottom: 16,
+  },
+  gallery: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
   },
 });

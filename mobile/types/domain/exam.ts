@@ -31,5 +31,5 @@ export interface HistoricExam {
   id: string;
   description: string;
   createdAt: string;
-  file: FileInfoDTO[];
+  files: FileInfoDTO[];
 }

@@ -17,7 +17,7 @@ interface UploadFileModalProps {
   upload: (
     file: DocumentPicker.DocumentPickerAsset,
     description?: string
-  ) => Promise<FileUploadResponse | undefined>;
+  ) => Promise<FileUploadResponse | any>;
   onUploaded?: (response: FileUploadResponse) => void;
   descriptionEnable?: boolean;
 }
