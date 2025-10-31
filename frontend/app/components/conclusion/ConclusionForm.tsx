@@ -4,6 +4,10 @@ import { api } from "~/services/api";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "~/routes/EnumRoutes";
 import { UploadCloud } from "lucide-react";
+import type { SelectChangeEvent } from "@mui/material";
+import { usePatientExams } from "../exam/hooks/usePatientExams";
+import Form from "../form";
+import type { ConclusionCreate } from "~/types/exam/conclusionCreate";
 
 interface ConclusionFormProps {
   patientId: number;
@@ -15,15 +19,23 @@ export function ConclusionForm({ patientId, doctorId }: ConclusionFormProps) {
   const [formData, setFormData] = useState({
     titulo: "",
     conclusao: "",
+    examId: "",
   });
   const [anexos, setAnexos] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { exams, isLoading: isLoadingExams } = usePatientExams(patientId);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (e: SelectChangeEvent<string | number>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: String(value) }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,22 +48,28 @@ export function ConclusionForm({ patientId, doctorId }: ConclusionFormProps) {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const conclusionCreate: ConclusionCreate = {
+      patientId: patientId,
+      doctorId: doctorId,
+      examId: Number(formData.examId),
+      description: formData.titulo,
+      conclusion: formData.conclusao,
+    };
+
     const conclusionData = new FormData();
-    conclusionData.append("patientId", String(patientId));
-    conclusionData.append("doctorId", String(doctorId));
-    conclusionData.append("title", formData.titulo);
-    conclusionData.append("content", formData.conclusao);
+    conclusionData.append(
+      "data",
+      new Blob([JSON.stringify(conclusionCreate)], {
+        type: "application/json",
+      })
+    );
 
     anexos.forEach((file) => {
-      conclusionData.append("attachments", file);
+      conclusionData.append("files", file);
     });
 
     try {
-      await api.post("/conclusions", conclusionData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await api.post("/conclusions", conclusionData);
       alert("Conclusão registrada com sucesso!");
       navigate(ROUTES.DOCTOR.PATIENTS);
     } catch (error) {
@@ -73,7 +91,22 @@ export function ConclusionForm({ patientId, doctorId }: ConclusionFormProps) {
         Data de registro: {new Date().toLocaleDateString("pt-BR")} (Exemplo)
       </p>
 
-      {/* Título */}
+      <Form.Select
+        label="Exame Relacionado"
+        name="examId"
+        value={formData.examId}
+        onChange={handleSelectChange}
+        options={exams.map((exam) => ({
+          value: exam.id,
+          label: `${exam.examTypeDescription} (${new Date(
+            exam.requestDate
+          ).toLocaleDateString("pt-BR")})`,
+        }))}
+        placeholder={
+          isLoadingExams ? "Carregando exames..." : "Selecione um exame"
+        }
+      />
+
       <div className="flex flex-col gap-2">
         <label htmlFor="titulo" className="text-sm font-semibold text-gray-700">
           Título da conclusão:
@@ -107,7 +140,6 @@ export function ConclusionForm({ patientId, doctorId }: ConclusionFormProps) {
         />
       </div>
 
-      {/* Anexos */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-semibold text-gray-700">Anexos:</label>
         <div className="flex flex-wrap gap-2 items-center">
