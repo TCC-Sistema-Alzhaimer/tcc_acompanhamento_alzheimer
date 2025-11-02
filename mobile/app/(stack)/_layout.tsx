@@ -36,6 +36,13 @@ export default function TabLayout() {
           }}
         />
         <Stack.Screen
+          name="conclusion/[id]"
+          options={{
+            title: "Detalhes da Conclusão",
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
           name="profile/index"
           options={{
             title: "Perfil",
@@ -45,14 +52,14 @@ export default function TabLayout() {
         <Stack.Screen
           name="association/index"
           options={{
-            title: "Associações",
+            title: "Associa����es",
             headerShown: true,
           }}
         />
         <Stack.Screen
           name="association/[id]"
           options={{
-            title: "Associação",
+            title: "Associa��ǜo",
             headerShown: true,
           }}
         />

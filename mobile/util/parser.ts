@@ -1,3 +1,4 @@
+import { ConclusionResponse } from "@/types/api/conclusion";
 import { NotificationResponse } from "@/types/api/notification";
 import { Notification } from "@/types/domain/notification";
 import { DocumentPickerAsset } from "expo-document-picker";
@@ -29,4 +30,22 @@ export function appendAssetToFormData(
       type: asset.mimeType ?? "application/octet-stream",
     } as any);
   }
+}
+
+export function perserConclusion(
+  conclusion: ConclusionResponse
+): ConclusionResponse {
+  return {
+    ...conclusion,
+    id: conclusion.id != null ? String(conclusion.id) : "",
+    examId: conclusion.examId != null ? String(conclusion.examId) : "",
+    doctorId: conclusion.doctorId != null ? String(conclusion.doctorId) : "",
+    createdAt: conclusion.createdAt ?? "",
+    updatedAt: conclusion.updatedAt ?? undefined,
+    updatedBy:
+      conclusion.updatedBy !== undefined && conclusion.updatedBy !== null
+        ? String(conclusion.updatedBy)
+        : undefined,
+    files: conclusion.files ?? [],
+  };
 }

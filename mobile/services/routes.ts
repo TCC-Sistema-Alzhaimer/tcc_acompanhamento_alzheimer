@@ -10,6 +10,11 @@ export const ROUTES = {
   UPLOAD_HISTORIC_EXAM_ATTACHMENT: "/medical-history",
   HISTORIC_EXAMS_BY_PATIENT_ID: (patientId: string) =>
     `/medical-history/patient/${patientId}`,
+  CONCLUSIONS: "/conclusions",
+  CONCLUSION_BY_ID: (conclusionId: string) =>
+    `/conclusions/${conclusionId}`,
+  CONCLUSIONS_BY_EXAM_ID: (examId: string) =>
+    `/conclusions/exam/${examId}`,
 
   CAREGIVER: "/caregivers",
   CAREGIVER_BY_ID: (caregiverId: string) => `/caregivers/${caregiverId}`,
