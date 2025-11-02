@@ -19,6 +19,8 @@ export default function HomeNewScreen() {
     logout();
   };
 
+  console.log("Selected patient in Home:", state);
+
   const patientName =
     "Visualizando " + (state.cachedPatient?.name || "nenhum paciente");
 

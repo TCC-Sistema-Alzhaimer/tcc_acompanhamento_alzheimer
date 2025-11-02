@@ -1,6 +1,6 @@
 import { Patient } from "@/types/domain/patient";
 import * as SecureStorage from "expo-secure-store";
-import {
+import React, {
   createContext,
   useContext,
   useEffect,
@@ -22,6 +22,7 @@ const initialState: State = {
 };
 
 const STORAGE_KEY = "selected_patient_id";
+const CACHE_KEY = "selected_patient_cache";
 
 type Action =
   | { type: "SET_ID"; patientId: string | null }
@@ -53,6 +54,9 @@ function reducer(state: State, action: Action): State {
   }
 }
 
+/**
+ * Lê o ID do paciente armazenado localmente
+ */
 async function readStoredPatientId(): Promise<string | null> {
   try {
     if (Platform.OS === "web") {
@@ -66,6 +70,30 @@ async function readStoredPatientId(): Promise<string | null> {
   }
 }
 
+/**
+ * Lê o cache do paciente armazenado localmente
+ */
+async function readStoredPatientCache(): Promise<Partial<Patient> | null> {
+  try {
+    let value: string | null;
+
+    if (Platform.OS === "web") {
+      if (typeof window === "undefined") return null;
+      value = window.localStorage.getItem(CACHE_KEY);
+    } else {
+      value = await SecureStorage.getItemAsync(CACHE_KEY);
+    }
+
+    return value ? JSON.parse(value) : null;
+  } catch (error) {
+    console.warn("Failed to read patient cache", error);
+    return null;
+  }
+}
+
+/**
+ * Persiste apenas o ID do paciente
+ */
 async function persistPatientId(id: string | null): Promise<void> {
   if (Platform.OS === "web") {
     if (typeof window === "undefined") return;
@@ -84,6 +112,33 @@ async function persistPatientId(id: string | null): Promise<void> {
   }
 }
 
+/**
+ * Persiste o cache do paciente
+ */
+async function persistPatientCache(
+  patient: Partial<Patient> | null
+): Promise<void> {
+  try {
+    if (Platform.OS === "web") {
+      if (typeof window === "undefined") return;
+      if (patient) {
+        window.localStorage.setItem(CACHE_KEY, JSON.stringify(patient));
+      } else {
+        window.localStorage.removeItem(CACHE_KEY);
+      }
+      return;
+    }
+
+    if (patient) {
+      await SecureStorage.setItemAsync(CACHE_KEY, JSON.stringify(patient));
+    } else {
+      await SecureStorage.deleteItemAsync(CACHE_KEY);
+    }
+  } catch (error) {
+    console.warn("Failed to persist patient cache", error);
+  }
+}
+
 export const SelectedPatientProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
@@ -94,35 +149,47 @@ export const SelectedPatientProvider: React.FC<{
     (async () => {
       setLoading(true);
       const id = await readStoredPatientId();
-      if (id) {
-        dispatch({ type: "SET_ID", patientId: id });
-      }
+      const cache = await readStoredPatientCache();
+
+      if (id) dispatch({ type: "SET_ID", patientId: id });
+      if (cache) dispatch({ type: "SET_CACHE", patient: cache });
+
       dispatch({ type: "HYDRATED" });
       setLoading(false);
     })();
   }, []);
 
+  /**
+   * Define e persiste o paciente selecionado
+   */
   const selectPatient = async (patient: Partial<Patient>) => {
     try {
       if (patient.id) {
         const id = String(patient.id);
         await persistPatientId(id);
+        await persistPatientCache(patient);
         dispatch({ type: "SET_ID", patientId: id });
+        dispatch({ type: "SET_CACHE", patient });
       } else {
         await persistPatientId(null);
+        await persistPatientCache(null);
         dispatch({ type: "SET_ID", patientId: null });
+        dispatch({ type: "SET_CACHE", patient: null });
       }
-      dispatch({ type: "SET_CACHE", patient });
     } catch (error) {
-      console.error("Failed to save patient id", error);
+      console.error("Failed to save patient id/cache", error);
     }
   };
 
+  /**
+   * Remove paciente selecionado e limpa armazenamento
+   */
   const clearSelection = async () => {
     try {
       await persistPatientId(null);
+      await persistPatientCache(null);
     } catch (error) {
-      console.warn("Failed to remove selected patient id", error);
+      console.warn("Failed to remove selected patient", error);
     } finally {
       dispatch({ type: "SET_ID", patientId: null });
       dispatch({ type: "SET_CACHE", patient: null });
