@@ -11,8 +11,49 @@ import {
 } from "@/services/exam-service";
 import { HistoricExamResponse } from "@/types/api/exam";
 import { DocumentPickerAsset } from "expo-document-picker";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Modal, ScrollView, StyleSheet } from "react-native";
+
+function groupExamsByDate(exams: HistoricExamResponse[]) {
+  const groups: Record<string, HistoricExamResponse[]> = {
+    Hoje: [],
+    Ontem: [],
+    "Esta semana": [],
+    "Este mês": [],
+    "Mais antigos": [],
+  };
+
+  const now = new Date();
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
+  const startOfYesterday = new Date(startOfToday);
+  startOfYesterday.setDate(startOfToday.getDate() - 1);
+
+  const startOfWeek = new Date(startOfToday);
+  startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay()); // domingo
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  exams.forEach((exam) => {
+    const date = new Date(exam.createdAt);
+
+    if (date >= startOfToday) {
+      groups["Hoje"].push(exam);
+    } else if (date >= startOfYesterday) {
+      groups["Ontem"].push(exam);
+    } else if (date >= startOfWeek) {
+      groups["Esta semana"].push(exam);
+    } else if (date >= startOfMonth) {
+      groups["Este mês"].push(exam);
+    } else {
+      groups["Mais antigos"].push(exam);
+    }
+  });
+
+  return groups;
+}
 
 export default function ExamHistoricScreen() {
   const [openModal, setOpenModal] = useState(false);
@@ -25,41 +66,47 @@ export default function ExamHistoricScreen() {
   const { state } = useSelectedPatient();
 
   const loadHistoricExams = async () => {
-    if (!session?.accessToken) return;
-    if (!state.patientId) return;
-
-    const resp: HistoricExamResponse[] = await fetchHistoricExamsByPatientId({
-      accessToken: session.accessToken,
-      patientId: state.patientId,
-    });
-    setLoading(false);
-    setHistoricExams(resp);
+    if (!session?.accessToken || !state.patientId) return;
+    try {
+      setLoading(true);
+      const resp: HistoricExamResponse[] = await fetchHistoricExamsByPatientId({
+        accessToken: session.accessToken,
+        patientId: state.patientId,
+      });
+      setHistoricExams(resp);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUpload = async (
     file: DocumentPickerAsset,
     description?: string
   ) => {
-    if (!session?.accessToken) return;
-    if (!file.uri) return;
-    if (!state.patientId) return;
+    if (!session?.accessToken || !file.uri || !state.patientId) return;
 
-    const resp = await uploadHistoricExamAttachment({
+    await uploadHistoricExamAttachment({
       accessToken: session.accessToken,
       patientId: state.patientId,
       description: description || "",
-      file: file,
+      file,
     });
 
-    return resp;
+    await loadHistoricExams();
   };
 
   useEffect(() => {
     loadHistoricExams();
   }, [session?.accessToken, state.patientId]);
 
+  const groupedExams = useMemo(
+    () => groupExamsByDate(historicExams),
+    [historicExams]
+  );
+
   return (
     <ThemedView style={styles.container}>
+      {/* Header */}
       <ThemedView style={styles.header}>
         <ThemedText type="primary">Histórico de Exames</ThemedText>
         <ThemedButton
@@ -69,22 +116,31 @@ export default function ExamHistoricScreen() {
         />
       </ThemedView>
 
+      {/* Conteúdo */}
       {loading ? (
         <ActivityIndicator size="large" />
       ) : (
         <ScrollView style={styles.scrollView}>
-          <ThemedView style={styles.gallery}>
-            {historicExams.map((exam) => (
-              <PreviewFile
-                key={exam.id}
-                description={exam.description}
-                file={exam.files[0]}
-              />
-            ))}
-          </ThemedView>
+          {Object.entries(groupedExams).map(([label, exams]) =>
+            exams.length > 0 ? (
+              <ThemedView key={label} style={styles.section}>
+                <ThemedText style={styles.sectionTitle}>{label}</ThemedText>
+                <ThemedView style={styles.gallery}>
+                  {exams.map((exam) => (
+                    <PreviewFile
+                      key={exam.id}
+                      description={exam.description}
+                      file={exam.files[0]}
+                    />
+                  ))}
+                </ThemedView>
+              </ThemedView>
+            ) : null
+          )}
         </ScrollView>
       )}
 
+      {/* Modal de upload */}
       <Modal visible={openModal} animationType="fade" transparent={true}>
         <UploadFileModal
           onClose={() => setOpenModal(false)}
@@ -112,9 +168,18 @@ const styles = StyleSheet.create({
     flex: 1,
     marginBottom: 16,
   },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontWeight: "600",
+    fontSize: 16,
+    marginBottom: 8,
+  },
   gallery: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
+    gap: 8,
   },
 });
