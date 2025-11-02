@@ -5,6 +5,7 @@ import {
   ListRenderItemInfo,
   RefreshControl,
   StyleSheet,
+  View,
 } from "react-native";
 
 import { Card } from "@/components/card/Card";
@@ -190,9 +191,12 @@ export default function ConclusionScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
         ListEmptyComponent={
-          <ThemedText style={styles.emptyText}>
-            Nenhuma conclusao cadastrada para o paciente.
-          </ThemedText>
+          <View style={styles.emptyContainer}>
+            <ThemedText type="title">Ops!</ThemedText>
+            <ThemedText style={styles.emptyText}>
+              Nenhuma conclusao cadastrada para o paciente.
+            </ThemedText>
+          </View>
         }
         contentContainerStyle={
           items.length === 0 ? styles.emptyContainer : styles.listContent

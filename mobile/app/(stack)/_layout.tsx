@@ -52,14 +52,14 @@ export default function TabLayout() {
         <Stack.Screen
           name="association/index"
           options={{
-            title: "Associa����es",
+            title: "Associações",
             headerShown: true,
           }}
         />
         <Stack.Screen
           name="association/[id]"
           options={{
-            title: "Associa��ǜo",
+            title: "Associação Detalhes",
             headerShown: true,
           }}
         />

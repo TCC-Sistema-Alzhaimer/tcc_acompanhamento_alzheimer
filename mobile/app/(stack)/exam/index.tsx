@@ -149,9 +149,20 @@ export default function ExamScreen() {
         keyExtractor={(item, index) => item.id ?? `exam-${index}`}
         contentContainerStyle={{ paddingBottom: 24 }}
         ListEmptyComponent={
-          <ThemedText style={{ padding: 16, textAlign: "center" }} type="title">
-            Nenhum exame disponível.
-          </ThemedText>
+          <View style={{ alignItems: "center", marginTop: 32 }}>
+            <ThemedText
+              style={{ padding: 16, textAlign: "center" }}
+              type="title"
+            >
+              Ops!
+            </ThemedText>
+            <ThemedText
+              style={{ paddingHorizontal: 16, textAlign: "center" }}
+              type="default"
+            >
+              Nenhum exame encontrado para o paciente neste filtro.
+            </ThemedText>
+          </View>
         }
         renderItem={({ item: exam }) => (
           <Card.Root
