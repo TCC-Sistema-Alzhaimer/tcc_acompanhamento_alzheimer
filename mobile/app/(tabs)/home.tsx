@@ -19,10 +19,10 @@ export default function HomeNewScreen() {
     logout();
   };
 
-  console.log("Selected patient in Home:", state);
-
   const patientName =
-    "Visualizando " + (state.cachedPatient?.name || "nenhum paciente");
+    session?.user.role === Roles.PATIENT
+      ? "Seu painel " + state.cachedPatient?.name || ""
+      : "Visualizando " + (state.cachedPatient?.name || "nenhum paciente");
 
   return (
     <ThemedView style={styles.container}>

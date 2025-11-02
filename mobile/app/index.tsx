@@ -1,6 +1,8 @@
 import { ThemedView } from "@/components/ThemedView";
 import { useAuth } from "@/context/AuthContext";
 import { useSelectedPatient } from "@/context/SelectedPatientContext";
+import { useSession } from "@/hooks/useSession";
+import { fetchPatientById } from "@/services/patient-service";
 import { GENDER } from "@/types/enum/gender";
 import { Roles } from "@/types/enum/roles";
 import { useRouter } from "expo-router";
@@ -10,6 +12,7 @@ import { ActivityIndicator } from "react-native";
 export default function StartPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const session = useSession();
   const { state, selectPatient } = useSelectedPatient();
 
   useEffect(() => {
@@ -26,17 +29,21 @@ export default function StartPage() {
       if (state.patientId !== patientId) {
         (async () => {
           try {
+            const resp = await fetchPatientById({
+              accessToken: session?.accessToken || "",
+              patientId: patientId,
+            });
             await selectPatient({
               id: user.id,
               email: user.email,
-              name: "",
-              cpf: "",
-              phone: "",
+              name: resp.name,
+              cpf: resp.cpf,
+              phone: resp.phone,
               gender: GENDER.MALE,
-              address: "",
-              birthdate: "",
-              doctorEmails: [],
-              caregiverEmails: [],
+              address: resp.address,
+              birthdate: resp.birthdate,
+              doctorEmails: resp.doctorEmails || [],
+              caregiverEmails: resp.caregiverEmails || [],
             });
           } finally {
             router.replace("/home");
