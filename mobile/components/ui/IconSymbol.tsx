@@ -27,14 +27,34 @@ const MAPPING = {
   "rectangle.portrait.and.arrow.right": "logout",
   magnifyingglass: "search",
   "gearshape.fill": "settings",
+  "xmark.circle.fill": "cancel",
+  "checkmark.circle.fill": "check-circle",
+  "paperclip.circle.fill": "attach-file",
+  "tablecells.fill": "grid-view",
+  "photo.on.rectangle.angled": "photo-library",
   "doc.fill": "description",
   "doc.plaintext.fill": "description",
   "doc.richtext.fill": "note",
-  "photo.on.rectangle.angled": "photo-library",
-  "tablecells.fill": "grid-view",
-  "xmark.circle.fill": "cancel",
-  "paperclip.circle.fill": "attach-file",
-  "checkmark.circle.fill": "check-circle",
+
+  "cross.case.fill": "biotech",
+  "bandage.fill": "science",
+  "waveform.path.ecg": "monitor-heart",
+
+  // Conclusões médicas
+  stethoscope: "medical-information", // 🩺
+  "doc.text.magnifyingglass": "assignment", // relatório médico
+
+  "person.2.fill": "groups", // 👥
+  "person.2.wave.2.fill": "handshake", // 🤝
+  "link.circle.fill": "link", // conexões
+
+  "clock.arrow.circlepath": "history", // 🕒
+  calendar: "calendar-today", // 🗓️
+  "archivebox.fill": "folder", // 🗂️
+
+  "person.fill": "person",
+  "person.3.fill": "groups",
+  "heart.text.square.fill": "favorite", // ❤️
 } as IconMapping;
 
 /**
