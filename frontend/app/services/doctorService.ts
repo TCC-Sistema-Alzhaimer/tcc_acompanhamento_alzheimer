@@ -3,6 +3,15 @@ import { api } from "./api";
 import type { PatientModel } from "~/types/roles/models";
 import type { ExamType } from "~/types/exam/examType";
 import type { MedicalHistoryResponse } from "~/types/exam/medicalHistoryResponse";
+import type { IndicatorResponse } from "~/types/dashboard/IndicatorResponse";
+
+export interface BioindicatorData {
+  // Exemplo de estrutura
+  bioindicator_1: { date: string; value: number }[];
+  bioindicator_2: { date: string; value: number }[];
+  bioindicator_3: { date: string; value: number }[];
+  bioindicator_4: { date: string; value: number }[];
+}
 
 export const getPatientsByDoctor = async (doctorId: number, query: string) => {
   try {
@@ -61,6 +70,19 @@ export const getPatientHistory = async (patientId: number) => {
     return response.data;
   } catch (error) {
     console.error("Erro ao buscar histórico médico do paciente:", error);
+    throw error;
+  }
+};
+
+export const getPatientIndicators = async (patientId: number) => {
+  try {
+    // Chama o endpoint do seu IndicatorController
+    const response = await api.get<IndicatorResponse[]>(
+      `/indicator/patient/${patientId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar indicadores:", error);
     throw error;
   }
 };
