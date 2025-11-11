@@ -54,7 +54,7 @@ export function HydrateFallback() {
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   if (isRouteErrorResponse(error)) {
     if (error.status === 403) {
-      return <Navigate to="/login" replace />;
+      return <Navigate to="/" replace />;
     }
   }
 

@@ -32,6 +32,8 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     List<Patient> findByDoctors(Doctor doctor);
 
     List<Patient> findByDoctorsAndActiveTrue(Doctor doctor);
+    
+    List<Patient> findByDoctorsAndActiveTrueAndNameContainingIgnoreCase(Doctor doctor, String name);
 
     @Query("""
                 SELECT p FROM Patient p

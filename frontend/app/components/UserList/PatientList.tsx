@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { UserListItem } from "../UserList/UserListItem";
 import { UserSearch } from "../UserList/UserSearch";
 import { usePatientList } from "./hooks/patient-list";
@@ -19,9 +19,9 @@ export function PatientList({
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  const handleSearch = (term: string) => {
+  const handleSearch = useCallback((term: string) => {
     setSearchTerm(term);
-  };
+  }, []);
 
   const { patients, isLoading } = usePatientList({
     doctorId,
@@ -31,7 +31,7 @@ export function PatientList({
   const renderContent = () => {
     if (isLoading) {
       return (
-        <div className="flex items-center justify-center p-8 text-gray-500">
+        <div className="flex items-center justify-center p-8 text-gray-400">
           Carregando pacientes...
         </div>
       );
@@ -39,7 +39,7 @@ export function PatientList({
 
     if (patients.length === 0) {
       return (
-        <div className="flex items-center justify-center p-8 text-gray-500">
+        <div className="flex items-center justify-center p-8 text-gray-400">
           Nenhum paciente encontrado.
         </div>
       );
@@ -48,7 +48,7 @@ export function PatientList({
     return patients.map((p) => (
       <UserListItem
         key={p.id}
-        user={{ ...p, userType: SystemRoles.PATIENT }}
+        user={p}
         selected={selectedId === p.id}
         onClick={() => {
           if (!p.id) return;

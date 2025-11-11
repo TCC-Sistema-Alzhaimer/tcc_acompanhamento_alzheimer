@@ -17,8 +17,6 @@ function DoctorSideBar() {
           {item.label}
         </Sidebar.Option>
       ))}
-
-      <Sidebar.Option to={"/doctor/settings"}>Configurações</Sidebar.Option>
     </Sidebar.Root>
   );
 }

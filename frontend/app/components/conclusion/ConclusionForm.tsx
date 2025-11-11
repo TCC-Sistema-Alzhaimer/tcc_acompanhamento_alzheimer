@@ -88,7 +88,7 @@ export function ConclusionForm({ patientId, doctorId }: ConclusionFormProps) {
       <h3 className="text-lg font-bold text-gray-800">Conclusão médica</h3>
 
       <p className="text-sm text-gray-600">
-        Data de registro: {new Date().toLocaleDateString("pt-BR")} (Exemplo)
+        Data de registro: {new Date().toLocaleDateString("pt-BR")}
       </p>
 
       <Form.Select

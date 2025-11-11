@@ -1,5 +1,11 @@
 import Cookies from "js-cookie";
-import { createContext, useContext, useState, type ReactNode, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  type ReactNode,
+  useEffect,
+} from "react";
 import { useNavigate } from "react-router";
 import { loginRequest, refreshRequest } from "~/services/auth";
 import type { LoginResponse } from "~/types/api/auth/LoginResponse";
@@ -23,7 +29,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (loginResult.status === 200 && loginResult.data) {
       const foundUser: LoginResponse = loginResult.data;
       setUser(foundUser);
-      const redirectTo = sessionStorage.getItem("redirectAfterLogin") || ROUTES.PRIVATE_HOME;
+      const redirectTo =
+        sessionStorage.getItem("redirectAfterLogin") || ROUTES.PRIVATE_HOME;
       sessionStorage.removeItem("redirectAfterLogin");
       navigate(redirectTo);
       return Promise.resolve();
@@ -34,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   function logout() {
     Cookies.remove("token");
     setUser(null);
-    navigate(ROUTES.LOGIN);
+    navigate("/");
   }
 
   useEffect(() => {
@@ -48,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
-        navigate(ROUTES.LOGIN, { replace: true });
+        navigate("/", { replace: true });
       }
     };
 

@@ -1,6 +1,6 @@
 import type { ExamResponse } from "~/types/exam/examResponse";
 import { api } from "./api";
-import type { PatientModel } from "~/types/roles/models";
+import type { BasicListModel, PatientModel } from "~/types/roles/models";
 import type { ExamType } from "~/types/exam/examType";
 import type { MedicalHistoryResponse } from "~/types/exam/medicalHistoryResponse";
 import type { IndicatorResponse } from "~/types/dashboard/IndicatorResponse";
@@ -15,7 +15,7 @@ export interface BioindicatorData {
 
 export const getPatientsByDoctor = async (doctorId: number, query: string) => {
   try {
-    const response = await api.get<PatientModel[]>(
+    const response = await api.get<BasicListModel[]>(
       `/doctors/${doctorId}/patients`,
       {
         params: {
@@ -76,7 +76,6 @@ export const getPatientHistory = async (patientId: number) => {
 
 export const getPatientIndicators = async (patientId: number) => {
   try {
-    // Chama o endpoint do seu IndicatorController
     const response = await api.get<IndicatorResponse[]>(
       `/indicator/patient/${patientId}`
     );
