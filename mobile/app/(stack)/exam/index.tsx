@@ -9,25 +9,55 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 
-type Filter = "todos" | "pendente" | "realizado";
+type Filter = "ALL" | "INPROCESS" | "COMPLETED" | "CANCELLED";
 
 const PAGE_SIZE = 10;
 
+/*
+    REQUESTED("Solicitado"),
+    SCHEDULED("Agendado"),
+    IN_PROGRESS("Em Andamento"),
+    COMPLETED("Concluído"),
+    CANCELLED("Cancelado"),
+    PENDING_RESULT("Aguardando Resultado");
+*/
+
 // Garante compat com ids "pending/done" OU "pendente/realizado"
-function matchesStatus(exam: Exam, filter: Exclude<Filter, "todos">) {
+function matchesStatus(exam: Exam, filter: Exclude<Filter, "ALL">) {
   const id = (exam.examStatusId || "").toLowerCase();
   const desc = (exam.examStatusDescription || "").toLowerCase();
 
-  if (filter === "pendente") {
-    return id === "pending" || id === "pendente" || desc.includes("pendente");
+  if (filter === "CANCELLED") {
+    return (
+      id === "CANCELLED" || id === "cancelado" || desc.includes("cancelado")
+    );
   }
-  // realizado
-  return id === "done" || id === "realizado" || desc.includes("realiz");
+  if (filter === "COMPLETED") {
+    return (
+      id === "COMPLETED" || id === "cancelado" || desc.includes("cancelado")
+    );
+  }
+  if (filter === "INPROCESS") {
+    const isCancelled =
+      id === "cancelled" ||
+      id === "cancelado" ||
+      desc.includes("cancelado") ||
+      desc.includes("cancel");
+    const isCompleted =
+      id === "completed" ||
+      id === "done" ||
+      id === "realizado" ||
+      desc.includes("realiz") ||
+      desc.includes("conclu") ||
+      desc.includes("complet");
+    return !isCancelled && !isCompleted;
+  }
+  return true;
 }
 
 export default function ExamScreen() {
   const [exams, setExams] = useState<Exam[]>([]);
-  const [filter, setFilter] = useState<Filter>("todos");
+  const [filter, setFilter] = useState<Filter>("ALL");
   const [page, setPage] = useState(1);
 
   const { state, loading: loadingSelected } = useSelectedPatient();
@@ -56,7 +86,7 @@ export default function ExamScreen() {
   }, [loadingSelected]);
 
   const filteredExams = useMemo(() => {
-    if (filter === "todos") return exams;
+    if (filter === "ALL") return exams;
     return exams.filter((e) => matchesStatus(e, filter));
   }, [exams, filter]);
 
@@ -107,9 +137,10 @@ export default function ExamScreen() {
             maxWidth: "100%",
           }}
         >
-          {renderFilterButton("Todos", "todos")}
-          {renderFilterButton("Pendente", "pendente")}
-          {renderFilterButton("Realizados", "realizado")}
+          {renderFilterButton("Todos", "ALL")}
+          {renderFilterButton("Em Processo", "INPROCESS")}
+          {renderFilterButton("Cancelado", "CANCELLED")}
+          {renderFilterButton("Realizados", "COMPLETED")}
         </View>
       </ThemedView>
 
@@ -118,9 +149,20 @@ export default function ExamScreen() {
         keyExtractor={(item, index) => item.id ?? `exam-${index}`}
         contentContainerStyle={{ paddingBottom: 24 }}
         ListEmptyComponent={
-          <ThemedText style={{ padding: 16, textAlign: "center" }} type="title">
-            Nenhum exame disponível.
-          </ThemedText>
+          <View style={{ alignItems: "center", marginTop: 32 }}>
+            <ThemedText
+              style={{ padding: 16, textAlign: "center" }}
+              type="title"
+            >
+              Ops!
+            </ThemedText>
+            <ThemedText
+              style={{ paddingHorizontal: 16, textAlign: "center" }}
+              type="default"
+            >
+              Nenhum exame encontrado para o paciente neste filtro.
+            </ThemedText>
+          </View>
         }
         renderItem={({ item: exam }) => (
           <Card.Root

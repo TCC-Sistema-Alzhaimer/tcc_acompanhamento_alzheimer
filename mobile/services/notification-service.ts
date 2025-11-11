@@ -12,7 +12,6 @@ interface NotificationByPatientRequest extends NotificationRequestBase {
 
 interface MarkAsReadRequest extends NotificationRequestBase {
   notificationId: string;
-  readerId: string;
 }
 
 export async function fetchNotificationsByPatient({
@@ -33,10 +32,9 @@ export async function fetchNotificationsByPatient({
 export async function markNotificationAsRead({
   accessToken,
   notificationId,
-  readerId,
 }: MarkAsReadRequest): Promise<void> {
   const resp = await api.patch(
-    ROUTES.NOTIFICATION_MARK_AS_READ(notificationId, readerId),
+    ROUTES.NOTIFICATION_MARK_AS_READ(notificationId),
     null,
     {
       headers: { Authorization: `Bearer ${accessToken}` },

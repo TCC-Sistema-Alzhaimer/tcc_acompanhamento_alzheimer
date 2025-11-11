@@ -1,6 +1,5 @@
 import { Card } from "@/components/card/Card";
 import { ThemedView } from "@/components/ThemedView";
-import { useAuth } from "@/context/AuthContext";
 import { useSelectedPatient } from "@/context/SelectedPatientContext";
 import { useSession } from "@/hooks/useSession";
 import {
@@ -8,9 +7,10 @@ import {
   markNotificationAsRead,
 } from "@/services/notification-service";
 import { Notification } from "@/types/domain/notification";
+import { parseNotification } from "@/util/parser";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function NotificationScreen() {
   const [patientNotifications, setPatientNotifications] = useState<
@@ -19,7 +19,6 @@ export default function NotificationScreen() {
 
   const router = useRouter();
   const session = useSession();
-  const { user } = useAuth();
   const { state, loading } = useSelectedPatient();
 
   useEffect(() => {
@@ -32,12 +31,10 @@ export default function NotificationScreen() {
             patientId: state.patientId,
           })
             .then((resp) => {
-              const parses: Notification[] = resp.map((n) => ({
-                ...n,
-                createdAt: n.createdAt
-                  ? new Date(n.createdAt).toLocaleString()
-                  : undefined,
-              }));
+              console.log(resp);
+              const parses: Notification[] = resp.map((n) =>
+                parseNotification(n)
+              );
               setPatientNotifications(parses);
             })
             .catch((error) => {
@@ -58,18 +55,17 @@ export default function NotificationScreen() {
   }: {
     notification: Notification;
   }) => {
+    console.log("Handling navigation for notification:", notification);
     if (notification.examId != null) {
       await markNotificationAsRead({
         accessToken: session?.accessToken || "",
         notificationId: String(notification.id),
-        readerId: String(user?.id || 0),
       });
       router.push(`/exam/${notification.examId}`);
     } else if (notification.associationId != null) {
       await markNotificationAsRead({
         accessToken: session?.accessToken || "",
         notificationId: String(notification.id),
-        readerId: String(user?.id || 0),
       });
       router.push(`/association/${notification.associationId}`);
     }
@@ -77,33 +73,32 @@ export default function NotificationScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.content}>
-        {patientNotifications ? (
-          patientNotifications.map((n) => (
-            <Card.Root
-              key={n.id!.toString()}
-              style={{ marginBottom: 10 }}
-              onPress={() =>
-                handleNavigation({
-                  notification: n,
-                })
-              }
-              themed={(() => {
-                const recipient = n.recipients.find((r) => r.id === user?.id);
-                if (!recipient) return true;
-                if (recipient.read === undefined) return true;
-                return !recipient.read;
-              })()}
-            >
-              <Card.Title title={n.title} subtitle={n.message} />
-              <Card.Icon name="paperplane.fill" />
-            </Card.Root>
-          ))
-        ) : (
-          <Card.Title
-            title="Sem notificação"
-            subtitle="Nenhuma notificação disponível."
-          />
-        )}
+        <ScrollView>
+          {patientNotifications ? (
+            patientNotifications.map((n) => (
+              <Card.Root
+                key={n.id!.toString()}
+                style={{ marginBottom: 10 }}
+                onPress={() =>
+                  handleNavigation({
+                    notification: n,
+                  })
+                }
+                themed={(() => {
+                  return n.read;
+                })()}
+              >
+                <Card.Title title={n.title} subtitle={n.message} />
+                <Card.Icon name="paperplane.fill" />
+              </Card.Root>
+            ))
+          ) : (
+            <Card.Title
+              title="Sem notificação"
+              subtitle="Nenhuma notificação disponível."
+            />
+          )}
+        </ScrollView>
       </View>
     </ThemedView>
   );

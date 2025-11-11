@@ -7,6 +7,14 @@ export const ROUTES = {
   EXAM_BY_PATIENT_ID: (patientId: string) => `/exams/patient/${patientId}`,
   EXAM_BY_DOCTOR_ID: (doctorId: string) => `/exams/doctor/${doctorId}`,
   EXAM_ATTACHMENTS: (examId: string) => `/exams/${examId}/results/upload`,
+  UPLOAD_HISTORIC_EXAM_ATTACHMENT: "/medical-history",
+  HISTORIC_EXAMS_BY_PATIENT_ID: (patientId: string) =>
+    `/medical-history/patient/${patientId}`,
+  CONCLUSIONS: "/conclusions",
+  CONCLUSION_BY_ID: (conclusionId: string) =>
+    `/conclusions/${conclusionId}`,
+  CONCLUSIONS_BY_EXAM_ID: (examId: string) =>
+    `/conclusions/exam/${examId}`,
 
   CAREGIVER: "/caregivers",
   CAREGIVER_BY_ID: (caregiverId: string) => `/caregivers/${caregiverId}`,
@@ -24,6 +32,9 @@ export const ROUTES = {
     `/notifications/${notificationId}`,
   NOTIFICATIONS_BY_PATIENT_ID: (patientId: string) =>
     `/notifications/patient/${patientId}`,
-  NOTIFICATION_MARK_AS_READ: (notificationId: string, readerId: string) =>
-    `/notifications/${notificationId}/recipients/${readerId}/read`,
+  NOTIFICATION_MARK_AS_READ: (notificationId: string) =>
+    `/notifications/${notificationId}/read`,
+
+  ASSOCIATIONS: "/requests",
+  ASSOCIATION_BY_ID: (associationId: string) => `/requests/${associationId}`,
 };

@@ -7,9 +7,10 @@ import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
+import { useAuth } from "@/context/AuthContext";
+import { useSelectedPatient } from "@/context/SelectedPatientContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useSession } from "@/hooks/useSession";
-import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 
 export default function TabLayout() {
@@ -17,18 +18,41 @@ export default function TabLayout() {
 
   const session = useSession();
   const { loading } = useAuth();
+  const {
+    state,
+    clearSelection,
+    loading: loadingSelected,
+  } = useSelectedPatient();
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) {
+    if (loading || loadingSelected) {
       return;
     }
     if (!session) {
       router.replace("/login");
+      return;
     }
-  }, [loading, router, session]);
+    if (state.patientId == null) {
+      clearSelection();
+      router.replace("/selecter-patient");
+    }
+  }, [
+    loading,
+    router,
+    session,
+    state.patientId,
+    state.hydrated,
+    loadingSelected,
+  ]);
 
-  if (loading || !session) {
+  if (
+    loading ||
+    !session ||
+    !state.hydrated ||
+    state.patientId == null ||
+    loadingSelected
+  ) {
     return (
       <SafeAreaView
         style={{ flex: 1, alignItems: "center", justifyContent: "center" }}

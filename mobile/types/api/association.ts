@@ -1,8 +1,13 @@
+export type AssociationType =
+  | "PATIENT_TO_DOCTOR"
+  | "PATIENT_TO_CAREGIVER"
+  | "CAREGIVER_TO_PATIENT";
+
 export interface AssociationResponseDto {
   id: number;
   patient: AssociationParticipantDto;
   relation: AssociationParticipantDto;
-  type: string;
+  type: AssociationType;
   status: string;
   createdAt: string;
   respondedAt?: string | null;

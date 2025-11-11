@@ -21,6 +21,20 @@ export const Colors = {
     secondaryText: "#3C4852",
     secondaryBackground: "#F5F5F5",
     brandBackground: brandColor,
+
+    button: {
+      primaryBackground: brandColor,
+      primaryText: "#ffffff",
+      primaryHover: "#4EB0AB",
+      secondaryBackground: "#F5F5F5",
+      secondaryText: "#3C4852",
+      secondaryHover: "#E2E8F0",
+      dangerBackground: "#D14343",
+      dangerText: "#ffffff",
+      dangerHover: "#B53636",
+      disabledBackground: "#E2E8F0",
+      disabledText: "#A0A4A8",
+    },
   },
   dark: {
     text: "#ECEDEE",
@@ -35,5 +49,19 @@ export const Colors = {
     secondaryText: "#9CA3AF",
     secondaryBackground: "#1F2224",
     brandBackground: brandColor,
+
+    button: {
+      primaryBackground: brandColor,
+      primaryText: "#ffffff",
+      primaryHover: "#4EB0AB",
+      secondaryBackground: "#1F2224",
+      secondaryText: "#ECEDEE",
+      secondaryHover: "#2A2D2F",
+      dangerBackground: "#EF4444",
+      dangerText: "#ffffff",
+      dangerHover: "#DC2626",
+      disabledBackground: "#374151",
+      disabledText: "#6B7280",
+    },
   },
 };

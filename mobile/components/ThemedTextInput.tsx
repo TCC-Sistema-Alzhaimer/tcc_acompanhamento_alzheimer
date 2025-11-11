@@ -37,13 +37,14 @@ export const ThemedTextInput = forwardRef<TextInput, ThemedTextInputProps>(
     const textColor = useThemeColor(
       { light: lightColor, dark: darkColor },
       "text"
-    );
-    const bgColor = useThemeColor({}, "secondaryBackground");
-    const borderColor = useThemeColor({}, "border");
-    const placeholderColor = useThemeColor({}, "placeholder");
-    const errorColor = useThemeColor({}, "danger");
-    const labelColor = useThemeColor({}, "secondaryText");
-    const focusColor = useThemeColor({}, "tint");
+    ) as string;
+
+    const bgColor = useThemeColor({}, "secondaryBackground") as string;
+    const borderColor = useThemeColor({}, "border") as string;
+    const placeholderColor = useThemeColor({}, "placeholder") as string;
+    const errorColor = useThemeColor({}, "danger") as string;
+    const labelColor = useThemeColor({}, "secondaryText") as string;
+    const focusColor = useThemeColor({}, "tint") as string;
 
     const sizeStyle =
       size === "sm" ? styles.sm : size === "lg" ? styles.lg : styles.md;
@@ -51,7 +52,9 @@ export const ThemedTextInput = forwardRef<TextInput, ThemedTextInputProps>(
     return (
       <View style={styles.wrapper}>
         {label ? (
-          <Text style={[styles.label, { color: labelColor }]}>{label}</Text>
+          <Text style={[styles.label, { color: labelColor as any }]}>
+            {label}
+          </Text>
         ) : null}
 
         <TextInput
@@ -79,7 +82,9 @@ export const ThemedTextInput = forwardRef<TextInput, ThemedTextInputProps>(
         />
 
         {!!error && (
-          <Text style={[styles.error, { color: errorColor }]}>{error}</Text>
+          <Text style={[styles.error, { color: errorColor as any }]}>
+            {error}
+          </Text>
         )}
       </View>
     );

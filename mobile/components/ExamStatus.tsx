@@ -6,6 +6,15 @@ interface ExamStatusProps {
   status: string | undefined;
 }
 
+/*
+    REQUESTED("Solicitado"),
+    SCHEDULED("Agendado"),
+    IN_PROGRESS("Em Andamento"),
+    COMPLETED("Concluído"),
+    CANCELLED("Cancelado"),
+    PENDING_RESULT("Aguardando Resultado");
+*/
+
 const statusColors: Record<string, string> = {
   [ExamStatusEnum.REQUESTED]: "#FFA500", // Orange
   [ExamStatusEnum.SCHEDULED]: "#1E90FF", // Dodger Blue

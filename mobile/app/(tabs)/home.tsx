@@ -20,7 +20,9 @@ export default function HomeNewScreen() {
   };
 
   const patientName =
-    "Visualizando " + (state.cachedPatient?.name || "nenhum paciente");
+    session?.user.role === Roles.PATIENT
+      ? "Seu painel " + state.cachedPatient?.name || ""
+      : "Visualizando " + (state.cachedPatient?.name || "nenhum paciente");
 
   return (
     <ThemedView style={styles.container}>
@@ -41,30 +43,42 @@ export default function HomeNewScreen() {
             title="Exames"
             subtitle="Verifique e adicione novos exames."
           />
-          <Card.Icon name="paperplane.fill" />
+          <Card.Icon name="waveform.path.ecg" />
         </Card.Root>
 
         <Card.Root themed={false} onPress={() => router.push("/conclusion")}>
-          <Card.Avatar />
+          <Card.Avatar uri="https://cdn.pixabay.com/photo/2016/02/29/15/01/doctor-1228627_1280.jpg" />
           <Card.Title
             title="Conclusões médicas"
             subtitle="Visualize suas conclusões médicas."
           />
           <Card.Icon
-            name="paperplane.fill"
+            name="doc.text.magnifyingglass"
             onPress={() => router.push("/conclusion")}
           />
         </Card.Root>
 
         <Card.Root themed={false} onPress={() => router.push("/association")}>
-          <Card.Avatar />
+          <Card.Avatar uri="https://cdn.pixabay.com/photo/2016/12/19/10/16/hands-1917895_1280.png" />
           <Card.Title
             title="Pedidos de Associações"
             subtitle="Visualize os pedidos referente ao paciente."
           />
           <Card.Icon
-            name="paperplane.fill"
+            name="link.circle.fill"
             onPress={() => router.push("/association")}
+          />
+        </Card.Root>
+
+        <Card.Root themed={false} onPress={() => router.push("/historic")}>
+          <Card.Avatar uri="https://cdn.pixabay.com/photo/2015/02/06/18/38/folder-626332_1280.jpg" />
+          <Card.Title
+            title="Histórico de Exames"
+            subtitle="Visualize e anexe os exames antigos do paciente."
+          />
+          <Card.Icon
+            name="archivebox.fill"
+            onPress={() => router.push("/historic")}
           />
         </Card.Root>
 
@@ -74,13 +88,13 @@ export default function HomeNewScreen() {
               themed={false}
               onPress={() => router.push("/selecter-patient")}
             >
-              <Card.Avatar />
+              <Card.Avatar uri="https://cdn.pixabay.com/photo/2025/01/16/05/01/assist-9336328_1280.jpg" />
               <Card.Title
                 title="Pacientes"
                 subtitle="Selecione ou adicione um novo paciente."
               />
               <Card.Icon
-                name="person.2.fill"
+                name="person.3.fill"
                 onPress={() => router.push("/selecter-patient")}
               />
             </Card.Root>

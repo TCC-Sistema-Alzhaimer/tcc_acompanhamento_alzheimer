@@ -1,4 +1,5 @@
 import { ExamStatus } from "../enum/exam-status";
+import { FileInfoDTO } from "./files";
 
 export enum ExamType {
   BLOOD_TEST = "BLOOD_TEST",
@@ -24,4 +25,11 @@ export interface Exam {
   note: string;
   updatedAt?: string;
   updatedBy?: string;
+}
+
+export interface HistoricExam {
+  id: string;
+  description: string;
+  createdAt: string;
+  files: FileInfoDTO[];
 }

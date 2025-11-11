@@ -19,6 +19,7 @@ import { fetchExamById } from "@/services/exam-service";
 import { uploadExamAttachment } from "@/services/file-service";
 import { FileUploadResponse } from "@/types/api/files";
 import { Exam } from "@/types/domain/exam";
+import { Roles } from "@/types/enum/roles";
 import * as DocumentPicker from "expo-document-picker";
 
 type LocalParams = { id?: string };
@@ -189,29 +190,31 @@ export default function ExamDetailScreen() {
               Atualizado em: {new Date(exam.updatedAt).toLocaleString()}
             </ThemedText>
           ) : null}
-          <Pressable onPress={() => setOpenModal(true)}>
-            <ThemedView
-              type="default"
-              style={{
-                marginTop: 16,
-                padding: 12,
-                borderRadius: 8,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}
-            >
-              <IconSymbol
-                name="paperclip.circle.fill"
-                size={20}
-                color="#2563eb"
-              />
-              <ThemedText style={{ color: "#2563eb", fontWeight: "600" }}>
-                Anexar documento
-              </ThemedText>
-            </ThemedView>
-          </Pressable>
+          {session?.user.role !== Roles.PATIENT && (
+            <Pressable onPress={() => setOpenModal(true)}>
+              <ThemedView
+                type="default"
+                style={{
+                  marginTop: 16,
+                  padding: 12,
+                  borderRadius: 8,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
+              >
+                <IconSymbol
+                  name="paperclip.circle.fill"
+                  size={20}
+                  color="#2563eb"
+                />
+                <ThemedText style={{ color: "#2563eb", fontWeight: "600" }}>
+                  Anexar documento
+                </ThemedText>
+              </ThemedView>
+            </Pressable>
+          )}
         </ThemedView>
       ) : (
         <ThemedText>Nenhum exame encontrado.</ThemedText>

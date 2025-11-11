@@ -1,4 +1,6 @@
-import { ExamResponse } from "@/types/api/exam";
+import { ExamResponse, HistoricExamResponse } from "@/types/api/exam";
+import { appendAssetToFormData } from "@/util/parser";
+import { DocumentPickerAsset } from "expo-document-picker";
 import { api } from "./api";
 import { ROUTES } from "./routes";
 
@@ -37,4 +39,68 @@ export async function fetchExamsByPatientId({
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   return res.data;
+}
+
+export async function uploadHistoricExamAttachment({
+  accessToken,
+  patientId,
+  description,
+  file,
+}: {
+  accessToken: string;
+  patientId: string;
+  description: string;
+  file: DocumentPickerAsset;
+}): Promise<ExamResponse> {
+  try {
+    const endpoint = ROUTES.UPLOAD_HISTORIC_EXAM_ATTACHMENT;
+    const formData = new FormData();
+
+    const payload = {
+      patientId: Number(patientId),
+      description,
+    };
+    const json = JSON.stringify(payload);
+    if (typeof Blob !== "undefined") {
+      formData.append("data", new Blob([json], { type: "application/json" }));
+    } else {
+      formData.append("data", json);
+    }
+    if (file) {
+      appendAssetToFormData(formData, file);
+    }
+
+    const response = await api.post<ExamResponse>(endpoint, formData, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    if (response.status !== 200 && response.status !== 201) {
+      throw new Error("Failed to upload historic exam attachment");
+    }
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to upload historic exam attachment");
+  }
+}
+
+export async function fetchHistoricExamsByPatientId({
+  accessToken,
+  patientId,
+}: {
+  accessToken: string;
+  patientId: string;
+}): Promise<HistoricExamResponse[]> {
+  try {
+    const res = await api.get(ROUTES.HISTORIC_EXAMS_BY_PATIENT_ID(patientId), {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (res.status !== 200) {
+      throw new Error("Failed to fetch historic exams");
+    }
+    return res.data;
+  } catch (error) {
+    throw new Error("Failed to fetch historic exams");
+  }
 }

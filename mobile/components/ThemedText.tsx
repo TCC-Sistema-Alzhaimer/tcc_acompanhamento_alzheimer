@@ -32,11 +32,11 @@ export function ThemedText({
   return (
     <Text
       style={[
-        { color },
+        { color: color as any },
         type === "default" ? styles.default : undefined,
         type === "primary" ? styles.primary : undefined,
         type === "secondary"
-          ? [styles.default, { color: secondaryColor }]
+          ? [styles.default, { color: secondaryColor as any }]
           : undefined,
         type === "title" ? styles.title : undefined,
         type === "defaultSemiBold" ? styles.defaultSemiBold : undefined,

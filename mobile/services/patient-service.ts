@@ -16,3 +16,18 @@ export async function fetchPatients({
   });
   return resp.data;
 }
+
+export async function fetchPatientById({
+  accessToken,
+  patientId,
+}: FetchPatientsParams & { patientId: string }): Promise<PatientResponse> {
+  const resp = await api.get<PatientResponse>(
+    `${ROUTES.PATIENTS}/${patientId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return resp.data;
+}
