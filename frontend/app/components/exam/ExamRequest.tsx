@@ -16,7 +16,6 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     tipo: "",
-    categoria: "",
     dataFinal: "",
     anotacoes: "",
   });
@@ -79,15 +78,6 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
         placeholder={
           isLoadingTypes ? "Carregando tipos..." : "Selecione o Tipo"
         }
-      />
-
-      <Form.Select
-        label="Categoria"
-        name="categoria"
-        value={formData.categoria}
-        onChange={handleSelectChange}
-        options={[]}
-        placeholder="Selecione a Categoria"
       />
 
       <div className="flex flex-col gap-2">

@@ -6,6 +6,7 @@ const navItems = [
   { label: "Pacientes", to: ROUTES.DOCTOR.PATIENTS },
   { label: "Exames", to: ROUTES.DOCTOR.EXAMINATION },
   { label: "Conclusões", to: ROUTES.DOCTOR.CONCLUSION },
+  { label: "Dashboard", to: ROUTES.DOCTOR.DASHBOARD },
 ];
 
 function DoctorSideBar() {

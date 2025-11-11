@@ -77,7 +77,7 @@ export default function DoctorHistoryPage() {
         {isLoading && <p className="text-gray-500">Carregando histórico...</p>}
 
         {!isLoading && history.length === 0 && (
-          <p className="text-gray-500 text-center py-10">
+          <p className="text-gray-800 text-center py-10">
             Nenhum histórico encontrado para este paciente.
           </p>
         )}
