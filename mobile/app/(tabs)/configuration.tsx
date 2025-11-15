@@ -18,12 +18,6 @@ export default function TabTwoScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.content}>
-        <Card.Root themed={false} onPress={() => console.log("Card pressed")}>
-          <Card.Title title="Geral" />
-        </Card.Root>
-        <Card.Root themed={false} onPress={() => console.log("Card pressed")}>
-          <Card.Title title="Notificações" />
-        </Card.Root>
         <Card.Root themed={false} onPress={() => router.push("/profile")}>
           <Card.Title title="Minha conta" />
         </Card.Root>
