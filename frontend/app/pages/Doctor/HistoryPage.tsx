@@ -1,24 +1,27 @@
+import { PatientList } from "~/components/UserList/PatientList";
 import type { Route } from "../../+types/root";
 import React, { useState } from "react";
 import { useAuth } from "~/hooks/useAuth";
-import { useLocation } from "react-router-dom";
+// 1. Importe 'useNavigate' e 'ROUTES'
+import { useLocation, useNavigate } from "react-router-dom";
+import { ROUTES } from "~/routes/EnumRoutes";
 import Button from "~/components/Button";
+import { ArrowLeft } from "lucide-react";
 import { usePatientDetails } from "~/components/PatientDetail/hooks/usePatientDetail";
 import { usePatientHistory } from "~/components/history/hooks/usePatientHistory";
 import { HistoryItemCard } from "~/components/history/HistoryItemCard";
 
-// --- Card de Informações do Paciente ---
+// --- Card de Informações do Paciente (sem mudanças) ---
 const PatientInfoCard = ({ patientId }: { patientId: number | null }) => {
   const { patient, isLoading } = usePatientDetails(patientId);
+
   const calculateAge = (birthdate: Date | string) => {
     try {
       const birth = new Date(birthdate);
       const today = new Date();
       let age = today.getFullYear() - birth.getFullYear();
       const m = today.getMonth() - birth.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-        age--;
-      }
+      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
       return age;
     } catch (error) {
       return "?";
@@ -27,7 +30,13 @@ const PatientInfoCard = ({ patientId }: { patientId: number | null }) => {
 
   if (isLoading || !patient) {
     return (
-      <div className="animate-pulse bg-white p-6 rounded-lg shadow">...</div>
+      <div className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
+        <div className="bg-gray-100 rounded-lg p-5">
+          <div className="h-5 bg-gray-300 rounded w-3/4 mb-2"></div>
+          <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+        </div>
+      </div>
     );
   }
 
@@ -62,28 +71,70 @@ export function meta({}: Route.MetaArgs) {
 export default function DoctorHistoryPage() {
   const { user } = useAuth();
   const location = useLocation();
-  const initialPatientId = location.state?.defaultPatientId || null;
+  const loggedDoctorId = user?.id;
+  // 3. Chame o hook 'useNavigate' aqui
+  const navigate = useNavigate();
+
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(
-    initialPatientId
+    () => location.state?.defaultPatientId || null
   );
 
   const { history, isLoading } = usePatientHistory(selectedPatientId);
 
+  const handleSelectPatient = (id: number) => {
+    setSelectedPatientId(id);
+  };
+
   return (
-    <main className="bg-gray-100 h-full p-6 flex flex-col gap-6">
-      <PatientInfoCard patientId={selectedPatientId} />
+    <main className="bg-white flex flex-row h-full">
+      <div className="basis-1/4 h-full">
+        <PatientList
+          doctorId={Number(loggedDoctorId) || 0}
+          onSelectPatient={handleSelectPatient}
+          onCreatePatient={() => {}}
+        />
+      </div>
 
-      <div className="flex flex-col gap-6">
-        {isLoading && <p className="text-gray-500">Carregando histórico...</p>}
+      <div className="flex-1 h-full overflow-y-auto bg-gray-100 p-6 flex flex-col gap-6">
+        {/* O botão agora funcionará */}
+        <Button
+          variant="secondary"
+          onClick={() => navigate(ROUTES.DOCTOR.PATIENTS)}
+          className="w-fit !px-4 !py-2 text-sm"
+        >
+          <ArrowLeft size={16} className="mr-2" />
+          Voltar para Pacientes
+        </Button>
 
-        {!isLoading && history.length === 0 && (
-          <p className="text-gray-800 text-center py-10">
-            Nenhum histórico encontrado para este paciente.
-          </p>
+        {selectedPatientId === null ? (
+          <div className="flex items-center justify-center h-full text-gray-700 p-6 rounded-lg border-2 border-dashed border-gray-300">
+            <p>Selecione um paciente na lista para ver o histórico.</p>
+          </div>
+        ) : (
+          <>
+            <PatientInfoCard patientId={selectedPatientId} />
+
+            <div className="flex flex-col gap-6">
+              {isLoading && (
+                <p className="text-gray-700">Carregando histórico...</p>
+              )}
+
+              {!isLoading && history.length === 0 && (
+                <p className="text-gray-700 text-center py-10">
+                  Nenhum histórico encontrado para este paciente.
+                </p>
+              )}
+
+              {!isLoading &&
+                history.map((item) => (
+                  <HistoryItemCard
+                    key={`${item.itemType}-${item.id}`}
+                    item={item}
+                  />
+                ))}
+            </div>
+          </>
         )}
-
-        {!isLoading &&
-          history.map((item) => <HistoryItemCard key={item.id} item={item} />)}
       </div>
     </main>
   );

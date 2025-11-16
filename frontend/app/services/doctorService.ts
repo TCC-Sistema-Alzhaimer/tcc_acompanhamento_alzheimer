@@ -1,21 +1,92 @@
-import type { ExamResponse } from "~/types/exam/examResponse";
 import { api } from "./api";
-import type { BasicListModel, PatientModel } from "~/types/roles/models";
-import type { ExamType } from "~/types/exam/examType";
-import type { MedicalHistoryResponse } from "~/types/exam/medicalHistoryResponse";
-import type { IndicatorResponse } from "~/types/dashboard/IndicatorResponse";
 
-export interface BioindicatorData {
-  // Exemplo de estrutura
-  bioindicator_1: { date: string; value: number }[];
-  bioindicator_2: { date: string; value: number }[];
-  bioindicator_3: { date: string; value: number }[];
-  bioindicator_4: { date: string; value: number }[];
+export interface FileInfoDTO {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  formattedSize: string;
+  createdTime: string;
+  modifiedTime: string;
+  downloadLink: string;
+  fileType: string;
+  isImage: boolean;
+  isPdf: boolean;
+}
+
+export interface MedicalHistoryResponseDTO {
+  id: number;
+  patientId: number;
+  description: string;
+  createdAt: string;
+  createdBy: number | null;
+  files: FileInfoDTO[];
+}
+
+export interface ExamResponseDTO {
+  id: number;
+  doctorId: number;
+  patientId: number;
+  examTypeId: string;
+  examStatusId: string;
+  requestDate: string;
+  instructions: string;
+  note: string;
+  examTypeDescription: string;
+  examStatusDescription: string;
+  doctorName: string;
+  patientName: string;
+}
+
+export interface ConclusionResponseDTO {
+  id: number;
+  doctorName: string;
+  patientName: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  attachmentUrls: string[];
+}
+
+export interface IndicatorResponseDTO {
+  id: number;
+  valor: number;
+  descricao: string;
+  data: string;
+  tipoDescription: string;
+  tipoId: number;
+  patientId: number;
+  patientName: string;
+  fileId: number | null;
+  conclusionId: number | null;
+}
+
+export interface ExamType {
+  id: string;
+  description: string;
+}
+
+export interface BasicDtoForList {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  type: string;
+}
+
+export interface PatientModel {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  cpf: string;
+  gender: string;
+  birthdate: string;
 }
 
 export const getPatientsByDoctor = async (doctorId: number, query: string) => {
   try {
-    const response = await api.get<BasicListModel[]>(
+    const response = await api.get<BasicDtoForList[]>(
       `/doctors/${doctorId}/patients`,
       {
         params: {
@@ -32,22 +103,10 @@ export const getPatientsByDoctor = async (doctorId: number, query: string) => {
 
 export const getPatientDetails = async (patientId: number) => {
   try {
-    const response = await api.get(`/patients/${patientId}`);
+    const response = await api.get<PatientModel>(`/patients/${patientId}`);
     return response.data;
   } catch (error) {
     console.error("Erro ao buscar detalhes do paciente:", error);
-    throw error;
-  }
-};
-
-export const getPatientExams = async (patientId: number) => {
-  try {
-    const response = await api.get<ExamResponse[]>(
-      `/exams/patient/${patientId}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Erro ao buscar exames do paciente:", error);
     throw error;
   }
 };
@@ -64,19 +123,43 @@ export const getExamTypes = async () => {
 
 export const getPatientHistory = async (patientId: number) => {
   try {
-    const response = await api.get<MedicalHistoryResponse[]>(
+    const response = await api.get<MedicalHistoryResponseDTO[]>(
       `/medical-history/patient/${patientId}`
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao buscar histórico médico do paciente:", error);
+    console.error("Erro ao buscar histórico médico:", error);
+    throw error;
+  }
+};
+
+export const getPatientExams = async (patientId: number) => {
+  try {
+    const response = await api.get<ExamResponseDTO[]>(
+      `/exams/patient/${patientId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar exames:", error);
+    throw error;
+  }
+};
+
+export const getPatientConclusions = async (patientId: number) => {
+  try {
+    const response = await api.get<ConclusionResponseDTO[]>(
+      `/conclusions/patient/${patientId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar conclusões:", error);
     throw error;
   }
 };
 
 export const getPatientIndicators = async (patientId: number) => {
   try {
-    const response = await api.get<IndicatorResponse[]>(
+    const response = await api.get<IndicatorResponseDTO[]>(
       `/indicator/patient/${patientId}`
     );
     return response.data;
