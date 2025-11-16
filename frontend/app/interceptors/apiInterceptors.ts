@@ -4,9 +4,7 @@ import type { AuthContextType } from "~/hooks/useAuth";
 import { refreshRequest } from "~/services/auth";
 import { ROUTES } from "~/routes/EnumRoutes";
 
-
 export function setupInterceptors(auth: AuthContextType) {
-
   api.interceptors.request.use((config) => {
     const token = auth.user?.token || Cookies.get("token");
     if (token) {
@@ -16,24 +14,30 @@ export function setupInterceptors(auth: AuthContextType) {
   });
 
   api.interceptors.response.use(
-    
     (res) => res,
-    (err) => {
-      // Se receber 401, tenta refresh
-      if (err.response?.status === 401) {
-        return refreshRequest()
-          .then((res) => {
-            auth.setUser(res.data);
-            err.config.headers.Authorization = `Bearer ${res.data.token}`;
-            return api.request(err.config);
-          })
-          .catch(() => {
-            auth.logout();
-            return Promise.reject(err);
-          });
+    async (err) => {
+      const originalRequest = err.config;
+
+      const refreshUrl = "/auth/refresh";
+
+      if (
+        err.response?.status === 401 &&
+        !originalRequest._retry &&
+        originalRequest.url !== refreshUrl
+      ) {
+        originalRequest._retry = true;
+
+        try {
+          const res = await refreshRequest();
+          auth.setUser(res.data);
+          originalRequest.headers.Authorization = `Bearer ${res.data.token}`;
+          return api.request(originalRequest);
+        } catch (refreshError) {
+          auth.logout();
+          return Promise.reject(refreshError);
+        }
       }
 
-      //se receber 403, limpa usuário e redireciona para login
       if (err.response?.status === 403) {
         console.log("Acesso negado - 403");
         auth.logout();
@@ -44,4 +48,3 @@ export function setupInterceptors(auth: AuthContextType) {
     }
   );
 }
-

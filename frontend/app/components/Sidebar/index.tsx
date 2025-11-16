@@ -1,5 +1,5 @@
 import { SidebarOption } from "./SidebarOption";
-import SidebarRoot from "./SidebarRoot";
+import { SidebarRoot } from "./SidebarRoot";
 
 const Sidebar = {
   Root: SidebarRoot,

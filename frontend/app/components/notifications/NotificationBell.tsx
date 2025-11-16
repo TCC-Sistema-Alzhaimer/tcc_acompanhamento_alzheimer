@@ -5,10 +5,11 @@ import IconButton from "@mui/material/IconButton";
 import { getUserNotifications } from "~/services/notificationService";
 import NotificationList from "./NotificationList";
 import type { NotificationRecipientResponse } from "~/types/notifications/NotificationResponse";
-import { fa } from "zod/v4/locales";
 
 const NotificationBell: React.FC = () => {
-  const [notifications, setNotifications] = useState<NotificationRecipientResponse[]>([]);
+  const [notifications, setNotifications] = useState<
+    NotificationRecipientResponse[]
+  >([]);
   const [open, setOpen] = useState(false);
 
   const fetchNotifications = async () => {
@@ -28,9 +29,12 @@ const NotificationBell: React.FC = () => {
 
   return (
     <div className="relative">
-      <IconButton color="inherit" onClick={handleToggle}>
+      <IconButton
+        onClick={handleToggle}
+        className="!bg-white rounded-full w-10 h-10 hover:!bg-gray-100 shadow-md"
+      >
         <Badge badgeContent={notifications.length} color="error">
-          <NotificationsIcon />
+          <NotificationsIcon className="text-green-500" />
         </Badge>
       </IconButton>
 
