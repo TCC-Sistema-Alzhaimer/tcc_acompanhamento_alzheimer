@@ -17,7 +17,7 @@ function ActionButton({
   return (
     <div
       className={cn(
-        "rounded-full w-[40px] h-[40px] cursor-pointer bg-white shadow-md",
+        "rounded-full w-[40px] h-[40px] cursor-pointer bg-white shadow-md hover:!bg-gray-100",
         className
       )}
       title={title || ""}

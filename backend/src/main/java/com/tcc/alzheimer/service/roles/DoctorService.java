@@ -13,6 +13,7 @@ import com.tcc.alzheimer.dto.roles.doctor.DoctorPostAndPutDto;
 import com.tcc.alzheimer.exception.ResourceConflictException;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Doctor;
+import com.tcc.alzheimer.model.roles.Patient;
 import com.tcc.alzheimer.repository.roles.DoctorRepository;
 import com.tcc.alzheimer.repository.roles.PatientRepository;
 
@@ -108,7 +109,13 @@ public DoctorGetDto update(Long id, DoctorPostAndPutDto dto) {
 
     public List<BasicDtoForList> searchUsersByDoc(Long id, String query, String serviceType) {
         var doctor = findByIdIntern(id);
-        var patients = patientRepo.findByDoctorsAndActiveTrue(doctor);
+        List<Patient> patients;
+
+        if (query == null || query.trim().isEmpty()) {
+            patients = patientRepo.findByDoctorsAndActiveTrue(doctor);
+        } else {
+            patients = patientRepo.findByDoctorsAndActiveTrueAndNameContainingIgnoreCase(doctor, query);
+        }
 
         return patients.stream()
                 .map(p -> new BasicDtoForList(p.getId(), p.getName(), p.getEmail(), p.getPhone(), p.getType()))

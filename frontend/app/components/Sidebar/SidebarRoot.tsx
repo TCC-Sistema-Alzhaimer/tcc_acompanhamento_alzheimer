@@ -1,10 +1,22 @@
-function SidebarRoot({ children }: { children: React.ReactNode }) {
+import React from "react";
 
-    return (
-        <div className={`w-1/5 bg-gray-200 p-4 py-8 gap-2 flex-col flex`}>
-            {children}
-        </div>
-    )
+interface SidebarRootProps {
+  children: React.ReactNode;
+  isCollapsed: boolean;
 }
 
-export default SidebarRoot;
+export function SidebarRoot({ children, isCollapsed }: SidebarRootProps) {
+  return (
+    <aside
+      className={`
+        flex flex-col h-full bg-white border-r border-gray-200
+        transition-all duration-300 ease-in-out
+        ${isCollapsed ? "w-20" : "w-64"} 
+      `}
+    >
+      <nav className="flex-1 px-4 py-4 space-y-2">{children}</nav>
+
+      <div className="mt-auto px-4 py-4 border-t border-gray-200"></div>
+    </aside>
+  );
+}

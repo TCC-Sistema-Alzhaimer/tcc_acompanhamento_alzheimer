@@ -8,7 +8,8 @@ import { ROUTES } from "./routes/EnumRoutes";
 
 export default [
   layout("./layout/Auth/index.tsx", [
-    route(ROUTES.LOGIN, "routes/Auth/login.tsx"),
+    index("routes/Auth/login.tsx"),
+    // route(ROUTES.LOGIN, "routes/Auth/login.tsx"),
   ]),
 
   layout("./layout/Doctor/index.tsx", [

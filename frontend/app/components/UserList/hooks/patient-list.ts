@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getPatientsByDoctor } from "~/services/doctorService";
-import type { PatientModel } from "~/types/roles/models";
+import type { BasicListModel } from "~/types/roles/models";
 
 interface UsePatientListProps {
   doctorId: number;
@@ -8,7 +8,8 @@ interface UsePatientListProps {
 }
 
 export function usePatientList({ doctorId, query }: UsePatientListProps) {
-  const [patients, setPatients] = useState<PatientModel[]>([]);
+  // 2. CORREÇÃO: O estado agora é 'BasicDtoForList[]'
+  const [patients, setPatients] = useState<BasicListModel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

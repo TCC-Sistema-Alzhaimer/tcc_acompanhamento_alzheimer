@@ -25,7 +25,7 @@ export function FormSelect({
   onChange,
 }: FormSelectProps) {
   return (
-    <div className="flex flex-col gap-1 mb-4 w-full">
+    <div className="flex flex-col gap-1 mb-4 w-full text-gray-700">
       {label && <label htmlFor={name}>{label}</label>}
 
       <FormControl fullWidth>

@@ -94,7 +94,7 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
         {isLoadingHistory ? (
           <div className="text-sm text-gray-800">Carregando histórico...</div>
         ) : (
-          <div className="flex flex-col gap-4 border-l-2 border-gray-200 pl-6 ml-3">
+          <div className="flex flex-col gap-4 border-l-2 border-gray-500 pl-6 ml-3">
             {exams.map((exam) => (
               <div key={exam.id} className="flex items-center gap-4 relative">
                 <div className="absolute -left-[1.65rem] top-1 w-6 h-6 rounded-full bg-teal-300 flex items-center justify-center text-white">
