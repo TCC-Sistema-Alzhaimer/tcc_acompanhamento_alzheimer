@@ -1,7 +1,6 @@
-import { Outlet } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import { Topbar } from "~/components/TopBar/Topbar";
 import AccountMenu from "~/components/TopBar/AccountMenu";
-import { useAuth } from "~/hooks/useAuth";
 import DoctorSideBar from "../Doctor/Sidebar";
 
 // 1. Importe o IconButton, Ícones e o NotificationBell
@@ -10,9 +9,15 @@ import { useLocalStorage } from "usehooks-ts";
 import IconButton from "@mui/material/IconButton";
 import ForumIcon from "@mui/icons-material/Forum";
 import NotificationBell from "~/components/notifications/NotificationBell";
+import { useChatUnreadCount } from "~/hooks/useChatUnreadCount";
+import { ROUTES } from "~/routes/EnumRoutes";
+import ChatUnreadBadge from "~/components/chat/UnreadBadge";
+import { useAuth } from "~/hooks/useAuth";
 
 export default function PrivateLayout() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { unreadChats } = useChatUnreadCount();
   const [isCollapsed, setIsCollapsed] = useLocalStorage(
     "sidebar-collapsed",
     false
@@ -25,9 +30,13 @@ export default function PrivateLayout() {
         <div className="flex items-center gap-2 ml-auto">
           <IconButton
             title="Mensagens"
-            className="!bg-white rounded-full w-10 h-10 hover:!bg-gray-100"
+            className="!bg-white rounded-full w-10 h-10 hover:!bg-gray-100 shadow-md border border-gray-200 !overflow-visible"
+            onClick={() => navigate(ROUTES.CHAT)}
           >
-            <ForumIcon className="text-green-500" />
+            <div className="relative">
+              <ForumIcon className="text-green-500" />
+              <ChatUnreadBadge count={unreadChats} />
+            </div>
           </IconButton>
 
           <NotificationBell />

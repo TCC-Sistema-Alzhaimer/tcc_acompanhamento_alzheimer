@@ -1,4 +1,4 @@
-import { Outlet } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import DoctorSideBar from "./Sidebar";
 import { AuthGuard } from "~/guards/authGuard";
 import { Topbar } from "./Topbar";
@@ -12,8 +12,13 @@ import NotificationBell from "~/components/notifications/NotificationBell"; // U
 import { SystemRoles } from "~/types/SystemRoles";
 import React from "react";
 import { useLocalStorage } from "usehooks-ts";
+import { ROUTES } from "~/routes/EnumRoutes";
+import { useChatUnreadCount } from "~/hooks/useChatUnreadCount";
+import ChatUnreadBadge from "~/components/chat/UnreadBadge";
 
 function DoctorLayout() {
+  const navigate = useNavigate();
+  const { unreadChats } = useChatUnreadCount();
   const [isCollapsed, setIsCollapsed] = useLocalStorage(
     "sidebar-collapsed",
     false
@@ -29,9 +34,13 @@ function DoctorLayout() {
             {/* 2. SUBSTITUA o ActionButton pelo IconButton */}
             <IconButton
               title="Mensagens"
-              className="!bg-white rounded-full w-10 h-10 hover:!bg-gray-100"
+              className="!bg-white rounded-full w-10 h-10 hover:!bg-gray-100 shadow-md border border-gray-200 !overflow-visible"
+              onClick={() => navigate(ROUTES.CHAT)}
             >
-              <ForumIcon className="text-green-500" />
+              <div className="relative">
+                <ForumIcon className="text-green-500" />
+                <ChatUnreadBadge count={unreadChats} />
+              </div>
             </IconButton>
 
             {/* 3. Use o seu NotificationBell (que já usa IconButton) */}

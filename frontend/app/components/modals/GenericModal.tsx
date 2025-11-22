@@ -3,8 +3,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
-  Button,
   IconButton,
   Box,
 } from "@mui/material";
@@ -17,7 +15,12 @@ interface ModalProps {
   children: React.ReactNode;
 }
 
-export default function GenericModal({ isOpen, onClose, title, children }: ModalProps) {
+export default function GenericModal({
+  isOpen,
+  onClose,
+  title,
+  children,
+}: ModalProps) {
   return (
     <Dialog
       open={isOpen}
@@ -32,22 +35,30 @@ export default function GenericModal({ isOpen, onClose, title, children }: Modal
         },
       }}
     >
-      <IconButton
-        onClick={onClose}
-        sx={{
-          position: "absolute",
-          top: 8,
-          left: 8,
-          color: "grey.600",
-        }}
-        aria-label="Fechar"
-      >
-        <CloseIcon />
-      </IconButton>
-
       {title && (
-        <DialogTitle sx={{ textAlign: "center", fontWeight: 600 }}>
+        <DialogTitle
+          sx={{
+            position: "relative",
+            textAlign: "center",
+            fontWeight: 600,
+            px: 6,
+            py: 2.5,
+          }}
+        >
           {title}
+          <IconButton
+            onClick={onClose}
+            sx={{
+              position: "absolute",
+              top: "50%",
+              right: 16,
+              transform: "translateY(-50%)",
+              color: "grey.600",
+            }}
+            aria-label="Fechar"
+          >
+            <CloseIcon />
+          </IconButton>
         </DialogTitle>
       )}
 
@@ -55,7 +66,6 @@ export default function GenericModal({ isOpen, onClose, title, children }: Modal
       <DialogContent dividers>
         <Box sx={{ mt: 1 }}>{children}</Box>
       </DialogContent>
-      <Button onClick={onClose}>Fechar</Button>
     </Dialog>
   );
 }

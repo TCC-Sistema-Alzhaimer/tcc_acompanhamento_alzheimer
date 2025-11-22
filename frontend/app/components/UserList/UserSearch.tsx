@@ -2,9 +2,13 @@ import { useState, useEffect } from "react";
 
 interface UserSearchProps {
   onSearch: (term: string) => void;
+  placeholder?: string;
 }
 
-export function UserSearch({ onSearch }: UserSearchProps) {
+export function UserSearch({
+  onSearch,
+  placeholder = "Buscar pacientes...",
+}: UserSearchProps) {
   const [term, setTerm] = useState("");
 
   // Busca automática com debounce
@@ -21,7 +25,7 @@ export function UserSearch({ onSearch }: UserSearchProps) {
       <div className="relative">
         <input
           type="text"
-          placeholder="Buscar pacientes..."
+          placeholder={placeholder}
           value={term}
           onChange={(e) => setTerm(e.target.value)}
           className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-teal-400 focus:outline-none transition-colors"

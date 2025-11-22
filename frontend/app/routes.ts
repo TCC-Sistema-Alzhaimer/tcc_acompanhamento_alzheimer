@@ -26,6 +26,7 @@ export default [
     route(ROUTES.PRIVATE_HOME, "routes/PrivateWelcome/private_home.tsx"),
     route(ROUTES.ADMIN.MANAGEMENT, "routes/userManagement/userManagement.tsx"),
     route(ROUTES.ASSOCIATION, "routes/Association/association.tsx"),
+    route(ROUTES.CHAT, "routes/Chat/chat.tsx"),
     route(ROUTES.DOCTOR.EXAMINATION, "routes/Doctor/examination.tsx"),
     route(ROUTES.DOCTOR.CONCLUSION, "routes/Doctor/conclusion.tsx"),
     route(ROUTES.DOCTOR.PATIENTS, "routes/Doctor/DoctorPatients.tsx"),
