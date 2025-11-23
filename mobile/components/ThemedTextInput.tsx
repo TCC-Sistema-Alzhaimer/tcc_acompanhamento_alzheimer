@@ -94,9 +94,7 @@ export const ThemedTextInput = forwardRef<TextInput, ThemedTextInputProps>(
 ThemedTextInput.displayName = "ThemedTextInput";
 
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-  },
+  wrapper: { flex: 1 },
   label: {
     fontSize: 13,
     marginBottom: 6,

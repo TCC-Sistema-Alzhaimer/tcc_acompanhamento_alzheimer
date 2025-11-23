@@ -7,7 +7,7 @@ services:
       dockerfile: docker/Dockerfile.dev
     container_name: backend-alzheimer
     ports:
-      - "0.0.0.0:8080:8080"
+      - "8080:8080"
       - "5005:5005" # debug remoto opcional
     volumes:
       - ./backend:/app
