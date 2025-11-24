@@ -1,4 +1,7 @@
 import Button from "~/components/Button";
+import { ROUTES } from "~/routes/EnumRoutes";
+import { useChatUnreadCount } from "~/hooks/useChatUnreadCount";
+import ChatUnreadBadge from "~/components/chat/UnreadBadge";
 
 interface QuickActionsProps {
   patientId: number | null;
@@ -12,6 +15,8 @@ export function QuickActions({
   onRegisterConclusion,
 }: QuickActionsProps) {
   const isDisabled = patientId === null;
+  const { unreadChats } = useChatUnreadCount();
+  const showUnreadPill = unreadChats > 0;
 
   return (
     <section>
@@ -31,8 +36,14 @@ export function QuickActions({
           </Button>
 
           <div className="flex gap-3">
-            <Button variant="secondary" disabled={isDisabled}>
+            <Button
+              variant="secondary"
+              disabled={isDisabled}
+              to={ROUTES.CHAT}
+              className="relative overflow-visible"
+            >
               Chat
+              <ChatUnreadBadge count={showUnreadPill ? unreadChats : 0} />
             </Button>
             <Button variant="secondary" disabled={isDisabled}>
               Ver mais

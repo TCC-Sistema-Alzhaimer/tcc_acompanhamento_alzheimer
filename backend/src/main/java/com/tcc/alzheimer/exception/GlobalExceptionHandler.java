@@ -28,7 +28,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiErrorDTO> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.FORBIDDEN, "Acesso negado: você não tem permissão para este recurso.", request);
+        return buildErrorResponse(HttpStatus.FORBIDDEN, "Acesso negado: você não tem permissão para este recurso.",
+                request);
     }
 
     @ExceptionHandler({ AuthenticationException.class, BadCredentialsException.class })
@@ -37,7 +38,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorDTO> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
+    public ResponseEntity<ApiErrorDTO> handleValidation(MethodArgumentNotValidException ex,
+            HttpServletRequest request) {
         String errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -47,13 +49,20 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ResourceConflictException.class)
-    public ResponseEntity<ApiErrorDTO> handleResourceConflict(ResourceConflictException ex, HttpServletRequest request) {
+    public ResponseEntity<ApiErrorDTO> handleResourceConflict(ResourceConflictException ex,
+            HttpServletRequest request) {
         return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiErrorDTO> handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
+    public ResponseEntity<ApiErrorDTO> handleResourceNotFound(ResourceNotFoundException ex,
+            HttpServletRequest request) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiErrorDTO> handleBadRequest(BadRequestException ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
     @ExceptionHandler(InvalidFileException.class)
