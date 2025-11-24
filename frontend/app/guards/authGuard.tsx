@@ -17,31 +17,20 @@ export const AuthGuard: FC<AuthGuardProps> = ({ children, allowRoles }) => {
   if (!token) {
     return <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />;
   }
-  const tokenDecoded = token ? jwtDecode<{ role: string }>(token) : null;
-  if (!tokenDecoded) {
+
+  const tokenDecoded = jwtDecode<{ role: string }>(token);
+
+  if (!tokenDecoded.role) {
+    Cookies.remove("token");
     return <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />;
   }
 
-  const tokenRole = tokenDecoded?.role;
+  const userRole = tokenDecoded.role as SystemRoles;
 
-  if (
-    !tokenRole ||
-    (allowRoles && !allowRoles.includes(tokenRole as SystemRoles))
-  ) {
-    if (tokenRole === SystemRoles.DOCTOR || tokenRole === SystemRoles.ADMIN) {
-      return (
-        <Navigate
-          to={ROUTES.DOCTOR.EXAMINATION}
-          state={{ from: location }}
-          replace
-        />
-      );
-    } else if (
-      tokenRole === SystemRoles.ADMIN ||
-      tokenRole === SystemRoles.PATIENT
-    ) {
-      return <Navigate to={ROUTES.HOME} state={{ from: location }} replace />;
-    }
+  if (allowRoles && !allowRoles.includes(userRole)) {
+    return (
+      <Navigate to={ROUTES.PRIVATE_HOME} state={{ from: location }} replace />
+    );
   }
 
   return <>{children}</>;

@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "conclusion")
@@ -36,7 +37,7 @@ public class Conclusion {
 
     @Column(name = "conclusion", columnDefinition = "TEXT", nullable = false)
     private String conclusion;
-    
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -46,5 +47,9 @@ public class Conclusion {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by")
     private User updatedBy;
-    
+
+    @ManyToMany
+    @JoinTable(name = "conclusion_files", joinColumns = @JoinColumn(name = "conclusion_id"), inverseJoinColumns = @JoinColumn(name = "file_id"))
+    private Set<com.tcc.alzheimer.model.files.File> files = new java.util.HashSet<>();
+
 }

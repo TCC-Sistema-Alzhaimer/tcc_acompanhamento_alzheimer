@@ -1,12 +1,9 @@
 import { Stack } from "expo-router";
 import React from "react";
 
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
       <Stack>
@@ -35,6 +32,41 @@ export default function TabLayout() {
           name="conclusion/index"
           options={{
             title: "Conclusões Médicas",
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="conclusion/[id]"
+          options={{
+            title: "Detalhes da Conclusão",
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="profile/index"
+          options={{
+            title: "Perfil",
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="association/index"
+          options={{
+            title: "Associações",
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="association/[id]"
+          options={{
+            title: "Associação Detalhes",
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="historic/index"
+          options={{
+            title: "Historico de Exames",
             headerShown: true,
           }}
         />

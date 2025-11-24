@@ -3,7 +3,9 @@ export const ROUTES = {
   HOME: "/home",
   PROFILE: "/profile",
   USER: "/user/:id",
+  CHAT: "/chat",
   PRIVATE_HOME: "/private-home",
+  ASSOCIATION: "/association",
 
   ADMIN: {
     MANAGEMENT: "/management",
@@ -15,10 +17,12 @@ export const ROUTES = {
     APPOINTMENTS: "/doctor/appointments",
     EXAMINATION: "/doctor/examination",
     CONCLUSION: "/doctor/conclusion",
+    HISTORY: "/doctor/history",
   },
 
   CAREGIVER: {
     EXAMINATION: "/caregiver/examination/:examId?",
+    DASHBOARD: "/caregiver/dashboard",
   },
 
   user: (id: string) => `/user/${id}`,

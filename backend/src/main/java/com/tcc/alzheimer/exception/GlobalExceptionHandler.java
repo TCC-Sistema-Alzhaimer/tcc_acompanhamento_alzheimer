@@ -1,7 +1,8 @@
 package com.tcc.alzheimer.exception;
 
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -13,7 +14,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.tcc.alzheimer.dto.ApiErrorDTO;
 
-import java.util.stream.Collectors;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -46,12 +48,6 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Erro de validação: " + errors, request);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorDTO> handleGeneric(Exception ex, HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno no servidor: " + ex.getMessage(),
-                request);
-    }
-
     @ExceptionHandler(ResourceConflictException.class)
     public ResponseEntity<ApiErrorDTO> handleResourceConflict(ResourceConflictException ex,
             HttpServletRequest request) {
@@ -62,6 +58,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorDTO> handleResourceNotFound(ResourceNotFoundException ex,
             HttpServletRequest request) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiErrorDTO> handleBadRequest(BadRequestException ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
     @ExceptionHandler(InvalidFileException.class)

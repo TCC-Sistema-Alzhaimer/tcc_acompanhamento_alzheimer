@@ -1,23 +1,35 @@
-export interface ExamType {
-  id: string;
-  description: string;
-}
+import { ExamStatus } from "../enum/exam-status";
+import { FileInfoDTO } from "./files";
 
-export interface ExamStatus {
-  id: string;
-  description: string;
+export enum ExamType {
+  BLOOD_TEST = "BLOOD_TEST",
+  URINE_TEST = "URINE_TEST",
+  BRAIN_SCAN = "BRAIN_SCAN",
+  COGNITIVE_ASSESSMENT = "COGNITIVE_ASSESSMENT",
+  OTHER = "OTHER",
 }
 
 export interface Exam {
   id?: string;
   doctorId: string;
+  doctorName?: string;
   patientId: string;
-  type: ExamType;
-  status: ExamStatus;
+  patientName?: string;
+  examTypeId: ExamType;
+  examTypeDescription?: string;
+  examStatusId: ExamStatus;
+  examStatusDescription?: string;
   requestDate: string;
-  intructions?: string;
+  instructions?: string;
   result?: string;
   note: string;
   updatedAt?: string;
   updatedBy?: string;
+}
+
+export interface HistoricExam {
+  id: string;
+  description: string;
+  createdAt: string;
+  files: FileInfoDTO[];
 }

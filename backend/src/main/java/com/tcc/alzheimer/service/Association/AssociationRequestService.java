@@ -1,16 +1,21 @@
 package com.tcc.alzheimer.service.Association;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tcc.alzheimer.dto.Association.AssociationRequestCreateDto;
 import com.tcc.alzheimer.dto.Association.AssociationRequestRespondDto;
-import com.tcc.alzheimer.dto.Association.AssociationRequestResponseDto;
+import com.tcc.alzheimer.dto.Association.AssociationResponseDto;
+import com.tcc.alzheimer.dto.notifications.NotificationCreateRequest;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.Association.AssociationRequest;
+import com.tcc.alzheimer.model.enums.NotificationType;
 import com.tcc.alzheimer.model.enums.RequestStatus;
 import com.tcc.alzheimer.model.roles.Caregiver;
 import com.tcc.alzheimer.model.roles.Doctor;
@@ -21,10 +26,12 @@ import com.tcc.alzheimer.repository.roles.CaregiverRepository;
 import com.tcc.alzheimer.repository.roles.DoctorRepository;
 import com.tcc.alzheimer.repository.roles.PatientRepository;
 import com.tcc.alzheimer.repository.roles.UserRepository;
+import com.tcc.alzheimer.service.notifications.NotificationService;
 
-import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class AssociationRequestService {
 
     private final AssociationRequestRepository repo;
@@ -32,26 +39,14 @@ public class AssociationRequestService {
     private final PatientRepository patientRepo;
     private final DoctorRepository doctorRepo;
     private final CaregiverRepository caregiverRepo;
+    private final NotificationService notificationService;
 
-    public AssociationRequestService(
-            AssociationRequestRepository repo,
-            UserRepository userRepo,
-            PatientRepository patientRepo,
-            DoctorRepository doctorRepo,
-            CaregiverRepository caregiverRepo) {
-        this.repo = repo;
-        this.userRepo = userRepo;
-        this.patientRepo = patientRepo;
-        this.doctorRepo = doctorRepo;
-        this.caregiverRepo = caregiverRepo;
-    }
-
-    public AssociationRequestResponseDto create(AssociationRequestCreateDto dto) {
-        User creator = userRepo.findByEmail(dto.getCreatorEmail())
+    public AssociationResponseDto create(AssociationRequestCreateDto dto) {
+        User creator = userRepo.findByEmailAndActiveTrue(dto.getCreatorEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Creator not found"));
-        Patient patient = patientRepo.findByEmail(dto.getPatientEmail())
+        Patient patient = patientRepo.findByEmailAndActiveTrue(dto.getPatientEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
-        User relation = userRepo.findByEmail(dto.getRelationEmail())
+        User relation = userRepo.findByEmailAndActiveTrue(dto.getRelationEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Relation not found"));
 
         AssociationRequest request = new AssociationRequest();
@@ -63,15 +58,16 @@ public class AssociationRequestService {
         request.setCreatedAt(LocalDateTime.now());
 
         repo.save(request);
-        return toDto(request);
+        sendCreationNotification(request);
+        return AssociationResponseDto.from(request);
     }
 
     @Transactional
-    public AssociationRequestResponseDto respond(Long id, AssociationRequestRespondDto dto) {
+    public AssociationResponseDto respond(Long id, AssociationRequestRespondDto dto) {
         AssociationRequest request = repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
-        User responder = userRepo.findByEmail(dto.getResponderEmail())
+        User responder = userRepo.findByEmailAndActiveTrue(dto.getResponderEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Responder not found"));
 
         validateResponderPermission(request, responder);
@@ -82,23 +78,36 @@ public class AssociationRequestService {
 
         if (dto.getStatus() == RequestStatus.ACEITA) {
             applyAssociation(request);
+            sendAcceptedNotification(request);
         }
 
         repo.save(request);
-        return toDto(request);
+        return AssociationResponseDto.from(request);
     }
 
-    public List<AssociationRequestResponseDto> findAllByUser(String email) {
-        User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return repo.findAllVisibleToUser(user)
-                .stream()
-                .map(this::toDto)
+    public List<AssociationResponseDto> findAllByUser(String email) {
+        User user = userRepo.findByEmailAndActiveTrue(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + email));
+
+        Set<AssociationRequest> requests = new HashSet<>();
+        requests.addAll(repo.findByCreator(user));
+        requests.addAll(repo.findByResponder(user));
+        requests.addAll(repo.findByRelation(user));
+        if (user instanceof Patient) {
+            requests.addAll(repo.findByPatient(user));
+        }
+        if (user instanceof Caregiver) {
+            requests.addAll(repo.findByCaregiver(user));
+        }
+
+        return requests.stream()
+                .distinct()
+                .map(AssociationResponseDto::from)
                 .toList();
     }
 
-    public AssociationRequestResponseDto findByIdForUser(Long id, String email) {
-        User user = userRepo.findByEmail(email)
+    public AssociationResponseDto findByIdForUser(Long id, String email) {
+        User user = userRepo.findByEmailAndActiveTrue(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         AssociationRequest request = repo.findById(id)
@@ -108,23 +117,41 @@ public class AssociationRequestService {
             throw new AccessDeniedException("User not authorized to view this request");
         }
 
-        return toDto(request);
+        return AssociationResponseDto.from(request);
     }
 
-    // ----------------- Helpers -----------------
-
+    // --- métodos auxiliares: validateResponderPermission, applyAssociation, send notifications, isUserRelated ---
     private void validateResponderPermission(AssociationRequest request, User responder) {
+        if (request.getCreator().equals(responder)) {
+            throw new AccessDeniedException("O criador da solicitação não pode responder");
+        }
+
         switch (request.getType()) {
-            case PATIENT_TO_DOCTOR, CAREGIVER_TO_PATIENT -> {
-                if (!request.getRelation().equals(responder)) {
-                    throw new AccessDeniedException("Only the relation user can respond");
-                }
+            case PATIENT_TO_DOCTOR -> {
+                if (!(responder instanceof Doctor))
+                    throw new AccessDeniedException("Apenas um médico pode aceitar esta solicitação");
+                if (!responder.getId().equals(request.getRelation().getId()))
+                    throw new AccessDeniedException("Apenas o médico relacionado pode aceitar");
             }
-            case DOCTOR_TO_PATIENT, PATIENT_TO_CAREGIVER -> {
-                if (!request.getPatient().equals(responder)) {
-                    throw new AccessDeniedException("Only the patient can respond");
-                }
+            case PATIENT_TO_CAREGIVER -> {
+                boolean isPatient = responder instanceof Patient
+                        && responder.getId().equals(request.getPatient().getId());
+                boolean isCaregiver = responder instanceof Caregiver && request.getPatient().getCaregivers().stream()
+                        .anyMatch(c -> c.getId().equals(responder.getId()));
+                if (!isPatient && !isCaregiver)
+                    throw new AccessDeniedException(
+                            "Apenas o paciente ou um cuidador relacionado podem aceitar esta solicitação");
             }
+            case DOCTOR_TO_PATIENT, CAREGIVER_TO_PATIENT -> {
+                boolean isPatient = responder instanceof Patient
+                        && responder.getId().equals(request.getPatient().getId());
+                boolean isCaregiver = responder instanceof Caregiver && request.getPatient().getCaregivers().stream()
+                        .anyMatch(c -> c.getId().equals(responder.getId()));
+                if (!isPatient && !isCaregiver)
+                    throw new AccessDeniedException(
+                            "Apenas o paciente ou seus cuidadores podem aceitar esta solicitação");
+            }
+            default -> throw new AccessDeniedException("Tipo de solicitação inválido para resposta");
         }
     }
 
@@ -140,7 +167,7 @@ public class AssociationRequestService {
 
         switch (request.getType()) {
             case PATIENT_TO_DOCTOR, DOCTOR_TO_PATIENT -> {
-                Doctor doctor = doctorRepo.findById(request.getRelation().getId())
+                Doctor doctor = doctorRepo.findByIdAndActiveTrue(request.getRelation().getId())
                         .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
                 patient.getDoctors().add(doctor);
                 doctor.getPatients().add(patient);
@@ -148,7 +175,7 @@ public class AssociationRequestService {
                 doctorRepo.save(doctor);
             }
             case PATIENT_TO_CAREGIVER, CAREGIVER_TO_PATIENT -> {
-                Caregiver caregiver = caregiverRepo.findById(request.getRelation().getId())
+                Caregiver caregiver = caregiverRepo.findByIdAndActiveTrue(request.getRelation().getId())
                         .orElseThrow(() -> new ResourceNotFoundException("Caregiver not found"));
                 patient.getCaregivers().add(caregiver);
                 caregiver.getPatients().add(patient);
@@ -158,17 +185,36 @@ public class AssociationRequestService {
         }
     }
 
-    private AssociationRequestResponseDto toDto(AssociationRequest r) {
-        AssociationRequestResponseDto dto = new AssociationRequestResponseDto();
-        dto.setId(r.getId());
-        dto.setPatientEmail(r.getPatient().getEmail());
-        dto.setRelationEmail(r.getRelation().getEmail());
-        dto.setType(r.getType());
-        dto.setStatus(r.getStatus());
-        dto.setCreatedAt(r.getCreatedAt());
-        dto.setRespondedAt(r.getRespondedAt());
-        dto.setCreatorEmail(r.getCreator().getEmail());
-        dto.setResponderEmail(r.getResponder() != null ? r.getResponder().getEmail() : null);
-        return dto;
+    private void sendCreationNotification(AssociationRequest request) {
+        String title = "Nova solicitação de associação";
+        String message = String.format("%s enviou uma solicitação de associação para você.",
+                request.getCreator().getName());
+
+        NotificationCreateRequest notification = new NotificationCreateRequest(
+                request.getCreator().getId(),
+                NotificationType.RELATIONAL_UPDATE,
+                title,
+                message,
+                List.of(request.getRelation().getId()),
+                request.getId()
+        );
+
+        notificationService.createAndSend(notification);
+    }
+
+    private void sendAcceptedNotification(AssociationRequest request) {
+        String title = "Solicitação de associação aceita";
+        String message = String.format("%s aceitou a solicitação de associação.", request.getResponder().getName());
+
+        NotificationCreateRequest notification = new NotificationCreateRequest(
+                request.getResponder().getId(),
+                NotificationType.RELATIONAL_UPDATE,
+                title,
+                message,
+                List.of(request.getCreator().getId(), request.getPatient().getId()),
+                request.getId()
+        );
+
+        notificationService.createAndSend(notification);
     }
 }

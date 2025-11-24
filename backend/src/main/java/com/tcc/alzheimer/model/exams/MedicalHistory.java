@@ -1,9 +1,12 @@
 package com.tcc.alzheimer.model.exams;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.tcc.alzheimer.model.roles.Patient;
 import com.tcc.alzheimer.model.roles.User;
+import com.tcc.alzheimer.model.files.File;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +15,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -24,7 +29,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MedicalHistory {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -49,5 +54,12 @@ public class MedicalHistory {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by")
     private User updatedBy;
+
+    @ManyToMany
+    @JoinTable(name = "medical_history_files", joinColumns = @JoinColumn(name = "medical_history_id"), inverseJoinColumns = @JoinColumn(name = "file_id"))
+    private Set<File> files = new HashSet<>();
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
 
 }

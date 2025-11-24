@@ -1,16 +1,67 @@
 import { Tabs } from "expo-router";
-import React from "react";
-import { Platform } from "react-native";
+import React, { useEffect } from "react";
+import { ActivityIndicator, Platform } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
+import { useAuth } from "@/context/AuthContext";
+import { useSelectedPatient } from "@/context/SelectedPatientContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSession } from "@/hooks/useSession";
+import { useRouter } from "expo-router";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+
+  const session = useSession();
+  const { loading } = useAuth();
+  const {
+    state,
+    clearSelection,
+    loading: loadingSelected,
+  } = useSelectedPatient();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (loading || loadingSelected) {
+      return;
+    }
+    if (!session) {
+      router.replace("/login");
+      return;
+    }
+    if (state.patientId == null) {
+      clearSelection();
+      router.replace("/selecter-patient");
+    }
+  }, [
+    loading,
+    router,
+    session,
+    state.patientId,
+    state.hydrated,
+    loadingSelected,
+  ]);
+
+  if (
+    loading ||
+    !session ||
+    !state.hydrated ||
+    state.patientId == null ||
+    loadingSelected
+  ) {
+    return (
+      <SafeAreaView
+        style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        edges={["top"]}
+      >
+        <ActivityIndicator />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["top"]}>

@@ -17,16 +17,29 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
 
     Optional<Patient> findByEmail(String email);
 
+    Optional<Patient> findByEmailAndActiveTrue(String email);
+
     Optional<Patient> findByCpf(String cpf);
+
+    Optional<Patient> findByIdAndActiveTrue(Long id);
+
+    List<Patient> findAllByActiveTrue();
 
     List<Patient> findByCaregivers(Caregiver caregiver);
 
+    List<Patient> findByCaregiversAndActiveTrue(Caregiver caregiver);
+
     List<Patient> findByDoctors(Doctor doctor);
+
+    List<Patient> findByDoctorsAndActiveTrue(Doctor doctor);
+    
+    List<Patient> findByDoctorsAndActiveTrueAndNameContainingIgnoreCase(Doctor doctor, String name);
 
     @Query("""
                 SELECT p FROM Patient p
                 JOIN p.doctors d
                 WHERE d.id = :doctorId
+                  AND p.active = true
                   AND (:query IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))
                                      OR LOWER(p.email) LIKE LOWER(CONCAT('%', :query, '%')))
                   AND (:serviceType IS NULL OR LOWER(p.type) = LOWER(:serviceType))

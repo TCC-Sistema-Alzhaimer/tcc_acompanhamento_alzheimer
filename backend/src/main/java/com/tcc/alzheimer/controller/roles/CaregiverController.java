@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tcc.alzheimer.dto.roles.carregiver.CaregiverPostAndPutDto;
 import com.tcc.alzheimer.dto.roles.carregiver.CarregiverGetDto;
 import com.tcc.alzheimer.model.roles.Caregiver;
-import com.tcc.alzheimer.model.roles.Patient;
+import com.tcc.alzheimer.dto.roles.patient.PatientResponseGetDTO;
 import com.tcc.alzheimer.service.roles.CaregiverService;
 
 @RestController
@@ -44,19 +44,10 @@ public class CaregiverController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Caregiver> update(@PathVariable Long id, @RequestBody CaregiverPostAndPutDto dto) {
-        Caregiver caregiver = new Caregiver();
-        caregiver.setCpf(dto.getCpf());
-        caregiver.setName(dto.getName());
-        caregiver.setEmail(dto.getEmail());
-        caregiver.setPhone(dto.getPhone());
-        caregiver.setBirthdate(dto.getBirthdate());
-        caregiver.setGender(dto.getGender());
-        caregiver.setAddress(dto.getAddress());
-        caregiver.setPassword(dto.getPassword());
-        caregiver.setType(dto.getUserType());
-
-        return ResponseEntity.ok(service.update(id, caregiver, dto.getPatientEmails()));
+    public ResponseEntity<CarregiverGetDto> update(
+            @PathVariable Long id,
+            @RequestBody CaregiverPostAndPutDto dto) {
+        return ResponseEntity.ok(service.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
@@ -66,7 +57,7 @@ public class CaregiverController {
     }
 
     @GetMapping("/{id}/patients")
-    public ResponseEntity<List<Patient>> getPatients(@PathVariable Long id) {
+    public ResponseEntity<List<PatientResponseGetDTO>> getPatients(@PathVariable Long id) {
         return ResponseEntity.ok(service.getPatients(id));
     }
 }

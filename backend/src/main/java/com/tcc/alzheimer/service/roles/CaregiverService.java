@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tcc.alzheimer.dto.roles.carregiver.CaregiverPostAndPutDto;
 import com.tcc.alzheimer.dto.roles.carregiver.CarregiverGetDto;
+import com.tcc.alzheimer.dto.roles.patient.PatientResponseGetDTO;
 import com.tcc.alzheimer.exception.ResourceConflictException;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Caregiver;
@@ -31,7 +32,9 @@ public class CaregiverService {
     private CarregiverGetDto toDto(Caregiver caregiver) {
         List<String> patientEmails = new ArrayList<>();
         if (caregiver.getPatients() != null) {
-            caregiver.getPatients().forEach(p -> patientEmails.add(p.getEmail()));
+            caregiver.getPatients().stream()
+                    .filter(patient -> Boolean.TRUE.equals(patient.getActive()))
+                    .forEach(p -> patientEmails.add(p.getEmail()));
         }
         return new CarregiverGetDto(
                 caregiver.getCpf(),
@@ -44,33 +47,49 @@ public class CaregiverService {
                 patientEmails);
     }
 
+    private PatientResponseGetDTO toPatientDto(Patient patient) {
+        return new PatientResponseGetDTO(
+                patient.getId(),
+                patient.getName(),
+                patient.getCpf(),
+                patient.getEmail(),
+                patient.getPhone(),
+                patient.getGender(),
+                patient.getAddress(),
+                patient.getBirthdate(),
+                patient.getDoctors().stream()
+                        .filter(doctor -> Boolean.TRUE.equals(doctor.getActive()))
+                        .map(doctor -> doctor.getEmail())
+                        .toList(),
+                patient.getCaregivers().stream()
+                        .filter(caregiver -> Boolean.TRUE.equals(caregiver.getActive()))
+                        .map(caregiver -> caregiver.getEmail())
+                        .toList());
+    }
+
     public List<CarregiverGetDto> findAll() {
-        return repo.findAll().stream()
+        return repo.findAllByActiveTrue().stream()
                 .map(this::toDto)
                 .toList();
     }
 
     public CarregiverGetDto findById(Long id) {
-        Caregiver caregiver  =  repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cuidador com id " + id + " não encontrado"));
+        Caregiver caregiver = findByIdIntern(id);
         return toDto(caregiver);
     }
 
     public Caregiver findByIdIntern(Long id) {
-        return repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cuidador com id " + id + " não encontrado"));
+        return repo.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cuidador com id " + id + " nao encontrado"));
     }
 
     public Caregiver save(CaregiverPostAndPutDto dto) {
-        // Verificar duplicidade
-        if (repo.findByCpf(dto.getCpf()).isPresent()) {
+        if (repo.findByCpf(dto.getCpf()).isPresent())
             throw new ResourceConflictException("CPF já cadastrado!");
-        }
-        if (repo.findByEmail(dto.getEmail()).isPresent()) {
-            throw new ResourceConflictException("Email já cadastrado!");
-        }
 
-        // Criar cuidador
+        if (repo.findByEmail(dto.getEmail()).isPresent())
+            throw new ResourceConflictException("Email já cadastrado!");
+
         Caregiver caregiver = new Caregiver();
         caregiver.setCpf(dto.getCpf());
         caregiver.setName(dto.getName());
@@ -81,61 +100,41 @@ public class CaregiverService {
         caregiver.setAddress(dto.getAddress());
         caregiver.setPassword(encoder.encode(dto.getPassword()));
         caregiver.setType(dto.getUserType());
-        caregiver.setPatients(null);
+        caregiver.setActive(Boolean.TRUE);
 
-        /*No inicio sera cadastrado sem pacientes 
-        List<String> patientEmails = dto.getPatientEmails();
-        if (patientEmails == null || patientEmails.isEmpty()) {
-            throw new IllegalArgumentException("Cuidador precisa ter pelo menos 1 paciente.");
-        }
-
-        patientEmails.forEach(email -> {
-            Patient patient = patientRepo.findByEmail(email)
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Paciente com email " + email + " não encontrado"));
-            caregiver.getPatients().add(patient);
-            patient.getCaregivers().add(caregiver);
-        });
-        */
         return repo.save(caregiver);
-        
     }
 
     @Transactional
-    public Caregiver update(Long id, Caregiver caregiver, List<String> patientEmails) {
+    public CarregiverGetDto update(Long id, CaregiverPostAndPutDto dto) {
         Caregiver existing = findByIdIntern(id);
 
-        existing.setName(caregiver.getName());
-        existing.setCpf(caregiver.getCpf());
-        existing.setEmail(caregiver.getEmail());
-        existing.setPhone(caregiver.getPhone());
-        existing.setBirthdate(caregiver.getBirthdate());
-        existing.setGender(caregiver.getGender());
-        existing.setAddress(caregiver.getAddress());
-
-        if (patientEmails != null) {
-            existing.getPatients().forEach(p -> p.getCaregivers().remove(existing));
-            existing.getPatients().clear();
-
-            patientEmails.forEach(email -> {
-                Patient patient = patientRepo.findByEmail(email)
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                "Paciente com email " + email + " não encontrado"));
-                existing.getPatients().add(patient);
-                patient.getCaregivers().add(existing);
-            });
+        existing.setName(dto.getName());
+        existing.setCpf(dto.getCpf());
+        existing.setEmail(dto.getEmail());
+        existing.setPhone(dto.getPhone());
+        existing.setBirthdate(dto.getBirthdate());
+        existing.setGender(dto.getGender());
+        existing.setAddress(dto.getAddress());
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            existing.setPassword(encoder.encode(dto.getPassword()));
         }
 
-        return repo.save(existing);
+        repo.save(existing);
+        return toDto(existing);
     }
 
     public void delete(Long id) {
         Caregiver caregiver = findByIdIntern(id);
-        repo.delete(caregiver);
+        caregiver.setActive(Boolean.FALSE);
+        repo.save(caregiver);
     }
 
-    public List<Patient> getPatients(Long id) {
+    @Transactional(readOnly = true)
+    public List<PatientResponseGetDTO> getPatients(Long id) {
         Caregiver caregiver = findByIdIntern(id);
-        return new ArrayList<>(caregiver.getPatients());
+        return patientRepo.findByCaregiversAndActiveTrue(caregiver).stream()
+                .map(this::toPatientDto)
+                .toList();
     }
 }

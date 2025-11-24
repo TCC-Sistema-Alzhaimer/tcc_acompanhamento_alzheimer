@@ -1,5 +1,3 @@
-// app/login.tsx
-
 import { useAuth } from "@/context/AuthContext";
 import {
   AuthenticationError,
@@ -7,7 +5,6 @@ import {
   NotFoundError,
 } from "@/services/errors";
 import { useRouter } from "expo-router";
-import * as SecureStore from "expo-secure-store";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -22,8 +19,8 @@ import {
 } from "react-native";
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState("admin1@gmail.com");
-  const [password, setPassword] = useState("senha123");
+  const [email, setEmail] = useState("amanda.dias@alzcare.com");
+  const [password, setPassword] = useState("careAmanda@123");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { useLogin } = useAuth();
@@ -36,20 +33,12 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     try {
-      const response = await useLogin({
+      await useLogin({
         email,
         password,
       });
-      if (response && response.token) {
-        if (Platform.OS === "web") {
-          localStorage.setItem("userToken", response.token);
-        } else {
-          await SecureStore.setItemAsync("userToken", response.token);
-        }
-        router.replace("/home" as any);
-      } else {
-        throw new Error("Resposta de autenticação inválida");
-      }
+
+      router.replace("/");
     } catch (error) {
       if (error instanceof AuthenticationError) {
         Alert.alert(

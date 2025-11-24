@@ -46,19 +46,10 @@ public class PatientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updatePatient(
+    public ResponseEntity<PatientResponseGetDTO> update(
             @PathVariable Long id,
-            @RequestBody PatientPostAndUpdateDto dto
-    ) {
-        try {
-            PatientResponseGetDTO updated = service.update(id, dto);
-            return ResponseEntity.ok(updated);
-        } catch (ResourceNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro ao atualizar paciente: " + ex.getMessage());
-        }
+            @RequestBody PatientPostAndUpdateDto dto) {
+        return ResponseEntity.ok(service.update(id, dto));
     }
 
     @DeleteMapping("/{id}")

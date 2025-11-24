@@ -1,6 +1,11 @@
 import { api } from "./api";
 import type { BasicListModel } from "~/types/roles/models";
-import type { CreateDoctorDTO, CreatePatientDTO, CreateCaregiverDTO, CreateAdminDTO } from "~/types/roles/dtos";
+import type {
+  CreateDoctorDTO,
+  CreatePatientDTO,
+  CreateCaregiverDTO,
+  CreateAdminDTO,
+} from "~/types/roles/dtos";
 import { SystemRoles } from "~/types/SystemRoles";
 import type {
   DoctorModel,
@@ -12,15 +17,18 @@ import type {
 // Busca todos os usuários
 export const getAllUsers = () => {
   return api.get<BasicListModel[]>("/users", {
-    withCredentials: true, 
+    withCredentials: true,
   });
 };
 
 // Busca usuários por termo de pesquisa
 export const searchUsers = (query: string) => {
-  return api.get<BasicListModel[]>(`/users/search?query=${encodeURIComponent(query)}`, {
-    withCredentials: true, 
-  });
+  return api.get<BasicListModel[]>(
+    `/users/search?query=${encodeURIComponent(query)}`,
+    {
+      withCredentials: true,
+    }
+  );
 };
 
 // GET listas para seleção (medicos, pacientes, cuidadores)
@@ -29,10 +37,14 @@ export const getAllPatients = () => api.get<BasicListModel[]>("patients");
 export const getAllCaregivers = () => api.get<BasicListModel[]>("caregivers");
 
 // POST criação de usuários
-export const createDoctor = (data: CreateDoctorDTO) => api.post("doctors", data);
-export const createPatient = (data: CreatePatientDTO) => api.post("patients", data);
-export const createCaregiver = (data: CreateCaregiverDTO) => api.post("caregivers", data);
-export const createAdmin = (data: CreateAdminDTO) => api.post("administrators", data);
+export const createDoctor = (data: CreateDoctorDTO) =>
+  api.post("doctors", data);
+export const createPatient = (data: CreatePatientDTO) =>
+  api.post("patients", data);
+export const createCaregiver = (data: CreateCaregiverDTO) =>
+  api.post("caregivers", data);
+export const createAdmin = (data: CreateAdminDTO) =>
+  api.post("administrators", data);
 
 export async function createUser(userType: SystemRoles, form: any) {
   switch (userType) {
@@ -64,7 +76,7 @@ export async function createUser(userType: SystemRoles, form: any) {
       };
       return createPatient(patientDto);
 
-    case SystemRoles.CARREGIVER:
+    case SystemRoles.CAREGIVER:
       const caregiverDto: CreateCaregiverDTO = {
         cpf: form.cpf,
         name: form.name,
@@ -94,13 +106,12 @@ export async function createUser(userType: SystemRoles, form: any) {
 }
 
 export async function getUserById(userType: SystemRoles, id: number) {
-  console.log("Fetching user", userType, id);
   switch (userType) {
     case SystemRoles.DOCTOR:
       return api.get<DoctorModel>(`doctors/${id}`);
     case SystemRoles.PATIENT:
       return api.get<PatientModel>(`patients/${id}`);
-    case SystemRoles.CARREGIVER:
+    case SystemRoles.CAREGIVER:
       return api.get<CaregiverModel>(`caregivers/${id}`);
     case SystemRoles.ADMIN:
       return api.get<AdminModel>(`administrators/${id}`);
@@ -110,13 +121,14 @@ export async function getUserById(userType: SystemRoles, id: number) {
 }
 
 export async function updateUser(userType: SystemRoles, id: number, data: any) {
+  console.log(userType);
+  console.log(data);
   switch (userType) {
     case SystemRoles.DOCTOR:
-      console.log(data)
       return api.put(`doctors/${id}`, data);
     case SystemRoles.PATIENT:
       return api.put(`patients/${id}`, data);
-    case SystemRoles.CARREGIVER:
+    case SystemRoles.CAREGIVER:
       return api.put(`caregivers/${id}`, data);
     case SystemRoles.ADMIN:
       return api.put(`administrators/${id}`, data);
@@ -125,5 +137,13 @@ export async function updateUser(userType: SystemRoles, id: number, data: any) {
   }
 }
 
-export const getPatientsAndCaregivers = () => 
-  api.get<BasicListModel[]>("/users/patients-and-caregivers", { withCredentials: true });
+export const getPatientsAndCaregivers = () =>
+  api.get<BasicListModel[]>("/users/patients-and-caregivers", {
+    withCredentials: true,
+  });
+
+export const searchUsersForChat = (query: string) =>
+  api.get<BasicListModel[]>("/users/chat-search", {
+    params: { query },
+    withCredentials: true,
+  });
