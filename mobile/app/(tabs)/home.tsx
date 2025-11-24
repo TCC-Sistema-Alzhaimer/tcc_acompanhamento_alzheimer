@@ -68,6 +68,7 @@ export default function HomeNewScreen() {
             <Card.Icon
               name="doc.text.magnifyingglass"
               onPress={() => router.push("/conclusion")}
+              type="primary"
             />
           </Card.Root>
 
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 16,
     justifyContent: "center",
-    borderColor: "#444", // cor mais sutil para fundo preto
+    borderColor: "#444",
   },
   scrollContent: {
     paddingBottom: 32, // espaço para o final do scroll
