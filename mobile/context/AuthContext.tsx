@@ -4,7 +4,13 @@ import { User } from "@/types/domain/user";
 import { isValidToken } from "@/util/valide-token";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Platform } from "react-native";
 
 export interface Session {
@@ -15,7 +21,7 @@ export interface Session {
 interface AuthContextType {
   logout: () => Promise<void>;
   useLogin: (credential: LoginRequest) => Promise<LoginResponse>;
-  useSession: () => Session | null;
+  getSession: Session | null;
   user: User | null;
   loading: boolean;
 }
@@ -107,13 +113,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const useSession = () => {
+  const getSession = useMemo(() => {
     return isValidToken(accessToken) && user ? { user, accessToken } : null;
-  };
+  }, [accessToken, user]);
 
   return (
     <AuthContext.Provider
-      value={{ logout, useLogin, useSession, user, loading }}
+      value={{ logout, useLogin, getSession, user, loading }}
     >
       {children}
     </AuthContext.Provider>
