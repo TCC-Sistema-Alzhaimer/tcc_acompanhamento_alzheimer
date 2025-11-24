@@ -1,9 +1,9 @@
-import { Msg } from "@/app/(stack)/chat/[id]";
+import { MessageView } from "@/app/(stack)/chat/[id]";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { StyleSheet, View } from "react-native";
 import { ThemedText } from "../ThemedText";
 
-export function MessageBubble({ text, time, variant }: Msg) {
+export function MessageBubble({ text, time, variant }: MessageView) {
   const muted = useThemeColor({}, "placeholder");
   const bgIncoming = useThemeColor({}, "background");
   const bgOutgoing = useThemeColor({}, "brandBackground");
