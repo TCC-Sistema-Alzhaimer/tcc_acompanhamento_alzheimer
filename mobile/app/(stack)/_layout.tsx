@@ -22,6 +22,13 @@ export default function TabLayout() {
           }}
         />
         <Stack.Screen
+          name="chat/create"
+          options={{
+            title: "Novo chat",
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
           name="exam/[id]"
           options={{
             title: "Detalhes do Exame",

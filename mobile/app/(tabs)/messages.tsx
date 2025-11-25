@@ -2,17 +2,26 @@ import { Card } from "@/components/card/Card";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { ThemedView } from "@/components/ThemedView";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useAuth } from "@/context/AuthContext";
+import { useThemeColor } from "@/hooks/useThemeColor";
 import { listMyChats } from "@/services/chat-service";
 import { ChatResponse } from "@/types/api/chat";
 import { formatTimeOrDate } from "@/util/format";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 
 export default function MessagesScreen() {
   const router = useRouter();
   const { getSession } = useAuth();
+  const brand = useThemeColor({}, "brandBackground");
 
   const [chats, setChats] = useState<ChatResponse[]>([]);
   const [searchText, setSearchText] = useState("");
@@ -25,6 +34,8 @@ export default function MessagesScreen() {
       try {
         const response = await listMyChats(getSession.accessToken);
         setChats(response);
+      } catch {
+        setChats([]);
       } finally {
         setLoading(false);
       }
@@ -34,7 +45,6 @@ export default function MessagesScreen() {
   }, [getSession]);
 
   const filteredChats = useMemo(() => {
-    console.log("Filtering chats with search text:", chats);
     if (!searchText.trim()) return chats;
     const term = searchText.toLowerCase();
     return chats.filter((chat) => {
@@ -83,6 +93,19 @@ export default function MessagesScreen() {
           />
           <Card.Icon name="magnifyingglass" />
         </Card.Root>
+
+        <Pressable
+          style={[
+            styles.newChatButton,
+            { backgroundColor: brand as any },
+            !getSession && styles.disabledButton,
+          ]}
+          onPress={() => router.push("/chat/create")}
+          disabled={!getSession}
+        >
+          <IconSymbol name="person.2.fill" size={18} color="#ffffff" />
+          <ThemedText style={styles.newChatText}>Novo chat</ThemedText>
+        </Pressable>
       </View>
 
       <View style={styles.content}>
@@ -144,10 +167,9 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
-    flex: 0.2,
     marginBottom: 16,
     justifyContent: "center",
-    borderColor: "#555",
+    gap: 12,
   },
   content: {
     flex: 1,
@@ -161,6 +183,25 @@ const styles = StyleSheet.create({
 
   search: {
     width: "100%",
+  },
+  newChatButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    paddingVertical: 12,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  newChatText: {
+    color: "#ffffff",
+    fontWeight: "700",
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
   listContent: {
     gap: 12,
