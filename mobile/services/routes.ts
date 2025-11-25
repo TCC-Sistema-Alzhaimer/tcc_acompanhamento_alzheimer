@@ -46,4 +46,5 @@ export const ROUTES = {
   CHAT_MESSAGES: (chatId: string) => `/chats/${chatId}/messages`,
   CHAT_NEW_MESSAGES: (chatId: string) => `/chats/${chatId}/messages/new`,
   CHAT_READ: (chatId: string) => `/chats/${chatId}/messages/read`,
+  CHAT_SEARCH_USERS: "/users/chat-search",
 };

@@ -25,6 +25,11 @@ export interface ChatResponse {
   participants: ChatParticipant[];
 }
 
+export interface ChatCreateRequest {
+  name: string;
+  participantIds: number[];
+}
+
 export interface ChatMessageCreateRequest {
   message: string;
   type?: string;
@@ -32,6 +37,13 @@ export interface ChatMessageCreateRequest {
 
 export interface ChatLastReadUpdateRequest {
   messageId: number;
+}
+
+export interface ChatUserSearchResult {
+  id: number;
+  name: string;
+  email: string;
+  userType?: Roles | string;
 }
 
 export interface PageResponse<T> {
