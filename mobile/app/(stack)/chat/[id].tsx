@@ -4,9 +4,15 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { ThemedView } from "@/components/ThemedView";
 import { Doctor, DoctorMocks } from "@/mocks/doctor-mock";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import {
+  KeyboardAwareScrollView,
+  KeyboardStickyView,
+} from "react-native-keyboard-controller";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export type Msg = {
   id: string;
@@ -39,6 +45,8 @@ const MESSAGES: Msg[] = [
 export default function ChatScreen() {
   const { id } = useLocalSearchParams();
   const [doctor, setDoctor] = useState<Doctor | null>(null);
+  const insets = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
 
   useEffect(() => {
     const doctorData = DoctorMocks.find((doc) => String(doc.id) === String(id));
@@ -49,31 +57,37 @@ export default function ChatScreen() {
     <ThemedView style={styles.container}>
       {doctor ? (
         <>
+          {/* HEADER */}
           <View style={styles.header}>
             <Card.Root themed={true} style={styles.headerCard}>
               <Card.Avatar uri="https://admin.cnnbrasil.com.br/wp-content/uploads/sites/12/2025/07/Avatar-Fogo-e-Cinzas.png?w=1200&h=900&crop=0" />
               <Card.Title
                 title={doctor.name}
-                subtitle="Última mensagem: há 2 horas"
+                subtitle="Ultima consulta: 12/06/2024"
               />
             </Card.Root>
           </View>
 
+          {/* MENSAGENS */}
           <ThemedView type="secondary" style={styles.content}>
-            <ScrollView
+            <KeyboardAwareScrollView
               style={{ flex: 1 }}
-              contentContainerStyle={styles.messages}
-              keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              bottomOffset={20}
             >
               {MESSAGES.map((m) => (
                 <MessageBubble key={m.id} {...m} />
               ))}
-            </ScrollView>
+            </KeyboardAwareScrollView>
           </ThemedView>
 
-          <View style={styles.footer}>
-            <Card.Root themed={false} style={styles.inputRow}>
+          {/* INPUT STICKY */}
+          <KeyboardStickyView
+            style={[styles.stickyFooter]}
+            offset={{ closed: 0, opened: 0 }}
+          >
+            <Card.Root themed={true}>
               <ThemedTextInput
                 placeholder="Digite sua mensagem..."
                 style={styles.input}
@@ -81,7 +95,7 @@ export default function ChatScreen() {
               />
               <Card.Icon name="paperplane.fill" onPress={() => {}} />
             </Card.Root>
-          </View>
+          </KeyboardStickyView>
         </>
       ) : (
         <ThemedText type="title">Loading...</ThemedText>
@@ -93,17 +107,20 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 16,
   },
+
   header: {
+    marginTop: 16,
     marginBottom: 12,
-    justifyContent: "center",
   },
+
   headerCard: {
     padding: 12,
     borderRadius: 10,
     borderWidth: 0,
   },
+
   content: {
     flex: 1,
     padding: 12,
@@ -111,22 +128,26 @@ const styles = StyleSheet.create({
     borderColor: "#555",
     borderRadius: 12,
   },
-  messages: {
-    paddingVertical: 4,
-    gap: 12,
+
+  stickyFooter: {
+    paddingTop: 8,
+    paddingBottom: 8,
+    backgroundColor: "rgba(30,30,30,0.96)", // dark responsivo
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "rgba(255,255,255,0.08)",
+
+    // Sombra suave
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 0,
   },
-  footer: {
-    paddingTop: 12,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 6,
-    borderRadius: 12,
-  },
+
   input: {
-    borderWidth: 0,
-    backgroundColor: "transparent",
-    paddingVertical: 10,
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    minHeight: 50,
   },
 });
