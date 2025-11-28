@@ -2,6 +2,7 @@ import { useNavigate, Link } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -14,6 +15,7 @@ import {
 } from "~/components/ui/form";
 import { ROUTES } from "~/routes/EnumRoutes";
 import { useAuth } from "~/hooks/useAuth";
+import { LogIn, AlertCircle } from "lucide-react";
 
 const loginSchema = z.object({
   username: z
@@ -31,6 +33,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -41,12 +44,26 @@ function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
+    setErrorMessage(null);
     try {
       await login(data.username, data.password);
       navigate(ROUTES.PRIVATE_HOME);
     } catch (error: any) {
-      alert(error.message || "Erro ao fazer login");
-      form.reset();
+      // Extrair mensagem de erro do axios ou usar mensagem padrão
+      let message = "Erro ao fazer login. Verifique suas credenciais.";
+
+      if (error.response?.data) {
+        const responseData = error.response.data;
+        if (typeof responseData === "string" && responseData.length > 0) {
+          message = responseData;
+        } else if (responseData.message) {
+          message = responseData.message;
+        } else if (responseData.error) {
+          message = responseData.error;
+        }
+      }
+
+      setErrorMessage(message);
     }
   };
 
@@ -55,6 +72,13 @@ function LoginPage() {
       <div className="w-full mb-6">
         <h1 className="text-2xl font-bold text-center">Login</h1>
       </div>
+
+      {errorMessage && (
+        <div className="w-full mb-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2 text-red-700">
+          <AlertCircle size={18} className="flex-shrink-0" />
+          <p className="text-sm">{errorMessage}</p>
+        </div>
+      )}
 
       <Form {...form}>
         <form
@@ -109,6 +133,7 @@ function LoginPage() {
             className="w-full bg-green-500 hover:bg-green-600 text-white"
             disabled={form.formState.isSubmitting}
           >
+            <LogIn size={18} className="mr-2" />
             {form.formState.isSubmitting ? "Entrando..." : "Entrar"}
           </Button>
         </form>
