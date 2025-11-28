@@ -148,7 +148,7 @@ export default function ChatPage() {
               <p className="text-base font-semibold text-gray-700">
                 Selecione um chat
               </p>
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-gray-700">
                 Em breve esta área exibirá o histórico completo de mensagens.
               </p>
             </div>
