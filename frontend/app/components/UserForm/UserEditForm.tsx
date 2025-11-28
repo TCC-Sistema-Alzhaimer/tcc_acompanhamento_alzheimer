@@ -67,8 +67,13 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
 
           let gender = "";
           if ("gender" in data && data.gender) {
-            const g = data.gender.toUpperCase();
-            gender = g === "M" || g === "F" ? g : "";
+            const g = String(data.gender).toUpperCase();
+            // Mapear diferentes formatos para M/F
+            if (g === "M" || g === "MALE" || g === "MASCULINO") {
+              gender = "M";
+            } else if (g === "F" || g === "FEMALE" || g === "FEMININO") {
+              gender = "F";
+            }
           }
 
           let doctorEmails: string[] = [];
