@@ -25,30 +25,44 @@ export function FormSelect({
   onChange,
 }: FormSelectProps) {
   return (
-    <div className="flex flex-col gap-1 mb-4 w-full text-gray-700">
-      {label && <label htmlFor={name}>{label}</label>}
+    <div className="flex flex-col gap-1 w-full">
+      {label && (
+        <label htmlFor={name} className="text-sm font-semibold text-gray-700">
+          {label}
+        </label>
+      )}
 
-      <FormControl fullWidth>
+      <FormControl fullWidth sx={{ margin: 0 }}>
         <Select
           id={name}
           name={name}
           value={value}
           onChange={onChange}
           displayEmpty
-          className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 text-dark-200 bg-gray-100 border-none rounded-lg"
           sx={{
             "& .MuiOutlinedInput-notchedOutline": {
-              border: "none",
+              border: "1px solid #d1d5db",
+              borderRadius: "8px",
+            },
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              border: "1px solid #d1d5db",
             },
             "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-              border: "none",
+              border: "1px solid #d1d5db",
             },
-            height: "42px",
+            "& .MuiSelect-select": {
+              color: value ? "inherit" : "#9ca3af",
+              padding: "8px",
+            },
+            backgroundColor: "#f9fafb",
+            borderRadius: "8px",
+            height: "38px",
+            fontSize: "14px",
           }}
         >
           {placeholder && (
             <MenuItem value="" disabled>
-              <em>{placeholder}</em>
+              {placeholder}
             </MenuItem>
           )}
 

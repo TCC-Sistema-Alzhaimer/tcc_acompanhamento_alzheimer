@@ -1,30 +1,15 @@
 import React from "react";
 import { usePatientDetails } from "./hooks/usePatientDetail";
-import { FileText, CalendarCheck, Calendar } from "lucide-react";
+import { FileText, CalendarCheck, Calendar, History } from "lucide-react";
 import Button from "~/components/Button";
 import { usePatientHistory } from "./hooks/usePatientHistory";
 import { ROUTES } from "~/routes/EnumRoutes";
 import { useNavigate } from "react-router";
+import { PatientInfoCard } from "./PatientInfoCard";
 
 interface PatientDetailsProps {
   patientId: number | null;
 }
-
-const calculateAge = (birthdate: Date | string) => {
-  try {
-    const birth = new Date(birthdate);
-    const today = new Date();
-    let age = today.getFullYear() - birth.getFullYear();
-    const m = today.getMonth() - birth.getMonth();
-
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-      age--;
-    }
-    return age;
-  } catch (error) {
-    return "?";
-  }
-};
 
 export function PatientDetails({ patientId }: PatientDetailsProps) {
   const { patient, isLoading: isLoadingPatient } = usePatientDetails(patientId);
@@ -70,42 +55,28 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
   };
 
   return (
-    <section className="flex flex-col gap-6 h-full">
-      <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col gap-5">
-        <h3 className="text-lg font-bold text-gray-800">
-          Dados do Paciente: {patient.name}
-        </h3>
-        <div className="bg-gray-100 rounded-lg p-5">
-          <strong className="block text-base font-bold text-gray-800 mb-2">
-            {patient.name} • {calculateAge(patient.birthdate)} anos •{" "}
-            {patient.gender}
-          </strong>
-          <p className="text-sm text-gray-600">
-            Data de Nascimento:{" "}
-            {new Date(patient.birthdate).toLocaleDateString("pt-BR")} • ID: #
-            {patient.id}
-          </p>
-        </div>
-      </div>
+    <section className="flex flex-col gap-6">
+      <PatientInfoCard patientId={patientId} />
 
-      <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col gap-5">
-        <h3 className="text-lg font-bold text-gray-800">Histórico resumido</h3>
+      <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm flex flex-col">
+        <h3 className="text-base font-semibold text-gray-800 mb-3">
+          Histórico resumido
+        </h3>
 
         {isLoadingHistory ? (
-          <div className="text-sm text-gray-800">Carregando histórico...</div>
+          <div className="text-sm text-gray-600">Carregando histórico...</div>
         ) : (
-          <div className="flex flex-col gap-4 border-l-2 border-gray-500 pl-6 ml-3">
+          <div className="flex flex-col gap-3 border-l-2 border-gray-300 pl-6 ml-3">
             {exams.map((exam) => (
-              <div key={exam.id} className="flex items-center gap-4 relative">
-                <div className="absolute -left-[1.65rem] top-1 w-6 h-6 rounded-full bg-teal-300 flex items-center justify-center text-white">
-                  <FileText size={12} />
+              <div key={exam.id} className="flex items-center gap-3 relative">
+                <div className="absolute -left-[1.65rem] top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-teal-400 flex items-center justify-center text-white">
+                  <FileText size={10} />
                 </div>
                 <div>
-                  <strong className="text-sm font-bold text-gray-800">
-                    Exame: {exam.examTypeDescription}
-                  </strong>
-                  <p className="text-xs text-gray-800">
-                    {/* Formate a data */}
+                  <p className="text-sm font-semibold text-gray-900">
+                    {exam.examTypeDescription}
+                  </p>
+                  <p className="text-xs text-gray-600">
                     {new Date(exam.requestDate).toLocaleDateString("pt-BR")}
                   </p>
                 </div>
@@ -113,14 +84,17 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
             ))}
 
             {exams.length === 0 && !isLoadingHistory && (
-              <p className="text-xs text-gray-800">Nenhum exame encontrado.</p>
+              <p className="text-sm text-gray-500">Nenhum exame encontrado.</p>
             )}
           </div>
         )}
 
-        <Button variant="primary" onClick={handleShowCompleteHistory}>
-          Ver histórico completo
-        </Button>
+        <div className="mt-4">
+          <Button variant="primary" onClick={handleShowCompleteHistory}>
+            <History size={20} className="flex-shrink-0" />
+            <span className="ml-2">Ver histórico completo</span>
+          </Button>
+        </div>
       </div>
     </section>
   );
