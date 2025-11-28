@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { QuickActions } from "~/components/UserList/QuickAction";
 import { useAuth } from "~/hooks/useAuth";
 import { PatientDetails } from "~/components/PatientDetail/PatientDetail";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { ROUTES } from "~/routes/EnumRoutes";
 
 export function meta({}: Route.MetaArgs) {
@@ -21,12 +21,15 @@ export default function DoctorPatientsPage() {
   const { user } = useAuth();
   const loggedDoctorId = user?.id;
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialSearch = searchParams.get("search") || "";
+
   const handleSelectPatient = (id: number) => {
     setSelectedPatientId(id);
   };
 
   const handleCreatePatient = () => {
-    console.log("Abrir modal de gerenciamento/criação de pacientes");
+    navigate(ROUTES.DOCTOR.PATIENTS);
   };
 
   const handleExamRequest = () => {
@@ -51,16 +54,15 @@ export default function DoctorPatientsPage() {
   };
 
   return (
-    <main className="bg-white flex flex-row h-full">
-      <div className="basis-1/4 h-full">
-        <PatientList
-          doctorId={Number(loggedDoctorId) || 0}
-          onSelectPatient={handleSelectPatient}
-          onCreatePatient={handleCreatePatient}
-        />
-      </div>
+    <main className="grid h-full gap-6 lg:grid-cols-[360px_1fr]">
+      <PatientList
+        doctorId={Number(loggedDoctorId) || 0}
+        onSelectPatient={handleSelectPatient}
+        onCreatePatient={handleCreatePatient}
+        initialSearchTerm={initialSearch}
+      />
 
-      <div className="flex-1 h-full overflow-y-auto bg-gray-100 p-6 flex flex-row gap-6">
+      <div className="h-full overflow-y-auto flex flex-row gap-6">
         <div className="basis-7/12 h-full">
           <PatientDetails patientId={selectedPatientId} />
         </div>
