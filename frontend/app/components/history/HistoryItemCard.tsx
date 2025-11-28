@@ -108,33 +108,54 @@ const IndicatorCard = ({ item }: { item: IndicatorResponseDTO }) => (
   </div>
 );
 
-export function HistoryItemCard({ item }: { item: UnifiedHistoryItem }) {
-  const renderDot = () => {
-    let bgColor = "bg-gray-300";
+interface HistoryItemCardProps {
+  item: UnifiedHistoryItem;
+  isLast?: boolean;
+}
 
-    if (item.itemType === "HISTORY") {
-      bgColor = "bg-yellow-500";
+export function HistoryItemCard({
+  item,
+  isLast = false,
+}: HistoryItemCardProps) {
+  const getIconAndColor = () => {
+    switch (item.itemType) {
+      case "HISTORY":
+        return {
+          icon: <FileText size={14} className="text-yellow-600" />,
+          bgColor: "bg-yellow-100",
+        };
+      case "EXAM":
+        return {
+          icon: <Stethoscope size={14} className="text-green-600" />,
+          bgColor: "bg-green-100",
+        };
+      case "CONCLUSION":
+        return {
+          icon: <ClipboardCheck size={14} className="text-blue-600" />,
+          bgColor: "bg-blue-100",
+        };
+      case "INDICATOR":
+        return {
+          icon: <Activity size={14} className="text-indigo-600" />,
+          bgColor: "bg-indigo-100",
+        };
+      default:
+        return { icon: null, bgColor: "bg-gray-100" };
     }
-    if (item.itemType === "EXAM") {
-      bgColor = "bg-green-500";
-    }
-    if (item.itemType === "CONCLUSION") {
-      bgColor = "bg-blue-500";
-    }
-    if (item.itemType === "INDICATOR") {
-      bgColor = "bg-indigo-500";
-    }
-
-    return (
-      <div
-        className={`absolute left-[-29px] top-5 w-4 h-4 rounded-full ${bgColor} border-2 border-white flex items-center justify-center`}
-      ></div>
-    );
   };
 
+  const { icon, bgColor } = getIconAndColor();
+
   return (
-    <div className="flex gap-4 relative pl-4 border-l-3 border-white ml-2">
-      {renderDot()}
+    <div className="relative pl-8">
+      {/* Ponto na linha do tempo */}
+      <div
+        className={`absolute left-[-12px] top-4 w-6 h-6 rounded-full ${bgColor} border border-gray-300 flex items-center justify-center z-10`}
+      >
+        {icon}
+      </div>
+
+      {/* Card do item */}
       {item.itemType === "HISTORY" && <MedicalHistoryCard item={item} />}
       {item.itemType === "EXAM" && <ExamCard item={item} />}
       {item.itemType === "CONCLUSION" && <ConclusionCard item={item} />}
