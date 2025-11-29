@@ -11,7 +11,6 @@ import { ArrowLeft } from "lucide-react";
 const verifySchema = z.object({
   email: z.string().email("E-mail inválido"),
   cpf: z.string().min(11, "CPF inválido"),
-  birthdate: z.string().min(1, "Data de nascimento obrigatória"),
 });
 
 type VerifyFormValues = z.infer<typeof verifySchema>;
@@ -27,7 +26,7 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (data: VerifyFormValues) => {
     setServerError("");
     try {
-      const response = await verifyUserReset(data);
+      const response = await verifyUserReset(data as any);
       const userId = response.data;
 
       navigate(ROUTES.RESET_PASSWORD, { state: { userId } });
@@ -87,22 +86,6 @@ export default function ForgotPasswordPage() {
             {form.formState.errors.cpf && (
               <span className="text-red-500 text-xs">
                 {form.formState.errors.cpf.message}
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold text-gray-700">
-              Data de Nascimento
-            </label>
-            <input
-              {...form.register("birthdate")}
-              type="date"
-              className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-all text-gray-600"
-            />
-            {form.formState.errors.birthdate && (
-              <span className="text-red-500 text-xs">
-                {form.formState.errors.birthdate.message}
               </span>
             )}
           </div>

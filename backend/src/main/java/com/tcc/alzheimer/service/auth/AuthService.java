@@ -173,10 +173,27 @@ public class AuthService {
         return userService.findByEmail(email);
     }
 
-    public Long verifyUserForReset(VerifyUserDTO dto) {
-        User user = userRepository.findByEmailAndCpf(dto.getEmail(), dto.getCpf())
-                .orElseThrow(() -> new ResourceNotFoundException("Dados não conferem."));
-                
+   public Long verifyUserForReset(VerifyUserDTO dto) {
+        // 1. LIMPEZA DE DADOS (Sanitization)
+        // Remove espaços antes/depois do email
+        String emailLimpo = dto.getEmail().trim(); 
+        
+        // Remove tudo que NÃO for número do CPF e remove espaços
+        String cpfLimpo = dto.getCpf().replaceAll("\\D", "").trim(); 
+
+        // 2. LOGS DE DEBUG (Olhe o terminal do Docker após tentar)
+        System.out.println("========== DEBUG RESET SENHA ==========");
+        System.out.println("Recebido do Front -> Email: '" + dto.getEmail() + "' | CPF: '" + dto.getCpf() + "'");
+        System.out.println("Buscando no Banco -> Email: '" + emailLimpo + "' | CPF: '" + cpfLimpo + "'");
+
+        // 3. A BUSCA
+        User user = userRepository.findByEmailAndCpf(emailLimpo, cpfLimpo)
+                .orElseThrow(() -> {
+                    System.out.println(">>> FALHA: Nenhuma conta encontrada com esses dados exatos.");
+                    return new ResourceNotFoundException("Dados não conferem.");
+                });
+        
+        System.out.println(">>> SUCESSO: Usuário encontrado: " + user.getName() + " (ID: " + user.getId() + ")");
         return user.getId();
     }
 

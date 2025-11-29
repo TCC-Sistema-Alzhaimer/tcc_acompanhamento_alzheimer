@@ -29,7 +29,7 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     if (!userId) {
-      navigate(ROUTES.LOGIN);
+      navigate("/");
     }
   }, [userId, navigate]);
 
@@ -46,7 +46,7 @@ export default function ResetPasswordPage() {
       });
       setSuccess(true);
 
-      setTimeout(() => navigate(ROUTES.LOGIN), 3000);
+      setTimeout(() => navigate("/"), 3000);
     } catch (err) {
       console.error(err);
       setServerError("Erro ao salvar nova senha. Tente novamente.");
@@ -57,7 +57,7 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <div className="w-full max-w-md bg-white p-10 rounded-2xl shadow-xl text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
@@ -77,8 +77,8 @@ export default function ResetPasswordPage() {
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
             Senha Alterada!
           </h2>
-          <p className="text-gray-500">Sua senha foi redefinida com sucesso.</p>
-          <p className="text-gray-400 text-sm mt-4">
+          <p className="text-gray-700">Sua senha foi redefinida com sucesso.</p>
+          <p className="text-gray-700 text-sm mt-4">
             Redirecionando para o login...
           </p>
         </div>
@@ -86,12 +86,11 @@ export default function ResetPasswordPage() {
     );
   }
 
-  // Tela de Formulário
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl">
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Nova Senha</h1>
-        <p className="text-gray-500 mb-6 text-sm">
+        <p className="text-gray-700 mb-6 text-sm">
           Crie uma nova senha segura para sua conta.
         </p>
 

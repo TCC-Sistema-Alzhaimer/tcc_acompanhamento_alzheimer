@@ -12,11 +12,7 @@ export const refreshRequest = () => {
   });
 };
 
-export const verifyUserReset = (data: {
-  email: string;
-  cpf: string;
-  birthdate: string;
-}) => {
+export const verifyUserReset = (data: { email: string; cpf: string }) => {
   return api.post<number>("/auth/password/verify", data);
 };
 
