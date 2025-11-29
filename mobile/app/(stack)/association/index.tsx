@@ -8,7 +8,7 @@ import { AssociationResponseDto } from "@/types/api/association";
 import { formatAssociationType } from "@/util/format";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { StyleSheet } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 export default function AssociationListScreen() {
   const [associations, setAssociations] = useState<AssociationResponseDto[]>(
     []
@@ -28,6 +28,7 @@ export default function AssociationListScreen() {
           accessToken,
           patientId,
         });
+        console.log("Fetched associations:", resp);
         setAssociations(resp);
       }
 
@@ -38,8 +39,9 @@ export default function AssociationListScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="subtitle" style={styles.subtitle}>
-        Associações pendentes
+        Associações
       </ThemedText>
+      <ScrollView>
       {associations.map((association) => (
         <Card.Root
           key={association.id}
@@ -53,7 +55,7 @@ export default function AssociationListScreen() {
           />
           <Card.Icon name="person.2.fill" />
         </Card.Root>
-      ))}
+      ))}</ScrollView>
     </ThemedView>
   );
 }

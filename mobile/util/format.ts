@@ -8,6 +8,8 @@ export function formatAssociationType(type: AssociationType): string {
       return "Paciente para Cuidador";
     case "CAREGIVER_TO_PATIENT":
       return "Cuidador para Paciente";
+    case "DOCTOR_TO_PATIENT":
+      return "Médico para Paciente";
     default:
       return "Tipo Desconhecido";
   }
