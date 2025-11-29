@@ -123,7 +123,7 @@ function LoginPage() {
 
           <Link
             to="/forgot-password"
-            className="text-blue-500 hover:underline text-sm block text-right"
+            className="text-teal-600 hover:underline text-sm block text-right"
           >
             Esqueceu sua senha?
           </Link>

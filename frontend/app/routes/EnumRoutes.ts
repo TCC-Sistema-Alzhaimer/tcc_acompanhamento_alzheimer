@@ -6,6 +6,8 @@ export const ROUTES = {
   CHAT: "/chat",
   PRIVATE_HOME: "/private-home",
   ASSOCIATION: "/association",
+  FORGOT_PASSWORD: "/forgot-password",
+  RESET_PASSWORD: "/reset-password",
 
   ADMIN: {
     MANAGEMENT: "/management",

@@ -9,6 +9,8 @@ import { ROUTES } from "./routes/EnumRoutes";
 export default [
   layout("./layout/Auth/index.tsx", [
     index("routes/Auth/login.tsx"),
+    route(ROUTES.FORGOT_PASSWORD, "routes/Auth/forgotPassword.tsx"),
+    route(ROUTES.RESET_PASSWORD, "routes/Auth/resetPassword.tsx"),
     // route(ROUTES.LOGIN, "routes/Auth/login.tsx"),
   ]),
 
