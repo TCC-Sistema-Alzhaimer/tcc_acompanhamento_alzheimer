@@ -10,23 +10,38 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tcc.alzheimer.dto.roles.BasicDtoForList;
 import com.tcc.alzheimer.dto.roles.doctor.DoctorGetDto;
 import com.tcc.alzheimer.dto.roles.doctor.DoctorPostAndPutDto;
+import com.tcc.alzheimer.exception.BadRequestException;
 import com.tcc.alzheimer.exception.ResourceConflictException;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Doctor;
 import com.tcc.alzheimer.model.roles.Patient;
 import com.tcc.alzheimer.repository.roles.DoctorRepository;
 import com.tcc.alzheimer.repository.roles.PatientRepository;
+import com.tcc.alzheimer.repository.roles.UserRepository;
 
 @Service
 public class DoctorService {
     private final DoctorRepository repo;
     private final PatientRepository patientRepo;
+    private final UserRepository UserRepo;
     private final PasswordEncoder encoder;
 
-    public DoctorService(DoctorRepository repo, PatientRepository patientRepo, PasswordEncoder encoder) {
+    public DoctorService(DoctorRepository repo, PatientRepository patientRepo, PasswordEncoder encoder, UserRepository UserRepo) {
         this.repo = repo;
         this.patientRepo = patientRepo;
         this.encoder = encoder;
+        this.UserRepo = UserRepo;
+    }
+    
+    private void validatePasswordLength(String password) {
+        if (password == null || password.trim().length() < 6) {
+            throw new BadRequestException("A senha deve ter no mínimo 6 caracteres.");
+        }
+    }
+
+    private String cleanNumericField(String value) {
+        if (value == null) return null;
+        return value.replaceAll("[^0-9]", "");
     }
 
     private DoctorGetDto toDto(Doctor doctor) {
@@ -60,20 +75,47 @@ public class DoctorService {
     }
 
     public Doctor save(DoctorPostAndPutDto dto) {
-        if (repo.findByCpf(dto.getCpf()).isPresent())
+
+        if (dto.getCpf() == null || dto.getCpf().isBlank()) {
+            throw new BadRequestException("CPF é obrigatório.");
+        }
+        if (dto.getEmail() == null || dto.getEmail().isBlank()) {
+            throw new BadRequestException("Email é obrigatório.");
+        }
+        if (dto.getName() == null || dto.getName().isBlank()) {
+            throw new BadRequestException("Nome é obrigatório.");
+        }
+        if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+            throw new BadRequestException("Senha é obrigatória.");
+        }
+
+        String cleanedCpf = cleanNumericField(dto.getCpf());
+        if(cleanedCpf.length() != 11) {
+            throw new BadRequestException("CPF inválido. Deve conter 11 dígitos.");
+        }
+
+        String cleanedPhone = cleanNumericField(dto.getPhone());
+        if(cleanedPhone.length() < 10 || cleanedPhone.length() > 11) {
+            throw new BadRequestException("Telefone inválido. Deve conter entre 10 e 11 dígitos.");
+        }
+
+        if (UserRepo.findByCpf(cleanedCpf).isPresent())
             throw new ResourceConflictException("CPF já cadastrado!");
 
-        if (repo.findByEmail(dto.getEmail()).isPresent())
+        if (UserRepo.findByEmail(dto.getEmail()).isPresent())
             throw new ResourceConflictException("Email já cadastrado!");
 
         if (repo.findByCrm(dto.getCrm()).isPresent())
             throw new ResourceConflictException("CRM já cadastrado!");
+        
+
+        validatePasswordLength(dto.getPassword());
 
         Doctor doctor = new Doctor();
-        doctor.setCpf(dto.getCpf());
+        doctor.setCpf(cleanedCpf);
         doctor.setName(dto.getName());
         doctor.setEmail(dto.getEmail());
-        doctor.setPhone(dto.getPhone());
+        doctor.setPhone(cleanedPhone);
         doctor.setCrm(dto.getCrm());
         doctor.setSpeciality(dto.getSpeciality());
         doctor.setPassword(encoder.encode(dto.getPassword()));
@@ -84,21 +126,42 @@ public class DoctorService {
     }
 
     @Transactional
-public DoctorGetDto update(Long id, DoctorPostAndPutDto dto) {
-    Doctor existing = findByIdIntern(id);
+    public DoctorGetDto update(Long id, DoctorPostAndPutDto dto) {
+        Doctor existing = findByIdIntern(id);
 
-    existing.setName(dto.getName());
-    existing.setCpf(dto.getCpf());
-    existing.setEmail(dto.getEmail());
-    existing.setPhone(dto.getPhone());
-    existing.setCrm(dto.getCrm());
-    existing.setSpeciality(dto.getSpeciality());
-    if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-        existing.setPassword(encoder.encode(dto.getPassword()));
-    }
+        if (dto.getName() == null || dto.getName().isBlank()) {
+            throw new BadRequestException("Nome é obrigatório para atualização.");
+        }
+        if (dto.getCpf() == null || dto.getCpf().isBlank()) {
+            throw new BadRequestException("CPF é obrigatório para atualização.");
+        }
+        if (dto.getEmail() == null || dto.getEmail().isBlank()) {
+            throw new BadRequestException("Email é obrigatório para atualização.");
+        }
 
-    repo.save(existing);
-    return toDto(existing);
+        String cleanedCpf = cleanNumericField(dto.getCpf());
+        if(cleanedCpf.length() != 11) {
+            throw new BadRequestException("CPF inválido. Deve conter 11 dígitos.");
+        }
+
+        String cleanedPhone = cleanNumericField(dto.getPhone());
+        if(cleanedPhone.length() < 10 || cleanedPhone.length() > 11) {
+            throw new BadRequestException("Telefone inválido. Deve conter entre 10 e 11 dígitos.");
+        }
+        existing.setName(dto.getName());
+        existing.setCpf(cleanedCpf);
+        existing.setEmail(dto.getEmail());
+        existing.setPhone(cleanedPhone);
+        existing.setCrm(dto.getCrm());
+        existing.setSpeciality(dto.getSpeciality());
+
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            validatePasswordLength(dto.getPassword());
+            existing.setPassword(encoder.encode(dto.getPassword()));
+        }
+
+        repo.save(existing);
+        return toDto(existing);
 }
 
     public void delete(Long id) {

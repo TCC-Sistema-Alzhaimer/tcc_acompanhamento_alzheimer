@@ -70,7 +70,7 @@ export function UserCreateForm() {
   const roleOptions = [
     { value: SystemRoles.DOCTOR, label: "Médico" },
     { value: SystemRoles.PATIENT, label: "Paciente" },
-    { value: SystemRoles.CARREGIVER, label: "Cuidador" },
+    { value: SystemRoles.CAREGIVER, label: "Cuidador" },
     { value: SystemRoles.ADMIN, label: "Administrador" }
   ].filter(r => {
     if (currentUserRole === SystemRoles.DOCTOR) {
@@ -153,6 +153,7 @@ export function UserCreateForm() {
             placeholder="CRM"
             value={form.crm || ""}
             onChange={(e) => setForm({ ...form, crm: e.target.value })}
+            mask= "CRM/aa 0000[0000]"
           >
             CRM
           </Input>
@@ -166,7 +167,7 @@ export function UserCreateForm() {
         </>
       )}
 
-      {(userType === SystemRoles.PATIENT || userType === SystemRoles.CARREGIVER) && (
+      {(userType === SystemRoles.PATIENT || userType === SystemRoles.CAREGIVER) && (
         <>
           <Input
             type="date"

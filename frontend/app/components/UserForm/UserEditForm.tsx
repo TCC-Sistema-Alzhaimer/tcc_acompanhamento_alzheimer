@@ -47,9 +47,6 @@ interface UserEditFormProps {
 
 export function UserEditForm({ userId, userType }: UserEditFormProps) {
   const [form, setForm] = useState<UserForm>({});
-  const [doctors, setDoctors] = useState<BasicListModel[]>([]);
-  const [patients, setPatients] = useState<BasicListModel[]>([]);
-  const [caregivers, setCaregivers] = useState<BasicListModel[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
@@ -252,6 +249,7 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
             placeholder="Digite o CRM"
             value={form.crm || ""}
             onChange={(e) => setForm({ ...form, crm: e.target.value })}
+            mask= "CRM/aa 0000[0000]"
           >
             CRM
           </Input>
