@@ -59,4 +59,5 @@ export type BasicListModel = {
   email: string;
   userType: SystemRoles;
   age?: number;
+  gender?: string;
 };

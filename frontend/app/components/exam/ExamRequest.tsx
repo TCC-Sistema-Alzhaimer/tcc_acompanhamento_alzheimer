@@ -6,6 +6,8 @@ import { ROUTES } from "~/routes/EnumRoutes";
 import type { SelectChangeEvent } from "@mui/material";
 import { useExamTypes } from "./hooks/useExamTypes";
 import Form from "../form";
+import { Send } from "lucide-react";
+import { useToast } from "~/context/ToastContext";
 
 interface SolicitarExameFormProps {
   patientId: number;
@@ -14,6 +16,7 @@ interface SolicitarExameFormProps {
 
 export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
   const navigate = useNavigate();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     tipo: "",
     dataFinal: "",
@@ -49,11 +52,11 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
 
     try {
       await api.post("/exams", examData);
-      alert("Exame solicitado com sucesso!");
-      navigate(ROUTES.DOCTOR.PATIENTS);
+      toast.success("Exame solicitado com sucesso!");
+      setFormData({ tipo: "", dataFinal: "", anotacoes: "" });
     } catch (error) {
       console.error("Erro ao solicitar exame:", error);
-      alert("Erro ao solicitar exame.");
+      toast.error("Erro ao solicitar exame. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -62,12 +65,12 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col bg-white gap-4 p-6 rounded-lg"
+      className="flex flex-col bg-white border border-gray-200 rounded-lg p-4 shadow-sm gap-4"
     >
       <Form.Header title="Solicitar exames" />
 
       <Form.Select
-        label="Tipo"
+        label="Tipo:"
         name="tipo"
         value={formData.tipo}
         onChange={handleSelectChange}
@@ -80,7 +83,7 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
         }
       />
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
         <label
           htmlFor="dataFinal"
           className="text-sm font-semibold text-gray-700"
@@ -93,11 +96,11 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
           name="dataFinal"
           value={formData.dataFinal}
           onChange={handleChange}
-          className="flex-1 p-2 border border-gray-300 bg-gray-100 rounded-lg w-full"
+          className="p-2 border border-gray-300 bg-gray-50 rounded-lg w-full text-sm"
         />
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
         <label
           htmlFor="anotacoes"
           className="text-sm font-semibold text-gray-700"
@@ -109,21 +112,28 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
           name="anotacoes"
           value={formData.anotacoes}
           onChange={handleChange}
-          rows={4}
+          rows={3}
           placeholder="Anotações..."
-          className="flex-1 p-2 border border-gray-300 bg-gray-100 rounded-lg w-full"
+          className="p-2 border border-gray-300 bg-gray-50 rounded-lg w-full text-sm"
         />
       </div>
 
-      <div className="flex justify-end gap-4 mt-4">
+      <div className="flex justify-end gap-3 mt-2">
         <Button
           type="button"
           variant="secondary"
+          className="!w-auto !py-2 !px-4 text-sm"
           onClick={() => navigate(ROUTES.DOCTOR.PATIENTS)}
         >
           Cancelar
         </Button>
-        <Button type="submit" variant="primary" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          variant="primary"
+          className="!w-auto !py-2 !px-4 text-sm"
+          disabled={isSubmitting}
+        >
+          <Send size={16} className="mr-2" />
           {isSubmitting ? "Enviando..." : "Solicitar"}
         </Button>
       </div>

@@ -171,12 +171,12 @@ function ChatListItem({
         className={clsx(
           "flex flex-col gap-2 rounded-lg border px-3.5 py-2.5 transition",
           selected
-            ? "border-emerald-600 bg-emerald-50"
+            ? "border-teal-200 bg-teal-50"
             : "border-transparent bg-gray-50 hover:bg-gray-100"
         )}
       >
         <div className="flex items-center gap-2.5">
-          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold uppercase text-emerald-900">
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-teal-400 text-xs font-semibold uppercase text-white">
             {chatLabel.slice(0, 2).toUpperCase()}
           </div>
 
@@ -187,7 +187,7 @@ function ChatListItem({
               </p>
               <div className="flex items-center gap-2 text-xs text-gray-700">
                 {chatHasUnread(chat) && (
-                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800">
+                  <span className="inline-flex items-center rounded-full bg-teal-50 px-2 py-0.5 font-semibold text-teal-800">
                     Novo
                   </span>
                 )}

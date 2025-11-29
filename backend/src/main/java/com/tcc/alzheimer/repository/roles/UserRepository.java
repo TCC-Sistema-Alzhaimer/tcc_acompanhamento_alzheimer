@@ -18,8 +18,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByIdAndActiveTrue(Long id);
 
+    Optional<User> findByEmailAndCpf(String email, String cpf);
+    
     List<User> findByIdInAndActiveTrue(List<Long> ids);
-
+    
     boolean existsByEmail(String email);
 
     boolean existsByEmailAndActiveTrue(String email);

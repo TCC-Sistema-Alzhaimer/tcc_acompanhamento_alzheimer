@@ -1,9 +1,6 @@
 import { Outlet, useNavigate } from "react-router";
 import { Topbar } from "~/components/TopBar/Topbar";
 import AccountMenu from "~/components/TopBar/AccountMenu";
-import DoctorSideBar from "../Doctor/Sidebar";
-
-// 1. Importe o IconButton, Ícones e o NotificationBell
 import React from "react";
 import { useLocalStorage } from "usehooks-ts";
 import IconButton from "@mui/material/IconButton";
@@ -13,6 +10,7 @@ import { useChatUnreadCount } from "~/hooks/useChatUnreadCount";
 import { ROUTES } from "~/routes/EnumRoutes";
 import ChatUnreadBadge from "~/components/chat/UnreadBadge";
 import { useAuth } from "~/hooks/useAuth";
+import { AppSidebar } from "~/components/Sidebar/AppSIdebar";
 
 export default function PrivateLayout() {
   const { user } = useAuth();
@@ -46,7 +44,7 @@ export default function PrivateLayout() {
       </Topbar>
 
       <div className="flex flex-1 overflow-hidden">
-        <DoctorSideBar isCollapsed={isCollapsed} />
+        <AppSidebar isCollapsed={isCollapsed} />
 
         <main className="flex-1 p-6 overflow-y-auto">
           <Outlet />

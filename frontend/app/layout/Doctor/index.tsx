@@ -1,5 +1,4 @@
 import { Outlet, useNavigate } from "react-router";
-import DoctorSideBar from "./Sidebar";
 import { AuthGuard } from "~/guards/authGuard";
 import { Topbar } from "./Topbar";
 import AccountMenu from "./TopbarItem/AccountMenu";
@@ -15,6 +14,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { ROUTES } from "~/routes/EnumRoutes";
 import { useChatUnreadCount } from "~/hooks/useChatUnreadCount";
 import ChatUnreadBadge from "~/components/chat/UnreadBadge";
+import { AppSidebar } from "~/components/Sidebar/AppSIdebar";
 
 function DoctorLayout() {
   const navigate = useNavigate();
@@ -51,7 +51,7 @@ function DoctorLayout() {
         </Topbar>
 
         <div className="flex flex-row flex-1 overflow-hidden">
-          <DoctorSideBar isCollapsed={isCollapsed} />
+          <AppSidebar isCollapsed={isCollapsed} />
 
           <main className="flex-1 overflow-y-auto bg-gray-100 p-6">
             <Outlet />

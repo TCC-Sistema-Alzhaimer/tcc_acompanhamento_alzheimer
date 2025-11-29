@@ -1,6 +1,8 @@
 export const ROUTES = {
   LOGIN: "api/auth/login",
   LOGOUT: "api/auth/logout",
+  LOGIN_SESSION: "/api/auth/login_session",
+  REFRESH: "/api/auth/refresh",
 
   EXAMS: "/exams",
   EXAM_BY_ID: (examId: string) => `/exams/${examId}`,
@@ -37,4 +39,12 @@ export const ROUTES = {
 
   ASSOCIATIONS: "/requests",
   ASSOCIATION_BY_ID: (associationId: string) => `/requests/${associationId}`,
+
+  CHATS: "/chats",
+  CHAT_BY_ID: (chatId: string) => `/chats/${chatId}`,
+  CHAT_PARTICIPANTS: (chatId: string) => `/chats/${chatId}/participants`,
+  CHAT_MESSAGES: (chatId: string) => `/chats/${chatId}/messages`,
+  CHAT_NEW_MESSAGES: (chatId: string) => `/chats/${chatId}/messages/new`,
+  CHAT_READ: (chatId: string) => `/chats/${chatId}/messages/read`,
+  CHAT_SEARCH_USERS: "/users/chat-search",
 };

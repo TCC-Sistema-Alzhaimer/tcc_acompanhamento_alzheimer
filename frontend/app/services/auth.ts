@@ -11,3 +11,14 @@ export const refreshRequest = () => {
     withCredentials: true,
   });
 };
+
+export const verifyUserReset = (data: { email: string; cpf: string }) => {
+  return api.post<number>("/auth/password/verify", data);
+};
+
+export const resetPassword = (data: {
+  userId: number;
+  newPassword: string;
+}) => {
+  return api.post("/auth/password/reset", data);
+};

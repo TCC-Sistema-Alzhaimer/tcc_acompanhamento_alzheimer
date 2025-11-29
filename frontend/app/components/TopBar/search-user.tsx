@@ -26,6 +26,7 @@ export default function SearchUser() {
 
   const onSubmit = (data: SearchFormValues) => {
     navigate(ROUTES.DOCTOR.PATIENTS + `?search=${data.searchTerm}`);
+    form.reset();
   };
 
   return (

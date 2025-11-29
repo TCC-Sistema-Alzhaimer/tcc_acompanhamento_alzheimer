@@ -53,6 +53,7 @@ export default function AssociationDetailScreen() {
           accessToken,
           associationId,
         });
+        console.log("Fetched association:", resp);
         if (!isActive) {
           return;
         }

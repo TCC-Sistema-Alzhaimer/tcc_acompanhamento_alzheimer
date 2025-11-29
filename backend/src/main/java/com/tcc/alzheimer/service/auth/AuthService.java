@@ -15,7 +15,11 @@ import org.springframework.stereotype.Service;
 
 import com.tcc.alzheimer.dto.auth.LoginDTO;
 import com.tcc.alzheimer.dto.auth.LoginResponseDTO;
+import com.tcc.alzheimer.dto.auth.ResetPasswordDTO;
+import com.tcc.alzheimer.dto.auth.VerifyUserDTO;
+import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.User;
+import com.tcc.alzheimer.repository.roles.UserRepository; 
 import com.tcc.alzheimer.service.roles.UserService;
 
 import io.jsonwebtoken.Claims;
@@ -28,11 +32,18 @@ import jakarta.servlet.http.HttpServletResponse;
 @Service
 public class AuthService {
     private final UserService userService;
+    private final UserRepository userRepository; 
+    
     private final PasswordEncoder encoder;
     private final Key key;
 
-    public AuthService(UserService userService, PasswordEncoder encoder, @Value("${jwt.secret}") String secret) {
+    public AuthService(
+            UserService userService, 
+            UserRepository userRepository,
+            PasswordEncoder encoder, 
+            @Value("${jwt.secret}") String secret) {
         this.userService = userService;
+        this.userRepository = userRepository;
         this.encoder = encoder;
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
@@ -127,27 +138,15 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("Refresh token missing"));
     }
 
-    /**
-     * Extrai o usuário atual do contexto de segurança (JWT)
-     * 
-     * @return Email do usuário logado
-     * @throws RuntimeException se não há usuário autenticado
-     */
     public String getCurrentUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() ||
                 "anonymousUser".equals(authentication.getPrincipal())) {
             throw new RuntimeException("Usuário não autenticado");
         }
-        return authentication.getName(); // retorna o email (subject do JWT)
+        return authentication.getName(); 
     }
 
-    /**
-     * Extrai a role do usuário atual do contexto de segurança
-     * 
-     * @return Role do usuário (DOCTOR, PATIENT, etc.)
-     * @throws RuntimeException se não há usuário autenticado ou role
-     */
     public String getCurrentUserRole() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -160,12 +159,6 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("Role não encontrada para o usuário"));
     }
 
-    /**
-     * Verifica se o usuário atual tem uma role específica
-     * 
-     * @param requiredRole Role necessária (ex: "DOCTOR")
-     * @return true se o usuário tem a role
-     */
     public boolean hasRole(String requiredRole) {
         try {
             String currentRole = getCurrentUserRole();
@@ -175,14 +168,40 @@ public class AuthService {
         }
     }
 
-    /**
-     * Busca o usuário atual completo baseado no email do JWT
-     * 
-     * @return Usuário logado
-     * @throws RuntimeException se usuário não encontrado
-     */
     public User getCurrentUser() {
         String email = getCurrentUserEmail();
         return userService.findByEmail(email);
+    }
+
+   public Long verifyUserForReset(VerifyUserDTO dto) {
+        // 1. LIMPEZA DE DADOS (Sanitization)
+        // Remove espaços antes/depois do email
+        String emailLimpo = dto.getEmail().trim(); 
+        
+        // Remove tudo que NÃO for número do CPF e remove espaços
+        String cpfLimpo = dto.getCpf().replaceAll("\\D", "").trim(); 
+
+        // 2. LOGS DE DEBUG (Olhe o terminal do Docker após tentar)
+        System.out.println("========== DEBUG RESET SENHA ==========");
+        System.out.println("Recebido do Front -> Email: '" + dto.getEmail() + "' | CPF: '" + dto.getCpf() + "'");
+        System.out.println("Buscando no Banco -> Email: '" + emailLimpo + "' | CPF: '" + cpfLimpo + "'");
+
+        // 3. A BUSCA
+        User user = userRepository.findByEmailAndCpf(emailLimpo, cpfLimpo)
+                .orElseThrow(() -> {
+                    System.out.println(">>> FALHA: Nenhuma conta encontrada com esses dados exatos.");
+                    return new ResourceNotFoundException("Dados não conferem.");
+                });
+        
+        System.out.println(">>> SUCESSO: Usuário encontrado: " + user.getName() + " (ID: " + user.getId() + ")");
+        return user.getId();
+    }
+
+    public void resetPassword(ResetPasswordDTO dto) {
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+
+        user.setPassword(encoder.encode(dto.getNewPassword())); 
+        userRepository.save(user);
     }
 }
