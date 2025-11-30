@@ -11,21 +11,23 @@ import { ActivityIndicator } from "react-native";
 
 export default function StartPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { getSession } = useAuth();
   const session = useSession();
   const { state, selectPatient } = useSelectedPatient();
 
   useEffect(() => {
-    if (authLoading || !state.hydrated) {
+    if (!getSession) {
       return;
     }
-    if (user == null) {
+    if (getSession == null) {
       router.replace("/login");
       return;
     }
 
+    const user = getSession.user;
+
     if (user.role === Roles.PATIENT) {
-      const patientId = String(user.id);
+      const patientId = String(getSession.user.id);
       if (state.patientId !== patientId) {
         (async () => {
           try {
@@ -70,12 +72,11 @@ export default function StartPage() {
 
     router.replace("/login");
   }, [
-    authLoading,
+    getSession,
     router,
     selectPatient,
     state.hydrated,
     state.patientId,
-    user,
   ]);
 
   return (
