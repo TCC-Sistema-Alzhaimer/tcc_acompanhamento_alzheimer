@@ -7,6 +7,7 @@ import { ROUTES } from "~/routes/EnumRoutes";
 import { verifyUserReset } from "~/services/auth";
 import Button from "~/components/Button";
 import { ArrowLeft } from "lucide-react";
+import Input from "~/components/Input";
 
 const verifySchema = z.object({
   email: z.string().email("E-mail inválido"),
@@ -59,15 +60,13 @@ export default function ForgotPasswordPage() {
           className="flex flex-col gap-4"
         >
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold text-gray-700">
-              E-mail
-            </label>
-            <input
-              {...form.register("email")}
-              type="email"
+            <Input
               placeholder="seu@email.com"
-              className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-all"
-            />
+              value={form.watch("email")}
+              onChange={(e) => form.setValue("email", e.target.value)}
+            >
+              Email
+            </Input>
             {form.formState.errors.email && (
               <span className="text-red-500 text-xs">
                 {form.formState.errors.email.message}
@@ -76,13 +75,14 @@ export default function ForgotPasswordPage() {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold text-gray-700">CPF</label>
-            <input
-              {...form.register("cpf")}
-              type="text"
-              placeholder="000.000.000-00"
-              className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-all"
-            />
+            <Input
+              placeholder="Digite o CPF"
+              value={form.watch("cpf")}
+              onChange={(e) => form.setValue("cpf", e.target.value)}
+              mask="000.000.000-00"
+            >
+              CPF
+            </Input>
             {form.formState.errors.cpf && (
               <span className="text-red-500 text-xs">
                 {form.formState.errors.cpf.message}
