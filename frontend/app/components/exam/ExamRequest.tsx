@@ -43,11 +43,26 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const formattedDate = formData.dataFinal
+      ? `${formData.dataFinal}T00:00:00`
+      : null;
+
+    const now = new Date();
+    if (formattedDate) {
+      const selectedDate = new Date(formattedDate);
+      if (selectedDate < now) {
+        toast.error("A data final não pode ser no passado.");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     const examData = {
       patientId: patientId,
       doctorId: doctorId,
       examTypeId: formData.tipo,
       instructions: formData.anotacoes,
+      scheduledDate: formattedDate,
     };
 
     try {

@@ -51,6 +51,9 @@ public class Exam {
     @Column(name = "request_date", nullable = false)
     private LocalDateTime requestDate;
 
+    @Column(name = "scheduled_date", nullable = true)
+    private LocalDateTime scheduledDate;
+
     @Column(name = "instructions", columnDefinition = "TEXT")
     private String instructions;
 
