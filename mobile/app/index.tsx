@@ -16,10 +16,7 @@ export default function StartPage() {
   const { state, selectPatient } = useSelectedPatient();
 
   useEffect(() => {
-    if (!getSession) {
-      return;
-    }
-    if (getSession == null) {
+    if (!getSession || getSession == null) {
       router.replace("/login");
       return;
     }
@@ -71,13 +68,7 @@ export default function StartPage() {
     }
 
     router.replace("/login");
-  }, [
-    getSession,
-    router,
-    selectPatient,
-    state.hydrated,
-    state.patientId,
-  ]);
+  }, [getSession, router, selectPatient, state.hydrated, state.patientId]);
 
   return (
     <ThemedView
