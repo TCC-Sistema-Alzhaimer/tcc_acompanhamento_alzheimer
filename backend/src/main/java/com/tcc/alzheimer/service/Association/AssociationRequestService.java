@@ -27,6 +27,8 @@ import com.tcc.alzheimer.repository.roles.DoctorRepository;
 import com.tcc.alzheimer.repository.roles.PatientRepository;
 import com.tcc.alzheimer.repository.roles.UserRepository;
 import com.tcc.alzheimer.service.notifications.NotificationService;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 
@@ -56,7 +58,6 @@ public class AssociationRequestService {
         request.setType(dto.getType());
         request.setStatus(RequestStatus.PENDENTE);
         request.setCreatedAt(LocalDateTime.now());
-
         repo.save(request);
         sendCreationNotification(request);
         return AssociationResponseDto.from(request);
@@ -185,21 +186,54 @@ public class AssociationRequestService {
         }
     }
 
+    private List<Long> getIdsFromUsers(Set<Caregiver> caregivers) {
+        if (caregivers == null) {
+            return new ArrayList<>();
+        }
+        return caregivers.stream()
+                .map(Caregiver::getId)
+                .collect(Collectors.toList());
+    }
+
     private void sendCreationNotification(AssociationRequest request) {
         String title = "Nova solicitação de associação";
         String message = String.format("%s enviou uma solicitação de associação para você.",
                 request.getCreator().getName());
-
-        NotificationCreateRequest notification = new NotificationCreateRequest(
-                request.getCreator().getId(),
-                NotificationType.RELATIONAL_UPDATE,
-                title,
-                message,
-                List.of(request.getRelation().getId()),
-                request.getId()
-        );
-
-        notificationService.createAndSend(notification);
+        List<Long> recipientIds;
+        Patient patient = request.getPatient();
+        User relation = request.getRelation(); 
+        List<Long> existingCaregiverIds = getIdsFromUsers(patient.getCaregivers());
+        switch (request.getType()) {
+            case DOCTOR_TO_PATIENT:
+                recipientIds = new ArrayList<>(existingCaregiverIds);
+                recipientIds.add(patient.getId());
+                break;
+            case PATIENT_TO_DOCTOR:
+                recipientIds = List.of(relation.getId());
+                break;
+            case PATIENT_TO_CAREGIVER:
+                recipientIds = new ArrayList<>(existingCaregiverIds);
+                if (relation.getId() != null) {
+                    if (!recipientIds.contains(relation.getId())) {
+                        recipientIds.add(relation.getId());
+                    }
+                }
+                recipientIds.add(patient.getId()); 
+                break;
+            default:
+                return; 
+        }
+        if (!recipientIds.isEmpty()) {
+            NotificationCreateRequest notification = new NotificationCreateRequest(
+                    request.getCreator().getId(),
+                    NotificationType.RELATIONAL_UPDATE,
+                    title,
+                    message,
+                    recipientIds, 
+                    request.getId()
+            );
+            notificationService.createAndSend(notification);
+        }
     }
 
     private void sendAcceptedNotification(AssociationRequest request) {

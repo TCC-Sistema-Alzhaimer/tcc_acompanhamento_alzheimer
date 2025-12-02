@@ -27,7 +27,7 @@ const roleOptionsMap: Record<string, RequestType[]> = {
   PATIENT: ["PATIENT_TO_DOCTOR", "PATIENT_TO_CAREGIVER"],
   DOCTOR: ["PATIENT_TO_CAREGIVER", "DOCTOR_TO_PATIENT"],
   CAREGIVER: ["CAREGIVER_TO_PATIENT", "PATIENT_TO_DOCTOR"],
-  ADMIN: ["PATIENT_TO_DOCTOR", "PATIENT_TO_CAREGIVER", "DOCTOR_TO_PATIENT"],
+  ADMINISTRATOR: ["PATIENT_TO_DOCTOR", "PATIENT_TO_CAREGIVER", "DOCTOR_TO_PATIENT"],
 };
 
 function getSecondSelectRole(
@@ -68,6 +68,7 @@ export function AssociationRequestForm({
 }: Props) {
   const toast = useToast();
   const userRole = user?.role ?? "";
+  console.log(userRole);
   const allowedValues = roleOptionsMap[userRole] || [];
   const filteredOptions = requestTypeOptions.filter((opt) =>
     allowedValues.includes(opt.value)
