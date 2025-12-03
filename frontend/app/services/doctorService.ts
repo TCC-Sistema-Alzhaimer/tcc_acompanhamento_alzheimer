@@ -38,14 +38,31 @@ export interface ExamResponseDTO {
   patientName: string;
 }
 
+export interface FileInfoDTO {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  formattedSize: string;
+  createdTime: string;
+  modifiedTime: string;
+  downloadLink: string;
+  fileType: string;
+  isImage: boolean;
+  isPdf: boolean;
+}
+
 export interface ConclusionResponseDTO {
   id: number;
+  examId?: number;
+  patientId?: number;
   doctorName: string;
   patientName: string;
   title: string;
   content: string;
   createdAt: string;
   attachmentUrls: string[];
+  files?: FileInfoDTO[];
 }
 
 export interface IndicatorResponseDTO {
@@ -153,6 +170,18 @@ export const getPatientConclusions = async (patientId: number) => {
     return response.data;
   } catch (error) {
     console.error("Erro ao buscar conclusões:", error);
+    throw error;
+  }
+};
+
+export const getConclusionById = async (conclusionId: number) => {
+  try {
+    const response = await api.get<ConclusionResponseDTO>(
+      `/conclusions/${conclusionId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar conclusão:", error);
     throw error;
   }
 };

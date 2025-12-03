@@ -13,15 +13,20 @@ import { useToast } from "~/context/ToastContext";
 interface ConclusionFormProps {
   patientId: number;
   doctorId: number;
+  defaultExamId?: number | null;
 }
 
-export function ConclusionForm({ patientId, doctorId }: ConclusionFormProps) {
+export function ConclusionForm({
+  patientId,
+  doctorId,
+  defaultExamId,
+}: ConclusionFormProps) {
   const navigate = useNavigate();
   const toast = useToast();
   const [formData, setFormData] = useState({
     titulo: "",
     conclusao: "",
-    examId: "",
+    examId: defaultExamId ? String(defaultExamId) : "",
   });
   const [anexos, setAnexos] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -182,7 +187,14 @@ export function ConclusionForm({ patientId, doctorId }: ConclusionFormProps) {
           type="button"
           variant="secondary"
           className="!w-auto !py-2 !px-4 text-sm"
-          onClick={() => navigate(ROUTES.DOCTOR.PATIENTS)}
+          onClick={() => {
+            setFormData({
+              titulo: "",
+              conclusao: "",
+              examId: defaultExamId ? String(defaultExamId) : "",
+            });
+            setAnexos([]);
+          }}
         >
           Cancelar
         </Button>
