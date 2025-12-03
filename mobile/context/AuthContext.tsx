@@ -82,7 +82,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const useLogin = async (credential: LoginRequest): Promise<LoginResponse> => {
-    setLoading(true);
     try {
       const response = await login(credential);
       if (response) {
@@ -108,8 +107,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
       return response;
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      throw error;
     }
   };
 
