@@ -18,20 +18,12 @@ public class ExamResultController {
         this.examResultService = examResultService;
     }
 
-    /**
-     * Busca todos os resultados de um exame específico.
-     * Acessível por DOCTOR, PATIENT e CAREGIVER.
-     */
     @GetMapping
     @PreAuthorize("hasRole('DOCTOR') or hasRole('PATIENT') or hasRole('CAREGIVER')")
     public ResponseEntity<?> getExamResults(@PathVariable Long examId) {
         return ResponseEntity.ok(examResultService.getExamResults(examId));
     }
 
-    /**
-     * Faz upload do resultado do exame.
-     * Acessível por PATIENT e CAREGIVER.
-     */
     @PostMapping("/upload")
     @PreAuthorize("hasRole('PATIENT') or hasRole('CAREGIVER')")
     public ResponseEntity<?> uploadExamResult(

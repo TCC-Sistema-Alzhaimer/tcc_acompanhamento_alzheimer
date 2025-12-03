@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
 @RestController
 @RequestMapping("/exams")
 public class ExamController {
@@ -29,22 +28,9 @@ public class ExamController {
         this.authService = authService;
     }
 
-    /**
-     * Cria um novo exame.
-     * 
-     * RESTRIÇÃO: Apenas usuários com role DOCTOR podem criar exames.
-     * 
-     * @param examCreateDTO Dados do exame a ser criado
-     * @return Dados do exame criado
-     * @throws org.springframework.security.access.AccessDeniedException se o
-     *                                                                   usuário não
-     *                                                                   for DOCTOR
-     */
     @PostMapping
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<ExamResponseDTO> createExam(@Valid @RequestBody ExamCreateDTO examCreateDTO) {
-        // Dupla validação: anotação @PreAuthorize + validação manual
-        // (a anotação já bloqueia, mas mantemos a validação manual como backup)
         if (!authService.hasRole(UserType.DOCTOR.name())) {
             throw InsufficientRoleException.forOperation("criar exame", UserType.DOCTOR.name());
         }
@@ -95,8 +81,9 @@ public class ExamController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<ExamResponseDTO> changeExamStatus(@PathVariable String id, @RequestBody ExamChangeStatusDTO entity) {
-        ExamResponseDTO result= examService.changeExamStatus(id, entity.getStatus());  
+    public ResponseEntity<ExamResponseDTO> changeExamStatus(@PathVariable String id,
+            @RequestBody ExamChangeStatusDTO entity) {
+        ExamResponseDTO result = examService.changeExamStatus(id, entity.getStatus());
         return ResponseEntity.ok(result);
     }
 }
