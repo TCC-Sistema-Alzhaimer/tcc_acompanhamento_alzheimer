@@ -1,19 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Select from "react-select";
 import Button from "~/components/Button";
 import Input from "~/components/Input";
-import Modal from "~/components/modals/ModalSucess";
+import { useToast } from "~/context/ToastContext";
 
-import {
-  getAllDoctors,
-  getAllPatients,
-  getAllCaregivers,
-  createUser,
-} from "~/services/userService";
-import type { BasicListModel } from "~/types/roles/models";
+import { createUser } from "~/services/userService";
 import { SystemRoles } from "~/types/SystemRoles";
 import { SystemGenders } from "~/types/gender";
-import { useAuth } from "~/hooks/useAuth"; // hook do usuário logado
+import { useAuth } from "~/hooks/useAuth";
 
 type UserForm = {
   name?: string;
@@ -31,17 +25,19 @@ type UserForm = {
   caregiverEmails?: string[];
 };
 
-export function UserCreateForm() {
+interface UserCreateFormProps {
+  onUserCreated?: () => void;
+}
+
+export function UserCreateForm({ onUserCreated }: UserCreateFormProps) {
   const { user } = useAuth();
+  const toast = useToast();
   const currentUserRole = user?.role;
 
   const [userType, setUserType] = useState<SystemRoles | "">("");
   const [form, setForm] = useState<UserForm>({});
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const toOptions = (list: BasicListModel[]) =>
-    list.map((u) => ({ value: u.email, label: u.name }));
 
   const validateForm = (): string | null => {
     if (!userType) {
@@ -93,9 +89,13 @@ export function UserCreateForm() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       await createUser(userType as SystemRoles, form);
-      setShowSuccessModal(true);
+      toast.success("Usuário criado com sucesso!");
+      setForm({});
+      setUserType("");
+      onUserCreated?.();
     } catch (error: any) {
       if (error.response) {
         const data = error.response.data;
@@ -113,6 +113,8 @@ export function UserCreateForm() {
       } else {
         setErrorMessage("Erro de conexão com o servidor.");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -134,16 +136,8 @@ export function UserCreateForm() {
   ];
 
   return (
-    <div className="flex flex-col items-center justify-start p-3 w-full rounded-2xl shadow-2xl bg-white gap-3">
-      <Modal
-        isOpen={showSuccessModal}
-        onClose={() => window.location.reload()}
-        title="Sucesso!"
-      >
-        Usuário criado com sucesso.
-      </Modal>
-
-      <h2 className="text-xl font-bold mb-4">Criar Usuário</h2>
+    <div className="flex flex-col items-center justify-start w-full gap-4">
+      <h2 className="text-xl font-bold text-gray-800">Criar Usuário</h2>
 
       {/* Select do tipo de usuário */}
       <Select
@@ -251,12 +245,14 @@ export function UserCreateForm() {
       )}
 
       {errorMessage && (
-        <div className="w-full p-2 bg-red-100 text-red-700 rounded">
+        <div className="w-full p-3 bg-red-50 text-red-700 rounded-lg border border-red-200">
           {errorMessage}
         </div>
       )}
 
-      <Button onClick={handleSubmit}>Criar</Button>
+      <Button onClick={handleSubmit} disabled={isSubmitting}>
+        {isSubmitting ? "Criando..." : "Criar"}
+      </Button>
     </div>
   );
 }

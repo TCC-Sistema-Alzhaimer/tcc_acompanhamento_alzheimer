@@ -23,8 +23,9 @@ export function SidebarOption({
       to={to}
       end
       className={({ isActive }) => `
-        flex items-center p-3 rounded-lg
+        flex items-center p-3 rounded-lg h-11
         transition-colors duration-200
+        ${isCollapsed ? "justify-center" : ""}
         ${isActive ? activeClasses : inactiveClasses}
       `}
     >
@@ -32,8 +33,8 @@ export function SidebarOption({
 
       <span
         className={`
-          overflow-hidden transition-all duration-200 font-semibold
-          ${isCollapsed ? "w-0 ml-0" : "w-full ml-3"}
+          overflow-hidden transition-all duration-200 font-semibold whitespace-nowrap
+          ${isCollapsed ? "w-0 ml-0 opacity-0" : "w-full ml-3 opacity-100"}
         `}
       >
         {children}
