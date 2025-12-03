@@ -128,7 +128,6 @@ public class AssociationRequestService {
 
         switch (request.getType()) {
             case PATIENT_TO_DOCTOR:
-                // Apenas o Médico alvo (Relation) pode aceitar
                 if (!responder.getId().equals(request.getRelation().getId())) {
                     throw new AccessDeniedException("Apenas o médico solicitado pode aceitar esta solicitação");
                 }
@@ -144,7 +143,6 @@ public class AssociationRequestService {
             case CAREGIVER_TO_PATIENT:
                 boolean isTargetPatient = responder.getId().equals(request.getPatient().getId());
                 
-
                 boolean isGuardian = responder instanceof Caregiver && request.getPatient().getCaregivers().stream()
                         .anyMatch(c -> c.getId().equals(responder.getId()));
 
@@ -160,10 +158,19 @@ public class AssociationRequestService {
     }
 
     private boolean isUserRelated(AssociationRequest request, User user) {
-        return request.getCreator().equals(user)
+        boolean isDirectlyRelated = request.getCreator().equals(user)
                 || (request.getResponder() != null && request.getResponder().equals(user))
                 || request.getPatient().equals(user)
                 || request.getRelation().equals(user);
+
+        if (isDirectlyRelated) return true;
+
+        if (user instanceof Caregiver && request.getPatient() != null) {
+            return request.getPatient().getCaregivers().stream()
+                    .anyMatch(c -> c.getId().equals(user.getId()));
+        }
+
+        return false;
     }
 
     private void applyAssociation(AssociationRequest request) {
