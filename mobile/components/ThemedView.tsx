@@ -4,7 +4,8 @@ import { View, type ViewProps } from "react-native";
 export type ThemedViewProps = ViewProps & {
   lightColor?: string;
   darkColor?: string;
-  type?: "default" | "secondary";
+  // Adicione o 'card' aqui
+  type?: "default" | "secondary" | "card";
 };
 
 export function ThemedView({
@@ -14,10 +15,16 @@ export function ThemedView({
   type = "default",
   ...otherProps
 }: ThemedViewProps) {
-  const token = type === "secondary" ? "secondaryBackground" : "background";
+  const colorName =
+    type === "secondary"
+      ? "secondaryBackground"
+      : type === "card"
+      ? "card"
+      : "background";
+
   const backgroundColor: any = useThemeColor(
     { light: lightColor, dark: darkColor },
-    token
+    colorName
   );
 
   return <View style={[{ backgroundColor }, style]} {...otherProps} />;

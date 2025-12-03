@@ -1,7 +1,9 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
+  Linking,
   Modal,
   Pressable,
   StyleSheet,
@@ -11,12 +13,14 @@ import {
 import UploadFileModal from "@/app/(modals)/upload-file";
 import { ExamStatus } from "@/components/ExamStatus";
 import { InfoField } from "@/components/InfoField";
+import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useSession } from "@/hooks/useSession";
-import { fetchExamById } from "@/services/exam-service";
+import { fetchAttachedExamFile, fetchExamById } from "@/services/exam-service";
 import { uploadExamAttachment } from "@/services/file-service";
+import { AttachmentedFileResponse } from "@/types/api/exam";
 import { FileUploadResponse } from "@/types/api/files";
 import { Exam } from "@/types/domain/exam";
 import { Roles } from "@/types/enum/roles";
@@ -27,8 +31,10 @@ type LocalParams = { id?: string };
 export default function ExamDetailScreen() {
   const { id } = useLocalSearchParams<LocalParams>();
   const session = useSession();
+  const router = useRouter();
 
   const [exam, setExam] = useState<Exam | null>(null);
+  const [files, setFiles] = useState<AttachmentedFileResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [lastUploaded, setLastUploaded] = useState<FileUploadResponse | null>(
@@ -49,10 +55,30 @@ export default function ExamDetailScreen() {
         accessToken: session.accessToken,
         examId: String(id),
       });
+      const files = await fetchAttachedExamFile({
+        accessToken: session.accessToken,
+        examId: String(id),
+      });
       if (resp) {
         return resp;
       }
       return null;
+    };
+
+    const findAttachedFiles = async (): Promise<void> => {
+      if (!id) {
+        return;
+      }
+      if (session === null) {
+        return;
+      }
+      const attachedFiles = await fetchAttachedExamFile({
+        accessToken: session.accessToken,
+        examId: String(id),
+      });
+      if (active) {
+        setFiles(attachedFiles);
+      }
     };
 
     const loadExam = async () => {
@@ -80,6 +106,8 @@ export default function ExamDetailScreen() {
           examId: String(id),
         });
 
+        await findAttachedFiles();
+
         if (active) {
           setExam(data);
         }
@@ -101,6 +129,33 @@ export default function ExamDetailScreen() {
       active = false;
     };
   }, [id, session?.accessToken]);
+
+  const handleOpenFile = async (file: AttachmentedFileResponse) => {
+    try {
+      if (!file.downloadLink) {
+        Alert.alert("Erro", "Link para visualização não disponível.");
+        return;
+      }
+
+      const supported = await Linking.canOpenURL(file.downloadLink);
+
+      if (supported) {
+        await Linking.openURL(file.downloadLink);
+      } else {
+        Alert.alert("Erro", "Não foi possível abrir este arquivo.");
+      }
+    } catch (error) {
+      console.error("Erro ao abrir arquivo:", error);
+      Alert.alert("Erro", "Ocorreu um erro ao tentar abrir o arquivo.");
+    }
+  };
+
+  const getFileIconName = (file: AttachmentedFileResponse): string => {
+    if (file.isImage) {
+      return "photo.on.rectangle.angled";
+    }
+    return "doc.fill";
+  };
 
   const handleUpload = async (file: DocumentPicker.DocumentPickerAsset) => {
     if (!session?.accessToken) return;
@@ -157,10 +212,54 @@ export default function ExamDetailScreen() {
         </ThemedView>
       ) : null}
 
+      {files.length > 0 ? (
+        <ThemedView style={styles.banner} type="secondary">
+          <View style={styles.bannerHeader}>
+            <IconSymbol
+              name="paperclip.circle.fill"
+              size={20}
+              color="#2563eb"
+            />
+            <ThemedText style={styles.bannerTitle}>
+              Documentos anexados ({files.length})
+            </ThemedText>
+          </View>
+
+          <View style={styles.fileList}>
+            {files.map((file) => (
+              <Pressable key={file.id} onPress={() => handleOpenFile(file)}>
+                <ThemedView type="card" style={styles.fileItem}>
+                  <IconSymbol
+                    name={getFileIconName(file) as any}
+                    size={20}
+                    color="#555"
+                  />
+
+                  <View style={{ flex: 1 }}>
+                    <ThemedText style={styles.fileName}>
+                      {file.fileName}
+                    </ThemedText>
+                    <ThemedText style={styles.fileSize}>
+                      {file.formattedFileSize}
+                    </ThemedText>
+                  </View>
+
+                  <IconSymbol
+                    name="magnifyingglass"
+                    size={16}
+                    color="#2563eb"
+                  />
+                </ThemedView>
+              </Pressable>
+            ))}
+          </View>
+        </ThemedView>
+      ) : null}
+
       {loading ? (
         <ActivityIndicator />
       ) : exam ? (
-        <ThemedView style={styles.content} type="secondary">
+        <ThemedView style={styles.content}>
           <View
             style={{
               flexDirection: "row",
@@ -175,15 +274,28 @@ export default function ExamDetailScreen() {
           <InfoField
             label="Tipo de exame:"
             value={exam.examTypeDescription ?? "-"}
+            addSeparator={true}
           />
           {exam.instructions ? (
-            <InfoField label="Instrucoes:" value={exam.instructions} />
+            <InfoField
+              label="Instrucoes:"
+              value={exam.instructions}
+              addSeparator={true}
+            />
           ) : null}
           {exam.result ? (
-            <InfoField label="Resultado:" value={exam.result} />
+            <InfoField
+              label="Resultado:"
+              value={exam.result}
+              addSeparator={true}
+            />
           ) : null}
           {exam.note ? (
-            <InfoField label="Observações:" value={exam.note} />
+            <InfoField
+              label="Observações:"
+              value={exam.note}
+              addSeparator={true}
+            />
           ) : null}
           {exam.updatedAt ? (
             <ThemedText>
@@ -192,29 +304,37 @@ export default function ExamDetailScreen() {
           ) : null}
           {session?.user.role !== Roles.PATIENT && (
             <Pressable onPress={() => setOpenModal(true)}>
-              <ThemedView
-                type="default"
-                style={{
-                  marginTop: 16,
-                  padding: 12,
-                  borderRadius: 8,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                }}
-              >
+              <ThemedButton type="primary" title="Anexar documento">
                 <IconSymbol
                   name="paperclip.circle.fill"
                   size={20}
                   color="#2563eb"
                 />
-                <ThemedText style={{ color: "#2563eb", fontWeight: "600" }}>
-                  Anexar documento
-                </ThemedText>
-              </ThemedView>
+              </ThemedButton>
             </Pressable>
           )}
+          <View style={{ flex: 1, justifyContent: "flex-end", gap: 12 }}>
+            {(files.length > 0 || lastUploaded) && (
+              <ThemedButton title="Enviar para conclusão" type="primary">
+                <IconSymbol
+                  name="arrow.right.circle.fill"
+                  size={20}
+                  color="#fff"
+                />
+              </ThemedButton>
+            )}
+            <ThemedButton
+              title="Voltar"
+              type="secondary"
+              onPress={() => router.back()}
+            >
+              <IconSymbol
+                name="arrow.left.circle.fill"
+                size={20}
+                color="#fff"
+              />
+            </ThemedButton>
+          </View>
         </ThemedView>
       ) : (
         <ThemedText>Nenhum exame encontrado.</ThemedText>
@@ -244,16 +364,14 @@ export default function ExamDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
   content: {
+    flex: 1,
     gap: 12,
     alignContent: "center",
     padding: 16,
     borderRadius: 8,
   },
   banner: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    padding: 16,
     borderRadius: 12,
     marginBottom: 12,
     gap: 12,
@@ -268,5 +386,30 @@ const styles = StyleSheet.create({
   bannerSubtitle: {
     fontSize: 12,
     opacity: 0.7,
+  },
+  bannerHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
+  },
+  fileList: {
+    gap: 8,
+  },
+  fileItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.05)",
+    padding: 10,
+    borderRadius: 8,
+    gap: 10,
+  },
+  fileName: {
+    fontSize: 13,
+    fontWeight: "500",
+  },
+  fileSize: {
+    fontSize: 11,
+    opacity: 0.6,
   },
 });

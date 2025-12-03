@@ -21,6 +21,7 @@ export const Colors = {
     secondaryText: "#3C4852",
     secondaryBackground: "#F5F5F5",
     brandBackground: brandColor,
+    card: "#ffffff",
 
     button: {
       primaryBackground: brandColor,
@@ -49,6 +50,7 @@ export const Colors = {
     secondaryText: "#9CA3AF",
     secondaryBackground: "#1F2224",
     brandBackground: brandColor,
+    card: "#2A2D2F",
 
     button: {
       primaryBackground: brandColor,
