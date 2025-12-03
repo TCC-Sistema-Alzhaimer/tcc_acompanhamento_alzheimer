@@ -125,6 +125,11 @@ public class ConclusionService {
         return list.stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
+    public List<ConclusionResponseDTO> getByPatientId(Long patientId) {
+        List<Conclusion> list = conclusionRepository.findByExamPatientIdOrderByCreatedAtDesc(patientId);
+        return list.stream().map(this::mapToDto).collect(Collectors.toList());
+    }
+
     public ConclusionResponseDTO updateConclusion(Long id, ConclusionCreateDTO dto) {
         Conclusion c = conclusionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Conclusion not found with id: " + id));
@@ -149,7 +154,12 @@ public class ConclusionService {
         ConclusionResponseDTO dto = new ConclusionResponseDTO();
         dto.setId(c.getId());
         dto.setExamId(c.getExam().getId());
+        dto.setPatientId(c.getExam().getPatient().getId());
         dto.setDoctorId(c.getDoctor().getId());
+        dto.setDoctorName(c.getDoctor().getName());
+        dto.setPatientName(c.getExam().getPatient().getName());
+        dto.setTitle(c.getDescription()); // description serves as title
+        dto.setContent(c.getConclusion()); // conclusion serves as content
         dto.setDescription(c.getDescription());
         dto.setNotes(c.getNotes());
         dto.setConclusion(c.getConclusion());
@@ -174,6 +184,10 @@ public class ConclusionService {
                 return fi;
             }).collect(Collectors.toList());
             dto.setFiles(fileInfos);
+            // Also populate attachmentUrls for frontend compatibility
+            dto.setAttachmentUrls(fileInfos.stream()
+                    .map(FileInfoDTO::getDownloadLink)
+                    .collect(Collectors.toList()));
         }
         return dto;
     }
