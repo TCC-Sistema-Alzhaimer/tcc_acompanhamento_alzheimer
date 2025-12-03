@@ -23,6 +23,7 @@ import { uploadExamAttachment } from "@/services/file-service";
 import { AttachmentedFileResponse } from "@/types/api/exam";
 import { FileUploadResponse } from "@/types/api/files";
 import { Exam } from "@/types/domain/exam";
+import { ExamStatus as ExamStatusEnum } from "@/types/enum/exam-status";
 import { Roles } from "@/types/enum/roles";
 import * as DocumentPicker from "expo-document-picker";
 
@@ -304,7 +305,14 @@ export default function ExamDetailScreen() {
           ) : null}
           {session?.user.role !== Roles.PATIENT && (
             <Pressable onPress={() => setOpenModal(true)}>
-              <ThemedButton type="primary" title="Anexar documento">
+              <ThemedButton
+                type={
+                  exam.examStatusId === ExamStatusEnum.REQUESTED
+                    ? "primary"
+                    : "disabled"
+                }
+                title="Anexar documento"
+              >
                 <IconSymbol
                   name="paperclip.circle.fill"
                   size={20}
