@@ -12,15 +12,22 @@ export default function UserManagementPage() {
     ""
   );
   const [mode, setMode] = useState<"view" | "create">("view");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const currentUserRole = user?.role as SystemRoles | undefined;
 
   const doctorId =
     user?.role === SystemRoles.DOCTOR && user.id ? Number(user.id) : undefined;
 
+  const handleUserCreated = () => {
+    setRefreshKey((prev) => prev + 1);
+    setMode("view");
+  };
+
   return (
     <main className="grid h-full overflow-hidden gap-6 lg:grid-cols-[360px_1fr]">
       <UserList
+        key={refreshKey}
         currentUserRole={currentUserRole!}
         doctorId={doctorId}
         onSelectUser={(id, userType) => {
@@ -52,7 +59,7 @@ export default function UserManagementPage() {
 
         {mode === "create" && (
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-            <UserCreateForm />
+            <UserCreateForm onUserCreated={handleUserCreated} />
           </div>
         )}
       </div>
