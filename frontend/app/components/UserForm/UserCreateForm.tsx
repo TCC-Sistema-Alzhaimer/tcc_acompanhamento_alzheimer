@@ -8,7 +8,7 @@ import {
   getAllDoctors,
   getAllPatients,
   getAllCaregivers,
-  createUser
+  createUser,
 } from "~/services/userService";
 import type { BasicListModel } from "~/types/roles/models";
 import { SystemRoles } from "~/types/SystemRoles";
@@ -40,12 +40,59 @@ export function UserCreateForm() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-
   const toOptions = (list: BasicListModel[]) =>
-    list.map(u => ({ value: u.email, label: u.name }));
+    list.map((u) => ({ value: u.email, label: u.name }));
+
+  const validateForm = (): string | null => {
+    if (!userType) {
+      return "Selecione o tipo de usuário.";
+    }
+    if (!form.name?.trim()) {
+      return "Nome é obrigatório.";
+    }
+    if (!form.cpf?.trim()) {
+      return "CPF é obrigatório.";
+    }
+    if (!form.email?.trim()) {
+      return "Email é obrigatório.";
+    }
+    if (!form.phone?.trim()) {
+      return "Telefone é obrigatório.";
+    }
+    if (!form.password?.trim()) {
+      return "Senha é obrigatória.";
+    }
+
+    if (userType === SystemRoles.DOCTOR) {
+      if (!form.crm?.trim()) {
+        return "CRM é obrigatório para médicos.";
+      }
+    }
+
+    if (
+      userType === SystemRoles.PATIENT ||
+      userType === SystemRoles.CAREGIVER
+    ) {
+      if (!form.birthdate) {
+        return "Data de nascimento é obrigatória.";
+      }
+      if (!form.gender) {
+        return "Gênero é obrigatório.";
+      }
+    }
+
+    return null;
+  };
 
   const handleSubmit = async () => {
     setErrorMessage(null);
+
+    const validationError = validateForm();
+    if (validationError) {
+      setErrorMessage(validationError);
+      return;
+    }
+
     try {
       await createUser(userType as SystemRoles, form);
       setShowSuccessModal(true);
@@ -59,7 +106,9 @@ export function UserCreateForm() {
         } else if (data?.error) {
           setErrorMessage(data.error);
         } else {
-          setErrorMessage("Erro ao criar usuário. Verifique os dados informados.");
+          setErrorMessage(
+            "Erro ao criar usuário. Verifique os dados informados."
+          );
         }
       } else {
         setErrorMessage("Erro de conexão com o servidor.");
@@ -71,8 +120,8 @@ export function UserCreateForm() {
     { value: SystemRoles.DOCTOR, label: "Médico" },
     { value: SystemRoles.PATIENT, label: "Paciente" },
     { value: SystemRoles.CAREGIVER, label: "Cuidador" },
-    { value: SystemRoles.ADMIN, label: "Administrador" }
-  ].filter(r => {
+    { value: SystemRoles.ADMIN, label: "Administrador" },
+  ].filter((r) => {
     if (currentUserRole === SystemRoles.DOCTOR) {
       return r.value !== SystemRoles.DOCTOR && r.value !== SystemRoles.ADMIN;
     }
@@ -81,7 +130,7 @@ export function UserCreateForm() {
 
   const genderOptions = [
     { value: SystemGenders.M, label: "Masculino" },
-    { value: SystemGenders.F, label: "Feminino" }
+    { value: SystemGenders.F, label: "Feminino" },
   ];
 
   return (
@@ -100,7 +149,7 @@ export function UserCreateForm() {
       <Select
         options={roleOptions}
         placeholder="Selecione o tipo"
-        value={roleOptions.find(opt => opt.value === userType) || null}
+        value={roleOptions.find((opt) => opt.value === userType) || null}
         onChange={(selected) => setUserType(selected?.value || "")}
         className="w-full"
       />
@@ -153,7 +202,7 @@ export function UserCreateForm() {
             placeholder="CRM"
             value={form.crm || ""}
             onChange={(e) => setForm({ ...form, crm: e.target.value })}
-            mask= "CRM/aa 0000[0000]"
+            mask="CRM/aa 0000[0000]"
           >
             CRM
           </Input>
@@ -167,7 +216,8 @@ export function UserCreateForm() {
         </>
       )}
 
-      {(userType === SystemRoles.PATIENT || userType === SystemRoles.CAREGIVER) && (
+      {(userType === SystemRoles.PATIENT ||
+        userType === SystemRoles.CAREGIVER) && (
         <>
           <Input
             type="date"
@@ -181,8 +231,12 @@ export function UserCreateForm() {
           <Select
             options={genderOptions}
             placeholder="Selecione gênero"
-            value={genderOptions.find(opt => opt.value === form.gender) || null}
-            onChange={(selected) => setForm({ ...form, gender: selected?.value })}
+            value={
+              genderOptions.find((opt) => opt.value === form.gender) || null
+            }
+            onChange={(selected) =>
+              setForm({ ...form, gender: selected?.value })
+            }
             className="w-full"
           />
 
