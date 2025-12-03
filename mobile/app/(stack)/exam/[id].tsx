@@ -323,7 +323,14 @@ export default function ExamDetailScreen() {
           )}
           <View style={{ flex: 1, justifyContent: "flex-end", gap: 12 }}>
             {(files.length > 0 || lastUploaded) && (
-              <ThemedButton title="Enviar para conclusão" type="primary">
+              <ThemedButton
+                title="Enviar para conclusão"
+                type={
+                  exam.examStatusId === ExamStatusEnum.REQUESTED
+                    ? "primary"
+                    : "disabled"
+                }
+              >
                 <IconSymbol
                   name="arrow.right.circle.fill"
                   size={20}
