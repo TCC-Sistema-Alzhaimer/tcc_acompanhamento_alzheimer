@@ -18,7 +18,11 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useSession } from "@/hooks/useSession";
-import { fetchAttachedExamFile, fetchExamById } from "@/services/exam-service";
+import {
+  fetchAttachedExamFile,
+  fetchExamById,
+  sendExamForCompletion,
+} from "@/services/exam-service";
 import { uploadExamAttachment } from "@/services/file-service";
 import { AttachmentedFileResponse } from "@/types/api/exam";
 import { FileUploadResponse } from "@/types/api/files";
@@ -177,6 +181,18 @@ export default function ExamDetailScreen() {
     return response;
   };
 
+  const sendForCompletion = async () => {
+    try {
+      const resp = await sendExamForCompletion({
+        accessToken: session!.accessToken,
+        examId: String(id),
+      });
+      setExam(resp);
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível enviar o exame para conclusão.");
+    }
+  };
+
   const requestDate = exam?.requestDate
     ? new Date(exam.requestDate).toLocaleDateString()
     : "-";
@@ -305,22 +321,21 @@ export default function ExamDetailScreen() {
             </ThemedText>
           ) : null}
           {session?.user.role !== Roles.PATIENT && (
-            <Pressable onPress={() => setOpenModal(true)}>
-              <ThemedButton
-                type={
-                  exam.examStatusDescription === ExamStatusEnum.REQUESTED
-                    ? "primary"
-                    : "disabled"
-                }
-                title="Anexar documento"
-              >
-                <IconSymbol
-                  name="paperclip.circle.fill"
-                  size={20}
-                  color="#2563eb"
-                />
-              </ThemedButton>
-            </Pressable>
+            <ThemedButton
+              type={
+                exam.examStatusDescription === ExamStatusEnum.REQUESTED
+                  ? "primary"
+                  : "disabled"
+              }
+              title="Anexar documento"
+              onPress={() => setOpenModal(true)}
+            >
+              <IconSymbol
+                name="paperclip.circle.fill"
+                size={20}
+                color="#2563eb"
+              />
+            </ThemedButton>
           )}
           <View style={{ flex: 1, justifyContent: "flex-end", gap: 12 }}>
             {(files.length > 0 || lastUploaded) && (
@@ -331,6 +346,7 @@ export default function ExamDetailScreen() {
                     ? "primary"
                     : "disabled"
                 }
+                onPress={sendForCompletion}
               >
                 <IconSymbol
                   name="arrow.right.circle.fill"

@@ -1,5 +1,6 @@
 package com.tcc.alzheimer.controller.exams;
 
+import com.tcc.alzheimer.dto.exams.ExamChangeStatusDTO;
 import com.tcc.alzheimer.dto.exams.ExamCreateDTO;
 import com.tcc.alzheimer.dto.exams.ExamResponseDTO;
 import com.tcc.alzheimer.exception.InsufficientRoleException;
@@ -14,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 
 @RestController
 @RequestMapping("/exams")
@@ -90,5 +92,11 @@ public class ExamController {
     public ResponseEntity<Void> deleteExam(@PathVariable Long id) {
         examService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<ExamResponseDTO> changeExamStatus(@PathVariable String id, @RequestBody ExamChangeStatusDTO entity) {
+        ExamResponseDTO result= examService.changeExamStatus(id, entity.getStatus());  
+        return ResponseEntity.ok(result);
     }
 }

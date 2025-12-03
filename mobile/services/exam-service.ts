@@ -3,6 +3,7 @@ import {
   ExamResponse,
   HistoricExamResponse,
 } from "@/types/api/exam";
+import { LiteralExamStatus } from "@/types/enum/exam-status";
 import { appendAssetToFormData } from "@/util/parser";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { api } from "./api";
@@ -123,5 +124,30 @@ export async function fetchHistoricExamsByPatientId({
     return res.data;
   } catch (error) {
     throw new Error("Failed to fetch historic exams");
+  }
+}
+
+export async function sendExamForCompletion({
+  accessToken,
+  examId,
+}: {
+  accessToken: string;
+  examId: string;
+}) {
+  try {
+    const newStatus = LiteralExamStatus.PENDING_RESULT;
+    const resp = await api.put(
+      ROUTES.EXAM_STATUS(examId),
+      { status: newStatus },
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+    if (resp.status !== 200) {
+      throw new Error("Failed to send exam to analytics");
+    }
+    return resp.data;
+  } catch (error) {
+    throw new Error("Failed to send exam to analytics");
   }
 }
