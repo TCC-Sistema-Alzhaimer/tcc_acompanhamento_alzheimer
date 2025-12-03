@@ -106,6 +106,7 @@ export default function ExamDetailScreen() {
           accessToken: session.accessToken,
           examId: String(id),
         });
+        console.log("Exame carregado:", data);
 
         await findAttachedFiles();
 
@@ -307,7 +308,7 @@ export default function ExamDetailScreen() {
             <Pressable onPress={() => setOpenModal(true)}>
               <ThemedButton
                 type={
-                  exam.examStatusId === ExamStatusEnum.REQUESTED
+                  exam.examStatusDescription === ExamStatusEnum.REQUESTED
                     ? "primary"
                     : "disabled"
                 }
@@ -326,7 +327,7 @@ export default function ExamDetailScreen() {
               <ThemedButton
                 title="Enviar para conclusão"
                 type={
-                  exam.examStatusId === ExamStatusEnum.REQUESTED
+                  exam.examStatusDescription === ExamStatusEnum.REQUESTED
                     ? "primary"
                     : "disabled"
                 }
