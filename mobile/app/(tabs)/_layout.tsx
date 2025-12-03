@@ -11,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useSelectedPatient } from "@/context/SelectedPatientContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useSession } from "@/hooks/useSession";
+import { Roles } from "@/types/enum/roles";
 import { useRouter } from "expo-router";
 
 export default function TabLayout() {
@@ -25,6 +26,11 @@ export default function TabLayout() {
   } = useSelectedPatient();
   const router = useRouter();
 
+  const isProfessional =
+    session?.user?.role === Roles.CAREGIVER ||
+    session?.user?.role === Roles.DOCTOR ||
+    session?.user?.role === Roles.ADMINISTRATOR;
+
   useEffect(() => {
     if (loading || loadingSelected) {
       return;
@@ -33,7 +39,8 @@ export default function TabLayout() {
       router.replace("/login");
       return;
     }
-    if (state.patientId == null) {
+
+    if (state.patientId == null && !isProfessional) {
       clearSelection();
       router.replace("/selecter-patient");
     }
@@ -44,13 +51,16 @@ export default function TabLayout() {
     state.patientId,
     state.hydrated,
     loadingSelected,
+    isProfessional,
   ]);
+
+  const canRenderTabs = state.patientId != null || isProfessional;
 
   if (
     loading ||
     !session ||
     !state.hydrated ||
-    state.patientId == null ||
+    !canRenderTabs ||
     loadingSelected
   ) {
     return (

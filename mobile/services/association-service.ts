@@ -1,4 +1,7 @@
-import { AssociationResponseDto } from "@/types/api/association";
+import {
+  AssociationRequestDto,
+  AssociationResponseDto,
+} from "@/types/api/association";
 import { api } from "./api";
 import { ROUTES } from "./routes";
 
@@ -49,5 +52,35 @@ export async function fetchAssociationById({
     return response.data;
   } catch (error) {
     throw new Error("Failed to fetch association by ID");
+  }
+}
+
+export async function respondToAssociationRequest(
+  payload: AssociationRequestDto
+): Promise<any> {
+  const { responderEmail, status, accessToken, associationId } = payload;
+  if (!associationId) {
+    throw new Error("Association ID is required to respond to a request");
+  }
+  try {
+    const endpoint = ROUTES.ASSOCIATIONS_RESPOND(associationId.toString());
+    const response = await api.post(
+      endpoint,
+      {
+        responderEmail,
+        status,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    if (response.status !== 200) {
+      throw new Error("Failed to respond to association request");
+    }
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to respond to association request");
   }
 }

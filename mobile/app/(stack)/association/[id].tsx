@@ -1,15 +1,18 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useSession } from "@/hooks/useSession";
-import { fetchAssociationById } from "@/services/association-service";
+import {
+  fetchAssociationById,
+  respondToAssociationRequest,
+} from "@/services/association-service";
 import { AssociationResponseDto } from "@/types/api/association";
+import { RequestStatus } from "@/types/enum/exam-status";
 import { Roles } from "@/types/enum/roles";
 import { formatAssociationType } from "@/util/format";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -152,11 +155,32 @@ export default function AssociationDetailScreen() {
     return items;
   }, [association]);
 
-  const handleAction = (action: string) => {
-    Alert.alert(
-      "Funcionalidade em desenvolvimento",
-      `A ação "${action}" estará disponível em breve.`
-    );
+  const handleAction = async (action: string) => {
+    const status =
+      action === "Aceitar solicitação"
+        ? RequestStatus.ACEITA
+        : action === "Recusar solicitação"
+        ? RequestStatus.RECUSADA
+        : null;
+    if (!status) {
+      return;
+    }
+    respondToAssociationRequest({
+      accessToken: session!.accessToken,
+      associationId: association!.id,
+      responderEmail: session!.user.email,
+      status,
+    })
+      .then(() => {
+        setAssociation((prev) =>
+          prev
+            ? { ...prev, status: status, respondedAt: new Date().toISOString() }
+            : prev
+        );
+      })
+      .catch((err) => {
+        console.error("Erro ao responder à solicitação de associação:", err);
+      });
   };
 
   const formatDateTime = (value?: string | null) => {
@@ -335,14 +359,6 @@ export default function AssociationDetailScreen() {
               >
                 <ThemedText style={styles.actionText}>
                   Recusar solicitação
-                </ThemedText>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.cancelAction]}
-                onPress={() => handleAction("Cancelar associação")}
-              >
-                <ThemedText style={styles.actionText}>
-                  Cancelar associação
                 </ThemedText>
               </TouchableOpacity>
             </View>

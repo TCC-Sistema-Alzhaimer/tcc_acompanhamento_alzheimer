@@ -39,6 +39,8 @@ export const ROUTES = {
 
   ASSOCIATIONS: "/requests",
   ASSOCIATION_BY_ID: (associationId: string) => `/requests/${associationId}`,
+  ASSOCIATIONS_RESPOND: (associationId: string) =>
+    `/requests/${associationId}/respond`,
 
   CHATS: "/chats",
   CHAT_BY_ID: (chatId: string) => `/chats/${chatId}`,

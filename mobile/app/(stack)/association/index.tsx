@@ -19,16 +19,15 @@ export default function AssociationListScreen() {
   const { state } = useSelectedPatient();
 
   useEffect(() => {
-    if (session != null && session.accessToken && state.patientId) {
+    if (session != null && session.accessToken) {
       const accessToken = session.accessToken;
-      const patientId = state.patientId;
+      const patientId = state.patientId || undefined;
 
       async function loadAssociations() {
         const resp = await fetchAssociations({
           accessToken,
           patientId,
         });
-        console.log("Fetched associations:", resp);
         setAssociations(resp);
       }
 
@@ -42,20 +41,21 @@ export default function AssociationListScreen() {
         Associações
       </ThemedText>
       <ScrollView>
-      {associations.map((association) => (
-        <Card.Root
-          key={association.id}
-          themed={false}
-          style={{ marginBottom: 16 }}
-          onPress={() => router.push(`/association/${association.id}`)}
-        >
-          <Card.Title
-            title={formatAssociationType(association.type)}
-            subtitle={association.creatorEmail}
-          />
-          <Card.Icon name="person.2.fill" />
-        </Card.Root>
-      ))}</ScrollView>
+        {associations.map((association) => (
+          <Card.Root
+            key={association.id}
+            themed={false}
+            style={{ marginBottom: 16 }}
+            onPress={() => router.push(`/association/${association.id}`)}
+          >
+            <Card.Title
+              title={formatAssociationType(association.type)}
+              subtitle={association.creatorEmail}
+            />
+            <Card.Icon name="person.2.fill" />
+          </Card.Root>
+        ))}
+      </ScrollView>
     </ThemedView>
   );
 }

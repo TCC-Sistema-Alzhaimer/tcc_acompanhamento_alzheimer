@@ -15,3 +15,9 @@ export enum LiteralExamStatus {
   CANCELLED = "CANCELLED",
   PENDING_RESULT = "PENDING_RESULT",
 }
+
+export enum RequestStatus {
+  PENDENTE = "PENDENTE",
+  ACEITA = "ACEITA",
+  RECUSADA = "RECUSADA",
+}

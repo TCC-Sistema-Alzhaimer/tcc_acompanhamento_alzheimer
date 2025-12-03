@@ -1,3 +1,5 @@
+import { RequestStatus } from "../enum/exam-status";
+
 export type AssociationType =
   | "PATIENT_TO_DOCTOR"
   | "PATIENT_TO_CAREGIVER"
@@ -21,4 +23,11 @@ export interface AssociationParticipantDto {
   name: string;
   email: string;
   userType: string;
+}
+
+export interface AssociationRequestDto {
+  accessToken: string;
+  associationId?: number;
+  responderEmail: string;
+  status: RequestStatus;
 }

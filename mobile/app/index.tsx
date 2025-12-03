@@ -67,7 +67,7 @@ export default function StartPage() {
       user.role === Roles.DOCTOR ||
       user.role === Roles.ADMINISTRATOR
     ) {
-      router.replace(state.patientId ? "/home" : "/selecter-patient");
+      router.replace("/home");
       return;
     }
 
