@@ -71,7 +71,7 @@ export interface IndicatorResponseDTO {
   descricao: string;
   data: string;
   tipoDescription: string;
-  tipoId: number;
+  tipoId: string;
   patientId: number;
   patientName: string;
   fileId: number | null;
@@ -99,6 +99,14 @@ export interface PatientModel {
   cpf: string;
   gender: string;
   birthdate: string;
+}
+
+export interface IndicatorRequestDto {
+  patientId: number;
+  tipoId: string;
+  valor: number;
+  descricao: string;
+  data: string;
 }
 
 export const getPatientsByDoctor = async (doctorId: number, query: string) => {
@@ -194,6 +202,31 @@ export const getPatientIndicators = async (patientId: number) => {
     return response.data;
   } catch (error) {
     console.error("Erro ao buscar indicadores:", error);
+    throw error;
+  }
+};
+
+export const createIndicator = async (data: {
+  patientId: number;
+  tipoId: number;
+  valor: number;
+  descricao: string;
+  data: string;
+}) => {
+  try {
+    const response = await api.post("/indicator", data);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao criar indicador:", error);
+    throw error;
+  }
+};
+
+export const deleteIndicator = async (id: number) => {
+  try {
+    await api.delete(`/indicator/${id}`);
+  } catch (error) {
+    console.error("Erro ao deletar indicador:", error);
     throw error;
   }
 };

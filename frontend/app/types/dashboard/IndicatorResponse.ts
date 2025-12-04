@@ -4,7 +4,7 @@ export interface IndicatorResponse {
   descricao: string;
   data: string;
   tipoDescription: string;
-  tipoId: number;
+  tipoId: string;
   patientId: number;
   patientName: string;
   fileId: number | null;

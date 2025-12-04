@@ -15,10 +15,10 @@ Sistema para acompanhamento de pacientes com Alzheimer, conectando médicos, cui
 
 Quer testar sem instalar nada? Acesse a versão de produção hospedada na Azure:
 
-| Plataforma       | Link                                                                                                                  |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------- |
-| **Frontend Web** | [https://kind-mud-06a65940f.1.azurestaticapps.net](https://kind-mud-06a65940f.1.azurestaticapps.net)                  |
-| **Mobile (APK)** | [Download no Expo](https://expo.dev/accounts/starbiel/projects/front-end/builds/9a735001-0b90-448e-8067-3ae1a0aeb2d0) |
+| Plataforma       | Link                                                                                                 |
+| ---------------- | ---------------------------------------------------------------------------------------------------- |
+| **Frontend Web** | [https://kind-mud-06a65940f.1.azurestaticapps.net](https://kind-mud-06a65940f.1.azurestaticapps.net) |
+| **Mobile (APK)** | [Download no Expo](https://expo.dev/artifacts/eas/gizRi62gcrmZ84Gujo3PqP.apk)                        |
 
 > **Credenciais:** Use os [usuários de teste](#-usuários-de-teste) listados abaixo.
 
