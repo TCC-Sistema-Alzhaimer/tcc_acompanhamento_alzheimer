@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useSelectedPatient } from "@/context/SelectedPatientContext";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
+import { Alert, Platform, StyleSheet, View } from "react-native";
 
 const aboutText = `Este aplicativo foi desenvolvido para auxiliar no monitoramento e gestão de pacientes com Alzheimer. Ele oferece funcionalidades como registro de exames, acompanhamento de conclusões médicas e notificações importantes. Nosso objetivo é proporcionar uma melhor qualidade de vida para os pacientes e facilitar o trabalho dos cuidadores e profissionais de saúde.`;
 
@@ -22,6 +22,11 @@ export default function TabTwoScreen() {
   };
 
   const handleLogout = () => {
+    if (Platform.OS === "web") {
+      clearSelection();
+      logout();
+      return;
+    }
     Alert.alert(
       "Sair do aplicativo",
       "Tem certeza que deseja desconectar sua conta?",
