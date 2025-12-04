@@ -30,3 +30,12 @@ export async function getAllExamStatus() {
 export async function changeExamStatus(examId: string, statusId: string) {
   return api.put<ExamResponse>(`/exams/${examId}/status`, { status: statusId });
 }
+
+export async function uploadExamResult(examId: number, file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return api.post(`/exams/${examId}/results/upload`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+}

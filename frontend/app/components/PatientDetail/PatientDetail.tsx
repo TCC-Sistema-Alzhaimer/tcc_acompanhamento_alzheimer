@@ -6,6 +6,7 @@ import { usePatientHistory } from "./hooks/usePatientHistory";
 import { ROUTES } from "~/routes/EnumRoutes";
 import { useNavigate } from "react-router";
 import { PatientInfoCard } from "./PatientInfoCard";
+import { useAuth } from "~/hooks/useAuth";
 
 interface PatientDetailsProps {
   patientId: number | null;
@@ -14,6 +15,7 @@ interface PatientDetailsProps {
 export function PatientDetails({ patientId }: PatientDetailsProps) {
   const { patient, isLoading: isLoadingPatient } = usePatientDetails(patientId);
   const { exams, isLoading: isLoadingHistory } = usePatientHistory(patientId);
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   if (patientId === null) {
@@ -42,8 +44,14 @@ export function PatientDetails({ patientId }: PatientDetailsProps) {
 
   const handleShowCompleteHistory = () => {
     if (patientId) {
-      const historyPath = ROUTES.DOCTOR.HISTORY;
-
+      let historyPath = ROUTES.DOCTOR.HISTORY;
+      console.log("User role:", user?.role);
+      if (user?.role === "CAREGIVER"){
+        navigate(ROUTES.CAREGIVER.HISTORY, {
+        state: { defaultPatientId: patientId },
+        });
+        return;
+      }
       navigate(historyPath, {
         state: { defaultPatientId: patientId },
       });

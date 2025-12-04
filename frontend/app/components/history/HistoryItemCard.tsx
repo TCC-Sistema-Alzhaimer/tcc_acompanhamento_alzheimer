@@ -19,6 +19,7 @@ import type {
 } from "~/services/doctorService";
 import type { UnifiedHistoryItem } from "./hooks/usePatientHistory";
 import { ROUTES } from "~/routes/EnumRoutes";
+import { useAuth } from "~/hooks/useAuth";
 
 const AttachmentItem = ({ file }: { file: FileInfoDTO }) => (
   <a
@@ -145,9 +146,17 @@ export function HistoryItemCard({
   isLast = false,
 }: HistoryItemCardProps) {
   const navigate = useNavigate();
-
+  const { user } = useAuth();
   const handleExamClick = () => {
     if (item.itemType === "EXAM") {
+      if (user?.role === "CAREGIVER") {
+        navigate(`${ROUTES.CAREGIVER.EXAMINATION}?examId=${item.id}&patientId=${item.patientId}`, {
+          state: {
+            defaultPatientId: item.patientId,
+          },
+        });
+        return;
+      }
       navigate(
         `${ROUTES.DOCTOR.EXAMINATION}?examId=${item.id}&patientId=${item.patientId}`
       );
@@ -156,6 +165,14 @@ export function HistoryItemCard({
 
   const handleConclusionClick = () => {
     if (item.itemType === "CONCLUSION") {
+      if (user?.role === "CAREGIVER") {
+        navigate(`${ROUTES.CAREGIVER.CONCLUSION}?tab=list&conclusionId=${item.id}`, {
+          state: {
+            defaultPatientId: item.patientId,
+          },
+        });
+        return;
+      }
       navigate(`${ROUTES.DOCTOR.CONCLUSION}?tab=list&conclusionId=${item.id}`, {
         state: {
           defaultPatientId: item.patientId,
