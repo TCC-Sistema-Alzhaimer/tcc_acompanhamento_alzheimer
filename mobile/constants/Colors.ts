@@ -3,24 +3,26 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
-const tintColorLight = "#0a7ea4";
-const tintColorDark = "#fff";
 export const brandColor = "#5BBFBA";
+
+const tintColorLight = brandColor;
+const tintColorDark = brandColor;
 
 export const Colors = {
   light: {
     text: "#11181C",
-    background: "#fff",
+    background: "#F2F4F7",
     tint: tintColorLight,
     icon: "#687076",
     tabIconDefault: "#687076",
     tabIconSelected: tintColorLight,
     placeholder: "#A0A4A8",
-    border: "#E2E8F0",
+    border: "#E6EEF3",
     danger: "#D14343",
-    secondaryText: "#3C4852",
-    secondaryBackground: "#F5F5F5",
+    secondaryText: "#475569",
+    secondaryBackground: "#FFFFFF",
     brandBackground: brandColor,
+    card: "#FFFFFF",
 
     button: {
       primaryBackground: brandColor,
@@ -37,22 +39,23 @@ export const Colors = {
     },
   },
   dark: {
-    text: "#ECEDEE",
-    background: "#151718",
+    text: "#F8FAFC",
+    background: "#0F172A",
     tint: tintColorDark,
-    icon: "#9BA1A6",
+    icon: "#94A3B8",
     tabIconDefault: "#9BA1A6",
     tabIconSelected: tintColorDark,
     placeholder: "#6B7280",
-    border: "#374151",
+    border: "#24282A",
     danger: "#EF4444",
-    secondaryText: "#9CA3AF",
-    secondaryBackground: "#1F2224",
+    secondaryText: "#94A3B8",
+    secondaryBackground: "#1E293B",
     brandBackground: brandColor,
+    card: "#1E293B",
 
     button: {
       primaryBackground: brandColor,
-      primaryText: "#ffffff",
+      primaryText: "#0F172A",
       primaryHover: "#4EB0AB",
       secondaryBackground: "#1F2224",
       secondaryText: "#ECEDEE",

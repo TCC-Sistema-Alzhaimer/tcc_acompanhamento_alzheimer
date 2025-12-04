@@ -1,28 +1,60 @@
 import { Card } from "@/components/card/Card";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { Colors } from "@/constants/Colors"; // Importando sua paleta
 import { useSelectedPatient } from "@/context/SelectedPatientContext";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { useSession } from "@/hooks/useSession";
 import { fetchExamsByPatientId } from "@/services/exam-service";
 import { Exam } from "@/types/domain/exam";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import {
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type Filter = "ALL" | "INPROCESS" | "COMPLETED" | "CANCELLED";
 
 const PAGE_SIZE = 10;
 
-/*
-    REQUESTED("Solicitado"),
-    SCHEDULED("Agendado"),
-    IN_PROGRESS("Em Andamento"),
-    COMPLETED("Concluído"),
-    CANCELLED("Cancelado"),
-    PENDING_RESULT("Aguardando Resultado");
-*/
+function FilterChip({
+  label,
+  isActive,
+  onPress,
+}: {
+  label: string;
+  isActive: boolean;
+  onPress: () => void;
+}) {
+  const theme = useColorScheme() ?? "light";
+  const colors = Colors[theme];
 
-// Garante compat com ids "pending/done" OU "pendente/realizado"
+  const backgroundColor = isActive ? colors.tint : colors.card;
+
+  const textColor = isActive ? "#FFFFFF" : colors.secondaryText;
+
+  const borderColor = isActive ? "transparent" : colors.border;
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={[
+        styles.chip,
+        { backgroundColor, borderColor, borderWidth: isActive ? 0 : 1 },
+      ]}
+    >
+      <Text style={[styles.chipText, { color: textColor }]}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+// --- Funções Auxiliares ---
 function matchesStatus(exam: Exam, filter: Exclude<Filter, "ALL">) {
   const id = (exam.examStatusId || "").toLowerCase();
   const desc = (exam.examStatusDescription || "").toLowerCase();
@@ -34,15 +66,17 @@ function matchesStatus(exam: Exam, filter: Exclude<Filter, "ALL">) {
   }
   if (filter === "COMPLETED") {
     return (
-      id === "COMPLETED" || id === "cancelado" || desc.includes("cancelado")
+      id === "COMPLETED" ||
+      id === "done" ||
+      id === "realizado" ||
+      desc.includes("realiz") ||
+      desc.includes("conclu") ||
+      desc.includes("complet")
     );
   }
   if (filter === "INPROCESS") {
     const isCancelled =
-      id === "cancelled" ||
-      id === "cancelado" ||
-      desc.includes("cancelado") ||
-      desc.includes("cancel");
+      id === "cancelled" || id === "cancelado" || desc.includes("cancelado");
     const isCompleted =
       id === "completed" ||
       id === "done" ||
@@ -59,19 +93,19 @@ export default function ExamScreen() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [filter, setFilter] = useState<Filter>("ALL");
   const [page, setPage] = useState(1);
+  const theme = useColorScheme() ?? "light";
 
   const { state, loading: loadingSelected } = useSelectedPatient();
   const router = useRouter();
   const session = useSession();
 
   const loadExams = async () => {
-    if (session !== null) {
+    if (session !== null && state.patientId) {
       try {
         const resp = await fetchExamsByPatientId({
           accessToken: session.accessToken,
-          patientId: state.patientId!,
+          patientId: state.patientId,
         });
-        console.log("Exames carregados:", resp);
         setExams(resp);
       } catch (error) {
         console.error("Erro ao carregar exames:", error);
@@ -105,84 +139,82 @@ export default function ExamScreen() {
     }
   }, [visibleData.length, filteredExams.length]);
 
-  const isActive = (f: Filter) => f === filter;
-
-  const renderFilterButton = (label: string, f: Filter) => (
-    <TouchableOpacity key={f} onPress={() => handleChangeFilter(f)}>
-      <ThemedView
-        type="default"
-        style={{
-          padding: 16,
-          borderRadius: 8,
-          margin: 8,
-          alignItems: "center",
-          justifyContent: "center",
-          opacity: isActive(f) ? 1 : 0.6,
-          borderWidth: isActive(f) ? 2 : 0,
-          borderColor: isActive(f) ? "#fff" : "transparent",
-        }}
-      >
-        <ThemedText type="default">{label}</ThemedText>
-      </ThemedView>
-    </TouchableOpacity>
-  );
-
   return (
-    <ThemedView style={{ flex: 1, padding: 16 }}>
-      <ThemedView type="secondary" style={{ borderRadius: 8, marginBottom: 8 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-evenly",
-            maxWidth: "100%",
-          }}
+    <ThemedView style={{ flex: 1 }}>
+      <View style={styles.filterContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterContent}
         >
-          {renderFilterButton("Todos", "ALL")}
-          {renderFilterButton("Em Processo", "INPROCESS")}
-          {renderFilterButton("Cancelado", "CANCELLED")}
-          {renderFilterButton("Realizados", "COMPLETED")}
-        </View>
-      </ThemedView>
+          <FilterChip
+            label="Todos"
+            isActive={filter === "ALL"}
+            onPress={() => handleChangeFilter("ALL")}
+          />
+          <FilterChip
+            label="Em Processo"
+            isActive={filter === "INPROCESS"}
+            onPress={() => handleChangeFilter("INPROCESS")}
+          />
+          <FilterChip
+            label="Realizados"
+            isActive={filter === "COMPLETED"}
+            onPress={() => handleChangeFilter("COMPLETED")}
+          />
+          <FilterChip
+            label="Cancelados"
+            isActive={filter === "CANCELLED"}
+            onPress={() => handleChangeFilter("CANCELLED")}
+          />
+        </ScrollView>
+      </View>
 
+      {/* Lista de Exames */}
       <FlatList
         data={visibleData}
         keyExtractor={(item, index) => item.id ?? `exam-${index}`}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        // Empty State estilizado
         ListEmptyComponent={
-          <View style={{ alignItems: "center", marginTop: 32 }}>
-            <ThemedText
-              style={{ padding: 16, textAlign: "center" }}
-              type="title"
-            >
-              Ops!
+          <View style={styles.emptyContainer}>
+            <ThemedText type="subtitle" style={{ marginBottom: 8 }}>
+              Nenhum exame encontrado
             </ThemedText>
             <ThemedText
-              style={{ paddingHorizontal: 16, textAlign: "center" }}
-              type="default"
+              style={{
+                color: Colors[theme].secondaryText,
+                textAlign: "center",
+              }}
             >
-              Nenhum exame encontrado para o paciente neste filtro.
+              Não há exames para este filtro no momento.
             </ThemedText>
           </View>
         }
         renderItem={({ item: exam }) => (
           <Card.Root
-            themed={false}
-            style={{ marginVertical: 6, padding: 16 }}
+            style={{ marginBottom: 12 }}
             onPress={() => router.push(`/exam/${exam.id}`)}
           >
             <Card.Title
-              title={exam.examTypeDescription ?? "Exame"}
-              subtitle={`Status: ${exam.examStatusDescription ?? "-"}`}
+              title={exam.examTypeDescription ?? "Exame sem título"}
+              subtitle={exam.examStatusDescription ?? "Status desconhecido"}
             />
-            <Card.Icon name="chevron.right" />
+            <Card.Icon name="chevron.right" type="primary" />
           </Card.Root>
         )}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.4}
         ListFooterComponent={
           visibleData.length < filteredExams.length ? (
-            <Text style={{ textAlign: "center", padding: 12 }}>
-              carregando mais...
+            <Text
+              style={{
+                textAlign: "center",
+                padding: 12,
+                color: Colors[theme].secondaryText,
+              }}
+            >
+              Carregando mais...
             </Text>
           ) : null
         }
@@ -190,3 +222,30 @@ export default function ExamScreen() {
     </ThemedView>
   );
 }
+
+const styles = StyleSheet.create({
+  filterContainer: {
+    paddingVertical: 12,
+  },
+  filterContent: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  chip: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  chipText: {
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 40,
+    paddingHorizontal: 20,
+  },
+});

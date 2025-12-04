@@ -102,6 +102,18 @@ public class ExamService {
         examRepository.save(exam);
     }
 
+    @Transactional
+    public ExamResponseDTO changeExamStatus(String examId, String newStatusId) {
+        Exam exam = findById(Long.parseLong(examId));
+
+        ExamStatus newStatus = examStatusRepository.findById(newStatusId)
+                .orElseThrow(() -> new ResourceNotFoundException("Exam Status not found with id: " + newStatusId));
+        exam.setStatus(newStatus);
+        examRepository.save(exam);
+
+        return toResponseDTO(exam);
+    }
+
     public ExamResponseDTO toResponseDTO(Exam exam) {
         ExamResponseDTO dto = new ExamResponseDTO();
 

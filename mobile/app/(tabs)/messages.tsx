@@ -84,7 +84,9 @@ export default function MessagesScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
-        <Card.Root themed={false} style={styles.search}>
+        <ThemedView
+          style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+        >
           <ThemedTextInput
             placeholder="Buscar"
             style={{ width: "100%" }}
@@ -92,7 +94,7 @@ export default function MessagesScreen() {
             onSubmitEditing={() => null}
           />
           <Card.Icon name="magnifyingglass" />
-        </Card.Root>
+        </ThemedView>
 
         <Pressable
           style={[
@@ -124,7 +126,6 @@ export default function MessagesScreen() {
                 <Card.Root
                   key={chat.id}
                   style={styles.card}
-                  themed={false}
                   onPress={() => router.push(`/chat/${chat.id}`)}
                 >
                   <Card.Avatar uri="https://admin.cnnbrasil.com.br/wp-content/uploads/sites/12/2025/07/Avatar-Fogo-e-Cinzas.png?w=1200&h=900&crop=0" />
@@ -179,10 +180,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#555",
     borderRadius: 8,
-  },
-
-  search: {
-    width: "100%",
   },
   newChatButton: {
     flexDirection: "row",

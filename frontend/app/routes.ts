@@ -5,6 +5,7 @@ import {
   route,
 } from "@react-router/dev/routes";
 import { ROUTES } from "./routes/EnumRoutes";
+import { ro } from "date-fns/locale";
 
 export default [
   layout("./layout/Auth/index.tsx", [
@@ -20,10 +21,6 @@ export default [
     // route(ROUTES.DOCTOR.PATIENTS, "routes/Doctor/DoctorPatients.tsx"),
   ]),
 
-  layout("./layout/Patient/index.tsx", [
-    route(ROUTES.CAREGIVER.EXAMINATION, "routes/Caregiver/exam.tsx"),
-  ]),
-
   layout("./layout/PrivatePages/index.tsx", [
     route(ROUTES.PRIVATE_HOME, "routes/PrivateWelcome/private_home.tsx"),
     route(ROUTES.ADMIN.MANAGEMENT, "routes/userManagement/userManagement.tsx"),
@@ -34,6 +31,13 @@ export default [
     route(ROUTES.DOCTOR.PATIENTS, "routes/Doctor/DoctorPatients.tsx"),
     route(ROUTES.DOCTOR.HISTORY, "routes/Doctor/history.tsx"),
     route(ROUTES.DOCTOR.DASHBOARD, "routes/Doctor/dashboard.tsx"),
+    route(ROUTES.CAREGIVER.EXAMINATION, "routes/Caregiver/CaregiverExam.tsx"),
+    route(ROUTES.CAREGIVER.PATIENTS, "routes/Caregiver/CaregiverPatients.tsx"),
+    route(ROUTES.CAREGIVER.HISTORY, "routes/Caregiver/CaregierHistory.tsx"),
+    route(
+      ROUTES.CAREGIVER.CONCLUSION,
+      "routes/Caregiver/CaregiverConclusion.tsx"
+    ),
     route(ROUTES.DOCTOR.ADD_INDICATOR, "routes/Doctor/addIndicator.tsx"),
   ]),
 ] satisfies RouteConfig;

@@ -1,16 +1,16 @@
 import { Tabs } from "expo-router";
 import React, { useEffect } from "react";
-import { ActivityIndicator, Platform } from "react-native";
+import { ActivityIndicator, Platform, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/context/AuthContext";
 import { useSelectedPatient } from "@/context/SelectedPatientContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useSession } from "@/hooks/useSession";
+import { Roles } from "@/types/enum/roles";
 import { useRouter } from "expo-router";
 
 export default function TabLayout() {
@@ -25,6 +25,11 @@ export default function TabLayout() {
   } = useSelectedPatient();
   const router = useRouter();
 
+  const isProfessional =
+    session?.user?.role === Roles.CAREGIVER ||
+    session?.user?.role === Roles.DOCTOR ||
+    session?.user?.role === Roles.ADMINISTRATOR;
+
   useEffect(() => {
     if (loading || loadingSelected) {
       return;
@@ -33,7 +38,8 @@ export default function TabLayout() {
       router.replace("/login");
       return;
     }
-    if (state.patientId == null) {
+
+    if (state.patientId == null && !isProfessional) {
       clearSelection();
       router.replace("/selecter-patient");
     }
@@ -44,13 +50,16 @@ export default function TabLayout() {
     state.patientId,
     state.hydrated,
     loadingSelected,
+    isProfessional,
   ]);
+
+  const canRenderTabs = state.patientId != null || isProfessional;
 
   if (
     loading ||
     !session ||
     !state.hydrated ||
-    state.patientId == null ||
+    !canRenderTabs ||
     loadingSelected
   ) {
     return (
@@ -64,58 +73,63 @@ export default function TabLayout() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-      <Tabs
-        screenOptions={{
-          tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-          headerShown: false,
-          tabBarButton: HapticTab,
-          tabBarBackground: TabBarBackground,
-          tabBarStyle: Platform.select({
-            ios: {
-              position: "absolute",
-            },
-            default: {},
-          }),
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        headerShown: false,
+        tabBarButton: HapticTab,
+        tabBarBackground: () => (
+          <View
+            style={{
+              backgroundColor: Colors[colorScheme ?? "light"].background,
+              flex: 1,
+            }}
+          />
+        ),
+        tabBarStyle: Platform.select({
+          ios: {
+            position: "absolute",
+          },
+          default: {},
+        }),
+      }}
+    >
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="house.fill" color={color} />
+          ),
         }}
-      >
-        <Tabs.Screen
-          name="home"
-          options={{
-            title: "Home",
-            tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="house.fill" color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="messages"
-          options={{
-            title: "Mensagens",
-            tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="envelope.fill" color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="notification"
-          options={{
-            title: "Notificações",
-            tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="bell.fill" color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="configuration"
-          options={{
-            title: "Configurações",
-            tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="gearshape.fill" color={color} />
-            ),
-          }}
-        />
-      </Tabs>
-    </SafeAreaView>
+      />
+      <Tabs.Screen
+        name="messages"
+        options={{
+          title: "Mensagens",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="envelope.fill" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="notification"
+        options={{
+          title: "Notificações",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="bell.fill" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="configuration"
+        options={{
+          title: "Configurações",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="gearshape.fill" color={color} />
+          ),
+        }}
+      />
+    </Tabs>
   );
 }

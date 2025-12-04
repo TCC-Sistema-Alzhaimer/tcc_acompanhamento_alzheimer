@@ -1,34 +1,35 @@
 package com.tcc.alzheimer.service.exams;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.tcc.alzheimer.dto.exams.ConclusionCreateDTO;
 import com.tcc.alzheimer.dto.exams.ConclusionResponseDTO;
-import com.tcc.alzheimer.exception.ResourceNotFoundException;
-import com.tcc.alzheimer.exception.InvalidFileException;
-import com.tcc.alzheimer.exception.FileUploadException;
 import com.tcc.alzheimer.dto.files.FileInfoDTO;
-import com.tcc.alzheimer.util.FileUtils;
+import com.tcc.alzheimer.exception.FileUploadException;
+import com.tcc.alzheimer.exception.InvalidFileException;
+import com.tcc.alzheimer.exception.ResourceNotFoundException;
+import com.tcc.alzheimer.model.enums.ExamStatusType;
 import com.tcc.alzheimer.model.exams.Conclusion;
 import com.tcc.alzheimer.model.exams.Exam;
+import com.tcc.alzheimer.model.files.File;
 import com.tcc.alzheimer.model.roles.Doctor;
 import com.tcc.alzheimer.repository.exams.ConclusionRepository;
 import com.tcc.alzheimer.repository.exams.ExamRepository;
-import com.tcc.alzheimer.repository.roles.DoctorRepository;
 import com.tcc.alzheimer.repository.files.FileRepository;
-import com.tcc.alzheimer.service.files.FirebaseStorageService;
+import com.tcc.alzheimer.repository.roles.DoctorRepository;
 import com.tcc.alzheimer.service.auth.AuthService;
-import com.tcc.alzheimer.model.files.File;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.tcc.alzheimer.service.files.FirebaseStorageService;
+import com.tcc.alzheimer.util.FileUtils;
+import com.tcc.alzheimer.service.exams.ExamService;
 
 @Service
 public class ConclusionService {
@@ -39,19 +40,22 @@ public class ConclusionService {
     private final FirebaseStorageService firebaseStorageService;
     private final FileRepository fileRepository;
     private final AuthService authService;
+    private final ExamService examService;
 
     public ConclusionService(ConclusionRepository conclusionRepository,
             ExamRepository examRepository,
             DoctorRepository doctorRepository,
             FirebaseStorageService firebaseStorageService,
             FileRepository fileRepository,
-            AuthService authService) {
+            AuthService authService,
+            ExamService examService) {
         this.conclusionRepository = conclusionRepository;
         this.examRepository = examRepository;
         this.doctorRepository = doctorRepository;
         this.firebaseStorageService = firebaseStorageService;
         this.fileRepository = fileRepository;
         this.authService = authService;
+        this.examService = examService;
     }
 
     private static final java.util.List<String> ALLOWED_CONTENT_TYPES = Arrays.asList(
@@ -110,7 +114,10 @@ public class ConclusionService {
             c.getFiles().addAll(savedFiles);
             c = conclusionRepository.save(c);
         }
-
+        examService.changeExamStatus(
+                exam.getId().toString(),
+                ExamStatusType.COMPLETED.getId()
+        );
         return mapToDto(c);
     }
 
@@ -122,6 +129,11 @@ public class ConclusionService {
 
     public List<ConclusionResponseDTO> getByExamId(Long examId) {
         List<Conclusion> list = conclusionRepository.findByExamId(examId);
+        return list.stream().map(this::mapToDto).collect(Collectors.toList());
+    }
+
+    public List<ConclusionResponseDTO> getByPatientId(Long patientId) {
+        List<Conclusion> list = conclusionRepository.findByExamPatientIdOrderByCreatedAtDesc(patientId);
         return list.stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
@@ -149,7 +161,12 @@ public class ConclusionService {
         ConclusionResponseDTO dto = new ConclusionResponseDTO();
         dto.setId(c.getId());
         dto.setExamId(c.getExam().getId());
+        dto.setPatientId(c.getExam().getPatient().getId());
         dto.setDoctorId(c.getDoctor().getId());
+        dto.setDoctorName(c.getDoctor().getName());
+        dto.setPatientName(c.getExam().getPatient().getName());
+        dto.setTitle(c.getDescription()); // description serves as title
+        dto.setContent(c.getConclusion()); // conclusion serves as content
         dto.setDescription(c.getDescription());
         dto.setNotes(c.getNotes());
         dto.setConclusion(c.getConclusion());
@@ -174,6 +191,10 @@ public class ConclusionService {
                 return fi;
             }).collect(Collectors.toList());
             dto.setFiles(fileInfos);
+            // Also populate attachmentUrls for frontend compatibility
+            dto.setAttachmentUrls(fileInfos.stream()
+                    .map(FileInfoDTO::getDownloadLink)
+                    .collect(Collectors.toList()));
         }
         return dto;
     }

@@ -10,6 +10,7 @@ import {
   Shield,
   UserCircle,
   CalendarDays,
+  History,
 } from "lucide-react";
 
 export interface NavItem {
@@ -24,6 +25,7 @@ export const ROLE_NAVIGATION: Record<string, NavItem[]> = {
     { label: "Pacientes", to: ROUTES.DOCTOR.PATIENTS, icon: Users },
     { label: "Exames", to: ROUTES.DOCTOR.EXAMINATION, icon: FileText },
     { label: "Conclusões", to: ROUTES.DOCTOR.CONCLUSION, icon: ClipboardCheck },
+    { label: "Histórico", to: ROUTES.DOCTOR.HISTORY, icon: History },
     { label: "Dashboard", to: ROUTES.DOCTOR.DASHBOARD, icon: LayoutDashboard },
   ],
   [SystemRoles.ADMIN]: [

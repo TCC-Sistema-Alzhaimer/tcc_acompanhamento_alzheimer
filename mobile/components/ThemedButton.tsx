@@ -7,12 +7,14 @@ interface ThemedButtonProps {
   type?: "primary" | "secondary" | "danger" | "disabled";
   title: string;
   onPress?: () => void;
+  children?: React.ReactNode;
 }
 
 export function ThemedButton({
   type = "primary",
   title,
   onPress,
+  children,
 }: ThemedButtonProps) {
   const theme = useColorScheme() ?? "light";
   const buttonColors = Colors[theme].button;
@@ -41,6 +43,7 @@ export function ThemedButton({
       onPress={type !== "disabled" ? onPress : undefined}
       activeOpacity={0.7}
     >
+      {children}
       <Text style={[styles.text, { color: textColor }]}>{title}</Text>
     </TouchableOpacity>
   );
@@ -52,6 +55,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
     alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
   },
   text: {
     fontWeight: "600",
