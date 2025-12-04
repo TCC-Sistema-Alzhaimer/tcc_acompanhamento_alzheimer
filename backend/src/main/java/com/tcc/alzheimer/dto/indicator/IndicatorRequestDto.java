@@ -1,6 +1,6 @@
 package com.tcc.alzheimer.dto.indicator;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -15,7 +15,7 @@ public class IndicatorRequestDto {
     private String descricao;
 
     @NotNull
-    private LocalDate data;
+    private LocalDateTime data;
 
     @NotNull
     private String tipoId; // referência ao IndicatorType

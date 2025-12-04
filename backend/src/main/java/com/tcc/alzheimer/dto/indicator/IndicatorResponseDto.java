@@ -1,6 +1,6 @@
 package com.tcc.alzheimer.dto.indicator;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,7 +14,7 @@ public class IndicatorResponseDto {
     private Long id;
     private Double valor;
     private String descricao;
-    private LocalDate data;
+    private LocalDateTime data;
 
     private String tipoDescricao;
     private String tipoId;

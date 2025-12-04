@@ -20,6 +20,7 @@ export const ROUTES = {
     EXAMINATION: "/doctor/examination",
     CONCLUSION: "/doctor/conclusion",
     HISTORY: "/doctor/history",
+    ADD_INDICATOR: "/doctor/dashboard/addIndicator",
   },
 
   CAREGIVER: {

@@ -34,5 +34,6 @@ export default [
     route(ROUTES.DOCTOR.PATIENTS, "routes/Doctor/DoctorPatients.tsx"),
     route(ROUTES.DOCTOR.HISTORY, "routes/Doctor/history.tsx"),
     route(ROUTES.DOCTOR.DASHBOARD, "routes/Doctor/dashboard.tsx"),
+    route(ROUTES.DOCTOR.ADD_INDICATOR, "routes/Doctor/addIndicator.tsx"),
   ]),
 ] satisfies RouteConfig;
