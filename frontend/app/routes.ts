@@ -31,9 +31,13 @@ export default [
     route(ROUTES.DOCTOR.PATIENTS, "routes/Doctor/DoctorPatients.tsx"),
     route(ROUTES.DOCTOR.HISTORY, "routes/Doctor/history.tsx"),
     route(ROUTES.DOCTOR.DASHBOARD, "routes/Doctor/dashboard.tsx"),
-    route(ROUTES.CAREGIVER.EXAMINATION, "routes/Caregiver/CaregiverExam.tsx"), 
+    route(ROUTES.CAREGIVER.EXAMINATION, "routes/Caregiver/CaregiverExam.tsx"),
     route(ROUTES.CAREGIVER.PATIENTS, "routes/Caregiver/CaregiverPatients.tsx"),
     route(ROUTES.CAREGIVER.HISTORY, "routes/Caregiver/CaregierHistory.tsx"),
-    route(ROUTES.CAREGIVER.CONCLUSION, "routes/Caregiver/CaregiverConclusion.tsx"),
+    route(
+      ROUTES.CAREGIVER.CONCLUSION,
+      "routes/Caregiver/CaregiverConclusion.tsx"
+    ),
+    route(ROUTES.DOCTOR.ADD_INDICATOR, "routes/Doctor/addIndicator.tsx"),
   ]),
 ] satisfies RouteConfig;

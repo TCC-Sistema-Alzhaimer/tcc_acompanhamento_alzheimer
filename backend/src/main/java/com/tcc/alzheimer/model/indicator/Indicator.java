@@ -1,6 +1,7 @@
 package com.tcc.alzheimer.model.indicator;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -41,7 +42,7 @@ public class Indicator {
     private String descricao;
 
     @Column(nullable = false)
-    private LocalDate data;
+    private LocalDateTime data;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "type_id", nullable = false)
