@@ -1,6 +1,5 @@
 import { Stack } from "expo-router";
 import React from "react";
-
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TabLayout() {
@@ -18,6 +17,13 @@ export default function TabLayout() {
           name="chat/[id]"
           options={{
             title: "Mensagens",
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="chat/create"
+          options={{
+            title: "Novo chat",
             headerShown: true,
           }}
         />

@@ -17,6 +17,7 @@ public class ExamResponseDTO {
     private String examTypeId;
     private String examStatusId;
     private LocalDateTime requestDate;
+    private LocalDateTime scheduledDate;
     private String instructions;
     private String note;
     private LocalDateTime updatedAt;

@@ -1,104 +1,158 @@
 import { PatientList } from "~/components/UserList/PatientList";
 import type { Route } from "../../+types/root";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "~/hooks/useAuth";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { ExamRequest } from "~/components/exam/ExamRequest";
-import { usePatientDetails } from "~/components/PatientDetail/hooks/usePatientDetail";
-
-const PatientInfoCard = ({ patientId }: { patientId: number | null }) => {
-  const { patient, isLoading } = usePatientDetails(patientId);
-
-  const calculateAge = (birthdate: Date | string) => {
-    try {
-      const birth = new Date(birthdate);
-      const today = new Date();
-      let age = today.getFullYear() - birth.getFullYear();
-      const m = today.getMonth() - birth.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-      return age;
-    } catch (error) {
-      return "?";
-    }
-  };
-
-  if (isLoading || !patient) {
-    return (
-      <div className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
-        <div className="bg-gray-100 rounded-lg p-5">
-          <div className="h-5 bg-gray-300 rounded w-3/4 mb-2"></div>
-          <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <h3 className="text-lg font-bold text-gray-800 mb-4">
-        Dados do Paciente: {patient.name}
-      </h3>
-      <div className="bg-gray-100 rounded-lg p-5">
-        <strong className="block text-base font-bold text-gray-800 mb-2">
-          {patient.name} • {calculateAge(patient.birthdate)} anos •{" "}
-          {patient.gender}
-        </strong>
-        <p className="text-sm text-gray-600">
-          Data de Nascimento:{" "}
-          {new Date(patient.birthdate).toLocaleDateString("pt-BR")} • ID: #
-          {patient.id}
-        </p>
-      </div>
-    </div>
-  );
-};
+import { ExamList } from "~/components/exam/ExamList";
+import { ExamDetail } from "~/components/exam/ExamDetail";
+import { PatientInfoCard } from "~/components/PatientDetail/PatientInfoCard";
+import { ROUTES } from "~/routes/EnumRoutes";
+import { PlusCircle, List } from "lucide-react";
+import type { ExamResponse } from "~/types/exam/examResponse";
+import { TabPanel, ContentPlaceholder, type TabItem } from "~/components/ui";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Solicitar Exames" },
-    { name: "DoctorExamination", content: "Solicitação de exames" },
+    { title: "Exames" },
+    { name: "DoctorExamination", content: "Gerenciamento de exames" },
   ];
 }
+
+type TabType = "request" | "list";
+
+const TABS: TabItem[] = [
+  { id: "list", label: "Exames Solicitados", icon: List },
+  { id: "request", label: "Solicitar Exame", icon: PlusCircle },
+];
 
 export default function DoctorExaminationPage() {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const loggedDoctorId = user?.id;
 
+  // State from URL params or location state
+  const examIdFromUrl = searchParams.get("examId");
+  const patientIdFromUrl = searchParams.get("patientId");
+  const tabFromUrl = searchParams.get("tab") as TabType | null;
+
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(
-    () => location.state?.defaultPatientId || null
+    () =>
+      location.state?.defaultPatientId ||
+      (patientIdFromUrl ? Number(patientIdFromUrl) : null)
   );
+  const [activeTab, setActiveTab] = useState<TabType>(
+    () => tabFromUrl || (examIdFromUrl ? "list" : "list")
+  );
+  const [selectedExam, setSelectedExam] = useState<ExamResponse | null>(null);
+
+  // Se veio com examId na URL, mostra detalhes do exame
+  useEffect(() => {
+    if (examIdFromUrl) {
+      setActiveTab("list");
+    }
+  }, [examIdFromUrl]);
 
   const handleSelectPatient = (id: number) => {
     setSelectedPatientId(id);
+    setSelectedExam(null);
+    // Limpa examId da URL quando seleciona outro paciente
+    if (examIdFromUrl) {
+      setSearchParams({});
+    }
+  };
+
+  const handleSelectExam = (exam: ExamResponse) => {
+    setSelectedExam(exam);
+    setSearchParams({ tab: "list", examId: String(exam.id) });
+  };
+
+  const handleBackToList = () => {
+    setSelectedExam(null);
+    setSearchParams({ tab: "list" });
+  };
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab as TabType);
+    setSelectedExam(null);
+    setSearchParams({ tab });
+  };
+
+  const renderContent = () => {
+    if (selectedPatientId === null && !examIdFromUrl) {
+      return (
+        <ContentPlaceholder message="Selecione um paciente na lista para gerenciar exames." />
+      );
+    }
+
+    // Se tem examId na URL, mostra detalhes diretamente
+    if (examIdFromUrl && !selectedExam) {
+      return (
+        <>
+          {patientIdFromUrl && (
+            <PatientInfoCard patientId={Number(patientIdFromUrl)} />
+          )}
+          <ExamDetail
+            examId={Number(examIdFromUrl)}
+            onBack={() => {
+              setSearchParams({});
+              navigate(ROUTES.DOCTOR.EXAMINATION);
+            }}
+          />
+        </>
+      );
+    }
+
+    // Se tem exame selecionado, mostra detalhes
+    if (selectedExam) {
+      return (
+        <>
+          <PatientInfoCard patientId={selectedExam.patientId} />
+          <ExamDetail examId={selectedExam.id} onBack={handleBackToList} />
+        </>
+      );
+    }
+
+    // Tabs para solicitar ou listar
+    return (
+      <>
+        <PatientInfoCard patientId={selectedPatientId!} />
+
+        <TabPanel
+          tabs={TABS}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        >
+          {activeTab === "list" ? (
+            <ExamList
+              patientId={selectedPatientId!}
+              onSelectExam={handleSelectExam}
+              selectedExamId={selectedExam?.id}
+            />
+          ) : (
+            <ExamRequest
+              patientId={selectedPatientId!}
+              doctorId={Number(loggedDoctorId) || 0}
+            />
+          )}
+        </TabPanel>
+      </>
+    );
   };
 
   return (
-    <main className="bg-white flex flex-row h-full">
-      <div className="basis-1/4 h-full">
-        <PatientList
-          doctorId={Number(loggedDoctorId) || 0}
-          onSelectPatient={handleSelectPatient}
-          onCreatePatient={() => {}}
-        />
-      </div>
+    <main className="grid h-full gap-6 lg:grid-cols-[360px_1fr]">
+      <PatientList
+        doctorId={Number(loggedDoctorId) || 0}
+        onSelectPatient={handleSelectPatient}
+        onCreatePatient={() => navigate(ROUTES.DOCTOR.PATIENTS)}
+      />
 
-      <div className="flex-1 h-full overflow-y-auto bg-gray-100 p-6 flex flex-col gap-6">
-        {selectedPatientId === null ? (
-          <div className="flex items-center justify-center h-full text-gray-800 p-6 rounded-lg border-2 border-dashed border-gray-300">
-            <p>Selecione um paciente na lista para solicitar um exame.</p>
-          </div>
-        ) : (
-          <>
-            <PatientInfoCard patientId={selectedPatientId} />
-            <ExamRequest
-              patientId={selectedPatientId}
-              doctorId={Number(loggedDoctorId) || 0}
-            />
-          </>
-        )}
+      <div className="h-full overflow-y-auto flex flex-col gap-6">
+        {renderContent()}
       </div>
     </main>
   );

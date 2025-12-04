@@ -3,8 +3,8 @@ import type { Route } from "../../+types/root";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Solicitar Exames" },
-    { name: "Exam", content: "Doctor page" },
+    { title: "Exames" },
+    { name: "Exam", content: "Gerenciamento de exames" },
   ];
 }
 

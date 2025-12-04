@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -56,7 +58,6 @@ public class AssociationRequestService {
         request.setType(dto.getType());
         request.setStatus(RequestStatus.PENDENTE);
         request.setCreatedAt(LocalDateTime.now());
-
         repo.save(request);
         sendCreationNotification(request);
         return AssociationResponseDto.from(request);
@@ -120,46 +121,56 @@ public class AssociationRequestService {
         return AssociationResponseDto.from(request);
     }
 
-    // --- métodos auxiliares: validateResponderPermission, applyAssociation, send notifications, isUserRelated ---
     private void validateResponderPermission(AssociationRequest request, User responder) {
-        if (request.getCreator().equals(responder)) {
+        if (request.getCreator().getId().equals(responder.getId())) {
             throw new AccessDeniedException("O criador da solicitação não pode responder");
         }
 
         switch (request.getType()) {
-            case PATIENT_TO_DOCTOR -> {
-                if (!(responder instanceof Doctor))
-                    throw new AccessDeniedException("Apenas um médico pode aceitar esta solicitação");
-                if (!responder.getId().equals(request.getRelation().getId()))
-                    throw new AccessDeniedException("Apenas o médico relacionado pode aceitar");
-            }
-            case PATIENT_TO_CAREGIVER -> {
-                boolean isPatient = responder instanceof Patient
-                        && responder.getId().equals(request.getPatient().getId());
-                boolean isCaregiver = responder instanceof Caregiver && request.getPatient().getCaregivers().stream()
+            case PATIENT_TO_DOCTOR:
+                if (!responder.getId().equals(request.getRelation().getId())) {
+                    throw new AccessDeniedException("Apenas o médico solicitado pode aceitar esta solicitação");
+                }
+                break;
+
+            case PATIENT_TO_CAREGIVER:
+                if (!responder.getId().equals(request.getRelation().getId())) {
+                    throw new AccessDeniedException("Apenas o cuidador solicitado pode aceitar esta solicitação");
+                }
+                break;
+
+            case DOCTOR_TO_PATIENT:
+            case CAREGIVER_TO_PATIENT:
+                boolean isTargetPatient = responder.getId().equals(request.getPatient().getId());
+                
+                boolean isGuardian = responder instanceof Caregiver && request.getPatient().getCaregivers().stream()
                         .anyMatch(c -> c.getId().equals(responder.getId()));
-                if (!isPatient && !isCaregiver)
+
+                if (!isTargetPatient && !isGuardian) {
                     throw new AccessDeniedException(
-                            "Apenas o paciente ou um cuidador relacionado podem aceitar esta solicitação");
-            }
-            case DOCTOR_TO_PATIENT, CAREGIVER_TO_PATIENT -> {
-                boolean isPatient = responder instanceof Patient
-                        && responder.getId().equals(request.getPatient().getId());
-                boolean isCaregiver = responder instanceof Caregiver && request.getPatient().getCaregivers().stream()
-                        .anyMatch(c -> c.getId().equals(responder.getId()));
-                if (!isPatient && !isCaregiver)
-                    throw new AccessDeniedException(
-                            "Apenas o paciente ou seus cuidadores podem aceitar esta solicitação");
-            }
-            default -> throw new AccessDeniedException("Tipo de solicitação inválido para resposta");
+                            "Apenas o paciente ou seus cuidadores atuais podem aceitar esta solicitação");
+                }
+                break;
+
+            default:
+                throw new AccessDeniedException("Tipo de solicitação inválido para resposta");
         }
     }
 
     private boolean isUserRelated(AssociationRequest request, User user) {
-        return request.getCreator().equals(user)
+        boolean isDirectlyRelated = request.getCreator().equals(user)
                 || (request.getResponder() != null && request.getResponder().equals(user))
                 || request.getPatient().equals(user)
                 || request.getRelation().equals(user);
+
+        if (isDirectlyRelated) return true;
+
+        if (user instanceof Caregiver && request.getPatient() != null) {
+            return request.getPatient().getCaregivers().stream()
+                    .anyMatch(c -> c.getId().equals(user.getId()));
+        }
+
+        return false;
     }
 
     private void applyAssociation(AssociationRequest request) {
@@ -169,37 +180,95 @@ public class AssociationRequestService {
             case PATIENT_TO_DOCTOR, DOCTOR_TO_PATIENT -> {
                 Doctor doctor = doctorRepo.findByIdAndActiveTrue(request.getRelation().getId())
                         .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
-                patient.getDoctors().add(doctor);
-                doctor.getPatients().add(patient);
+                
+                // Evita duplicatas ao adicionar
+                if (!patient.getDoctors().contains(doctor)) {
+                    patient.getDoctors().add(doctor);
+                }
+                if (!doctor.getPatients().contains(patient)) {
+                    doctor.getPatients().add(patient);
+                }
+                
                 patientRepo.save(patient);
                 doctorRepo.save(doctor);
             }
             case PATIENT_TO_CAREGIVER, CAREGIVER_TO_PATIENT -> {
                 Caregiver caregiver = caregiverRepo.findByIdAndActiveTrue(request.getRelation().getId())
                         .orElseThrow(() -> new ResourceNotFoundException("Caregiver not found"));
-                patient.getCaregivers().add(caregiver);
-                caregiver.getPatients().add(patient);
+                
+                // Evita duplicatas ao adicionar
+                if (!patient.getCaregivers().contains(caregiver)) {
+                    patient.getCaregivers().add(caregiver);
+                }
+                if (!caregiver.getPatients().contains(patient)) {
+                    caregiver.getPatients().add(patient);
+                }
+                
                 patientRepo.save(patient);
                 caregiverRepo.save(caregiver);
             }
         }
     }
 
+    private List<Long> getIdsFromUsers(Set<Caregiver> caregivers) {
+        if (caregivers == null) {
+            return new ArrayList<>();
+        }
+        return caregivers.stream()
+                .map(Caregiver::getId)
+                .collect(Collectors.toList());
+    }
+
     private void sendCreationNotification(AssociationRequest request) {
         String title = "Nova solicitação de associação";
         String message = String.format("%s enviou uma solicitação de associação para você.",
                 request.getCreator().getName());
+        List<Long> recipientIds;
+        Patient patient = request.getPatient();
+        User relation = request.getRelation(); 
+        List<Long> existingCaregiverIds = getIdsFromUsers(patient.getCaregivers());
+        
+        switch (request.getType()) {
+            case DOCTOR_TO_PATIENT:
+                recipientIds = new ArrayList<>(existingCaregiverIds);
+                if (!recipientIds.contains(patient.getId())) recipientIds.add(patient.getId());
+                break;
+            case PATIENT_TO_DOCTOR:
+                recipientIds = List.of(relation.getId());
+                break;
+            case PATIENT_TO_CAREGIVER:
+                recipientIds = new ArrayList<>(existingCaregiverIds);
+                // Importante: Adicionar o cuidador NOVO (Relation) na notificação
+                if (relation.getId() != null && !recipientIds.contains(relation.getId())) {
+                    recipientIds.add(relation.getId());
+                }
+                // Adiciona o paciente também se não estiver (embora ele seja o criador aqui, então ok)
+                if (!recipientIds.contains(patient.getId()) && !request.getCreator().getId().equals(patient.getId())) {
+                     recipientIds.add(patient.getId()); 
+                }
+                break;
+            case CAREGIVER_TO_PATIENT:
+                recipientIds = new ArrayList<>(existingCaregiverIds);
+                if (!recipientIds.contains(patient.getId())) recipientIds.add(patient.getId());
+                break;
+            default:
+                return; 
+        }
+        
+        // Remove o criador da lista de destinatários para não receber notificação do próprio envio
+        recipientIds.removeIf(id -> id.equals(request.getCreator().getId()));
 
-        NotificationCreateRequest notification = new NotificationCreateRequest(
-                request.getCreator().getId(),
-                NotificationType.RELATIONAL_UPDATE,
-                title,
-                message,
-                List.of(request.getRelation().getId()),
-                request.getId()
-        );
-
-        notificationService.createAndSend(notification);
+        if (!recipientIds.isEmpty()) {
+            NotificationCreateRequest notification = new NotificationCreateRequest(
+                    request.getCreator().getId(),
+                    NotificationType.RELATIONAL_UPDATE,
+                    title,
+                    message,
+                    recipientIds, 
+                    request.getId()
+            );
+            notificationService.createAndSend(notification);
+        }
     }
 
     private void sendAcceptedNotification(AssociationRequest request) {
@@ -211,7 +280,7 @@ public class AssociationRequestService {
                 NotificationType.RELATIONAL_UPDATE,
                 title,
                 message,
-                List.of(request.getCreator().getId(), request.getPatient().getId()),
+                List.of(request.getCreator().getId()),
                 request.getId()
         );
 

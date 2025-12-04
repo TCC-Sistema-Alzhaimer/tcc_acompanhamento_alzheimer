@@ -2,16 +2,27 @@ import { useState, useEffect } from "react";
 import Select from "react-select";
 import Button from "~/components/Button";
 import Input from "~/components/Input";
-import Modal from "~/components/modals/ModalSucess";
-
+import { useToast } from "~/context/ToastContext";
 import {
-  updateUser,
-  getUserById
-} from "~/services/userService";
+  User,
+  Mail,
+  Phone,
+  FileText,
+  Stethoscope,
+  MapPin,
+  Calendar,
+  Save,
+} from "lucide-react";
+
+import { updateUser, getUserById } from "~/services/userService";
 import type { BasicListModel } from "~/types/roles/models";
 import { SystemRoles } from "~/types/SystemRoles";
 import { SystemGenders } from "~/types/gender";
-import type { DoctorModel, PatientModel, CaregiverModel } from "~/types/roles/models";
+import type {
+  DoctorModel,
+  PatientModel,
+  CaregiverModel,
+} from "~/types/roles/models";
 
 type UserForm = {
   name?: string;
@@ -30,22 +41,20 @@ type UserForm = {
 };
 
 interface UserEditFormProps {
-  userId: number | null ;
+  userId: number | null;
   userType: SystemRoles;
 }
 
 export function UserEditForm({ userId, userType }: UserEditFormProps) {
   const [form, setForm] = useState<UserForm>({});
-  const [doctors, setDoctors] = useState<BasicListModel[]>([]);
-  const [patients, setPatients] = useState<BasicListModel[]>([]);
-  const [caregivers, setCaregivers] = useState<BasicListModel[]>([]);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
 
   // Carregar dados do usuário para edição
   useEffect(() => {
     if (userId) {
       getUserById(userType, userId)
-        .then(res => {
+        .then((res) => {
           const data = res.data;
 
           const birthdate =
@@ -55,8 +64,13 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
 
           let gender = "";
           if ("gender" in data && data.gender) {
-            const g = data.gender.toUpperCase();
-            gender = g === "M" || g === "F" ? g : "";
+            const g = String(data.gender).toUpperCase();
+            // Mapear diferentes formatos para M/F
+            if (g === "M" || g === "MALE" || g === "MASCULINO") {
+              gender = "M";
+            } else if (g === "F" || g === "FEMALE" || g === "FEMININO") {
+              gender = "F";
+            }
           }
 
           let doctorEmails: string[] = [];
@@ -88,118 +102,177 @@ export function UserEditForm({ userId, userType }: UserEditFormProps) {
     }
   }, [userId, userType]);
 
-
-
-
   const toOptions = (list: BasicListModel[]) =>
-    list.map(u => ({ value: u.email, label: u.name }));
+    list.map((u) => ({ value: u.email, label: u.name }));
 
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-const handleSubmit = async () => {
-  setErrorMessage(null);
-  try {
-    await updateUser(userType, userId!, form);
-    setShowSuccessModal(true);
-  } catch (error: any) {
-    if (error.response) {
-      const data = error.response.data;
-      if (typeof data === "string") {
-        setErrorMessage(data);
-      } else if (data.error) {
-        setErrorMessage(data.error);
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+      await updateUser(userType, userId!, form);
+      toast.success("Perfil atualizado com sucesso!");
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (error: any) {
+      if (error.response) {
+        const data = error.response.data;
+        if (typeof data === "string") {
+          toast.error(data);
+        } else if (data.error) {
+          toast.error(data.error);
+        } else {
+          toast.error(
+            "Erro ao atualizar usuário. Verifique os dados informados."
+          );
+        }
       } else {
-        setErrorMessage("Erro ao atualizar usuário. Verifique os dados informados.");
+        toast.error("Erro de conexão com o servidor.");
       }
-    } else {
-      setErrorMessage("Erro de conexão com o servidor.");
+    } finally {
+      setIsLoading(false);
     }
-  }
-};
+  };
 
   const genderOptions = [
     { value: SystemGenders.M, label: "Masculino" },
-    { value: SystemGenders.F, label: "Feminino" }
+    { value: SystemGenders.F, label: "Feminino" },
   ];
 
-  return (
-    <div className="flex flex-col items-center justify-start p-3 w-full rounded-2xl shadow-2xl bg-white gap-3">
-      <Modal
-        isOpen={showSuccessModal}
-        onClose={() => window.location.reload()}
-        title="Sucesso!"
-      >
-        Usuário atualizado com sucesso.
-      </Modal>
+  const selectStyles = {
+    control: (base: any, state: any) => ({
+      ...base,
+      borderColor: state.isFocused ? "#14b8a6" : "#d1d5db",
+      boxShadow: state.isFocused ? "0 0 0 1px #14b8a6" : "none",
+      "&:hover": { borderColor: "#14b8a6" },
+      borderRadius: "0.5rem",
+      padding: "2px 0",
+    }),
+    option: (base: any, state: any) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? "#14b8a6"
+        : state.isFocused
+          ? "#f0fdfa"
+          : "white",
+      color: state.isSelected ? "white" : "#374151",
+    }),
+  };
 
-      <h2 className="text-xl font-bold mb-4">Editar Usuário</h2>
+  const getRoleLabel = () => {
+    switch (userType) {
+      case SystemRoles.DOCTOR:
+        return "Médico";
+      case SystemRoles.PATIENT:
+        return "Paciente";
+      case SystemRoles.CAREGIVER:
+        return "Cuidador";
+      case SystemRoles.ADMIN:
+        return "Administrador";
+      default:
+        return "Usuário";
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-5 w-full max-w-lg mx-auto">
+      {/* Header com tipo de usuário */}
+      <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
+        <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center">
+          <User size={20} className="text-teal-600" />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-700">Tipo de conta</p>
+          <p className="text-base font-semibold text-gray-900">
+            {getRoleLabel()}
+          </p>
+        </div>
+      </div>
 
       {/* Campos comuns */}
-      <Input
-        placeholder="Nome"
-        value={form.name || ""}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
-      >
-        Nome
-      </Input>
-      <Input
-        placeholder="Digite o CPF"
-        value={form.cpf || ""}
-        onChange={(e) => setForm({ ...form, cpf: e.target.value })}
-        mask="000.000.000-00"
-      >
-        CPF
-      </Input>
-      <Input
-        type="email"
-        placeholder="Email"
-        value={form.email || ""}
-        onChange={(e) => setForm({ ...form, email: e.target.value })}
-      >
-        Email
-      </Input>
-      <Input
-        placeholder="Digite o telefone"
-        value={form.phone || ""}
-        onChange={(e) => setForm({ ...form, phone: e.target.value })}
-        mask="(00) 00000-0000"
-      >
-        Telefone
-      </Input>
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+          <User size={16} />
+          Informações Pessoais
+        </h3>
 
+        <Input
+          placeholder="Digite seu nome"
+          value={form.name || ""}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+        >
+          Nome
+        </Input>
 
-      {/* Campos específicos */}
+        <Input
+          placeholder="Digite o CPF"
+          value={form.cpf || ""}
+          onChange={(e) => setForm({ ...form, cpf: e.target.value })}
+          mask="000.000.000-00"
+        >
+          CPF
+        </Input>
+      </div>
+
+      {/* Contato */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+          <Mail size={16} />
+          Contato
+        </h3>
+
+        <Input
+          type="email"
+          placeholder="Digite seu email"
+          value={form.email || ""}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+        >
+          Email
+        </Input>
+
+        <Input
+          placeholder="Digite o telefone"
+          value={form.phone || ""}
+          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          mask="(00) 00000-0000"
+        >
+          Telefone
+        </Input>
+      </div>
+
+      {/* Campos específicos do médico */}
       {userType === SystemRoles.DOCTOR && (
-        <>
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <Stethoscope size={16} />
+            Informações Profissionais
+          </h3>
+
           <Input
-            placeholder="CRM"
+            placeholder="Digite o CRM"
             value={form.crm || ""}
             onChange={(e) => setForm({ ...form, crm: e.target.value })}
+            mask= "CRM/aa 0000[0000]"
           >
             CRM
           </Input>
+
           <Input
-            placeholder="Especialidade"
+            placeholder="Digite a especialidade"
             value={form.speciality || ""}
             onChange={(e) => setForm({ ...form, speciality: e.target.value })}
           >
             Especialidade
           </Input>
-
-          <Select
-            options={toOptions(patients)}
-            isMulti
-            isDisabled={true} 
-            placeholder="Pacientes"
-            value={(form.patientEmails || []).map(email => ({ value: email, label: email }))}
-            onChange={(selected) => setForm({ ...form, patientEmails: selected.map(s => s.value) })}
-            className="w-full"
-          />
-        </>
+        </div>
       )}
 
-      {(userType === SystemRoles.PATIENT || userType === SystemRoles.CAREGIVER) && (
-        <>
+      {/* Campos específicos de paciente/cuidador */}
+      {(userType === SystemRoles.PATIENT ||
+        userType === SystemRoles.CAREGIVER) && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <Calendar size={16} />
+            Dados Adicionais
+          </h3>
+
           <Input
             type="date"
             placeholder="Data de nascimento"
@@ -209,61 +282,40 @@ const handleSubmit = async () => {
             Data de Nascimento
           </Input>
 
-          <Select
-            options={genderOptions}
-            placeholder="Selecione gênero"
-            value={genderOptions.find(opt => opt.value === form.gender) || null}
-            onChange={(selected) => setForm({ ...form, gender: selected?.value || "" })}
-            className="w-full"
-          />
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">
+              Gênero
+            </label>
+            <Select
+              options={genderOptions}
+              placeholder="Selecione o gênero"
+              value={
+                genderOptions.find((opt) => opt.value === form.gender) || null
+              }
+              onChange={(selected) =>
+                setForm({ ...form, gender: selected?.value || "" })
+              }
+              styles={selectStyles}
+            />
+          </div>
 
           <Input
-            placeholder="Endereço"
+            placeholder="Digite o endereço"
             value={form.address || ""}
             onChange={(e) => setForm({ ...form, address: e.target.value })}
           >
             Endereço
           </Input>
-        </>
+        </div>
       )}
 
-      {userType === SystemRoles.PATIENT && (
-        <>
-          <Select
-            options={toOptions(doctors)}
-            isMulti
-            isDisabled={true} 
-            placeholder="Médicos"
-            value={(form.doctorEmails || []).map(email => ({ value: email, label: email }))}
-            onChange={(selected) => setForm({ ...form, doctorEmails: selected.map(s => s.value) })}
-            className="w-full"
-          />
-
-          <Select
-            options={toOptions(caregivers)}
-            isMulti
-            isDisabled={true} 
-            placeholder="Cuidadores"
-            value={(form.caregiverEmails || []).map(email => ({ value: email, label: email }))}
-            onChange={(selected) => setForm({ ...form, caregiverEmails: selected.map(s => s.value) })}
-            className="w-full"
-          />
-        </>
-      )}
-
-      {userType === SystemRoles.CAREGIVER && (
-        <Select
-          options={toOptions(patients)}
-          isMulti
-          isDisabled={true} 
-          placeholder="Pacientes"
-          value={(form.patientEmails || []).map(email => ({ value: email, label: email }))}
-          onChange={(selected) => setForm({ ...form, patientEmails: selected.map(s => s.value) })}
-          className="w-full"
-        />
-      )}
-
-      <Button onClick={handleSubmit}>Salvar</Button>
+      {/* Footer com botão de salvar */}
+      <div className="pt-4 border-t border-gray-200 flex justify-end">
+        <Button onClick={handleSubmit} disabled={isLoading}>
+          <Save size={18} className="mr-2" />
+          {isLoading ? "Salvando..." : "Salvar"}
+        </Button>
+      </div>
     </div>
   );
 }

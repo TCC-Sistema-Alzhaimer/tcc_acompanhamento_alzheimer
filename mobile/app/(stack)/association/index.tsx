@@ -8,7 +8,7 @@ import { AssociationResponseDto } from "@/types/api/association";
 import { formatAssociationType } from "@/util/format";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { StyleSheet } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 export default function AssociationListScreen() {
   const [associations, setAssociations] = useState<AssociationResponseDto[]>(
     []
@@ -19,9 +19,9 @@ export default function AssociationListScreen() {
   const { state } = useSelectedPatient();
 
   useEffect(() => {
-    if (session != null && session.accessToken && state.patientId) {
+    if (session != null && session.accessToken) {
       const accessToken = session.accessToken;
-      const patientId = state.patientId;
+      const patientId = state.patientId || undefined;
 
       async function loadAssociations() {
         const resp = await fetchAssociations({
@@ -38,22 +38,23 @@ export default function AssociationListScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="subtitle" style={styles.subtitle}>
-        Associações pendentes
+        Associações
       </ThemedText>
-      {associations.map((association) => (
-        <Card.Root
-          key={association.id}
-          themed={false}
-          style={{ marginBottom: 16 }}
-          onPress={() => router.push(`/association/${association.id}`)}
-        >
-          <Card.Title
-            title={formatAssociationType(association.type)}
-            subtitle={association.creatorEmail}
-          />
-          <Card.Icon name="person.2.fill" />
-        </Card.Root>
-      ))}
+      <ScrollView>
+        {associations.map((association) => (
+          <Card.Root
+            key={association.id}
+            style={{ marginBottom: 16 }}
+            onPress={() => router.push(`/association/${association.id}`)}
+          >
+            <Card.Title
+              title={formatAssociationType(association.type)}
+              subtitle={association.creatorEmail}
+            />
+            <Card.Icon name="person.2.fill" />
+          </Card.Root>
+        ))}
+      </ScrollView>
     </ThemedView>
   );
 }

@@ -11,4 +11,6 @@ public interface ConclusionRepository extends JpaRepository<Conclusion, Long> {
 
     List<Conclusion> findByDoctorId(Long doctorId);
 
+    List<Conclusion> findByExamPatientIdOrderByCreatedAtDesc(Long patientId);
+
 }

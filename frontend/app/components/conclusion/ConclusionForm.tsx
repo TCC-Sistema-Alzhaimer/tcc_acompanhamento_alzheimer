@@ -3,23 +3,30 @@ import Button from "~/components/Button";
 import { api } from "~/services/api";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "~/routes/EnumRoutes";
-import { UploadCloud } from "lucide-react";
+import { UploadCloud, Send } from "lucide-react";
 import type { SelectChangeEvent } from "@mui/material";
 import { usePatientExams } from "../exam/hooks/usePatientExams";
 import Form from "../form";
 import type { ConclusionCreate } from "~/types/exam/conclusionCreate";
+import { useToast } from "~/context/ToastContext";
 
 interface ConclusionFormProps {
   patientId: number;
   doctorId: number;
+  defaultExamId?: number | null;
 }
 
-export function ConclusionForm({ patientId, doctorId }: ConclusionFormProps) {
+export function ConclusionForm({
+  patientId,
+  doctorId,
+  defaultExamId,
+}: ConclusionFormProps) {
   const navigate = useNavigate();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     titulo: "",
     conclusao: "",
-    examId: "",
+    examId: defaultExamId ? String(defaultExamId) : "",
   });
   const [anexos, setAnexos] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,11 +77,12 @@ export function ConclusionForm({ patientId, doctorId }: ConclusionFormProps) {
 
     try {
       await api.post("/conclusions", conclusionData);
-      alert("Conclusão registrada com sucesso!");
-      navigate(ROUTES.DOCTOR.PATIENTS);
+      toast.success("Conclusão registrada com sucesso!");
+      setFormData({ titulo: "", conclusao: "", examId: "" });
+      setAnexos([]);
     } catch (error) {
       console.error("Erro ao registrar conclusão:", error);
-      alert("Erro ao registrar conclusão.");
+      toast.error("Erro ao registrar conclusão. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -83,16 +91,16 @@ export function ConclusionForm({ patientId, doctorId }: ConclusionFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col gap-5"
+      className="flex flex-col bg-white border border-gray-200 rounded-lg p-4 shadow-sm gap-4"
     >
-      <h3 className="text-lg font-bold text-gray-800">Conclusão médica</h3>
+      <Form.Header title="Conclusão médica" />
 
       <p className="text-sm text-gray-600">
         Data de registro: {new Date().toLocaleDateString("pt-BR")}
       </p>
 
       <Form.Select
-        label="Exame Relacionado"
+        label="Exame Relacionado:"
         name="examId"
         value={formData.examId}
         onChange={handleSelectChange}
@@ -107,7 +115,7 @@ export function ConclusionForm({ patientId, doctorId }: ConclusionFormProps) {
         }
       />
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
         <label htmlFor="titulo" className="text-sm font-semibold text-gray-700">
           Título da conclusão:
         </label>
@@ -117,12 +125,12 @@ export function ConclusionForm({ patientId, doctorId }: ConclusionFormProps) {
           name="titulo"
           value={formData.titulo}
           onChange={handleChange}
-          className="flex-1 p-2 border border-gray-300 rounded-lg  bg-gray-100 w-full"
+          className="p-2 border border-gray-300 bg-gray-50 rounded-lg w-full text-sm"
           placeholder="Título..."
         />
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
         <label
           htmlFor="conclusao"
           className="text-sm font-semibold text-gray-700"
@@ -134,8 +142,8 @@ export function ConclusionForm({ patientId, doctorId }: ConclusionFormProps) {
           name="conclusao"
           value={formData.conclusao}
           onChange={handleChange}
-          rows={6}
-          className="flex-1 p-2 border border-gray-300 bg-gray-100 rounded-lg w-full"
+          rows={4}
+          className="p-2 border border-gray-300 bg-gray-50 rounded-lg w-full text-sm"
           placeholder="Conclusão..."
         />
       </div>
@@ -144,37 +152,59 @@ export function ConclusionForm({ patientId, doctorId }: ConclusionFormProps) {
         <label className="text-sm font-semibold text-gray-700">Anexos:</label>
         <div className="flex flex-wrap gap-2 items-center">
           {anexos.map((file) => (
-            <div key={file.name} className="bg-gray-100 p-2 rounded-md text-sm">
+            <div
+              key={file.name}
+              className="bg-gray-50 border border-gray-300 p-2 rounded-lg text-sm"
+            >
               {file.name}
             </div>
           ))}
 
           <label
             htmlFor="file-upload"
-            className="bg-gray-200 p-2 rounded-md cursor-pointer hover:bg-gray-300"
+            className="flex items-center gap-2 bg-gray-50 border border-gray-300 p-2 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors text-sm text-gray-600"
           >
-            <UploadCloud size={20} />
+            <UploadCloud size={18} />
+            <span>Anexar arquivo</span>
             <input
               id="file-upload"
               name="anexos"
               type="file"
               multiple
+              accept=".pdf,.jpeg,.jpg,.png,.gif,image/jpeg,image/png,image/gif,application/pdf"
               onChange={handleFileChange}
               className="hidden"
             />
           </label>
         </div>
+        <span className="text-xs text-gray-600">
+          Formatos aceitos: PDF, JPEG, JPG, PNG, GIF
+        </span>
       </div>
 
-      <div className="flex justify-end gap-4 mt-4">
+      <div className="flex justify-end gap-3 mt-2">
         <Button
           type="button"
           variant="secondary"
-          onClick={() => navigate(ROUTES.DOCTOR.PATIENTS)}
+          className="!w-auto !py-2 !px-4 text-sm"
+          onClick={() => {
+            setFormData({
+              titulo: "",
+              conclusao: "",
+              examId: defaultExamId ? String(defaultExamId) : "",
+            });
+            setAnexos([]);
+          }}
         >
           Cancelar
         </Button>
-        <Button type="submit" variant="primary" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          variant="primary"
+          className="!w-auto !py-2 !px-4 text-sm"
+          disabled={isSubmitting}
+        >
+          <Send size={16} className="mr-2" />
           {isSubmitting ? "Registrando..." : "Registrar"}
         </Button>
       </div>

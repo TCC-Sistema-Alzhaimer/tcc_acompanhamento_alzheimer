@@ -8,6 +8,8 @@ export function formatAssociationType(type: AssociationType): string {
       return "Paciente para Cuidador";
     case "CAREGIVER_TO_PATIENT":
       return "Cuidador para Paciente";
+    case "DOCTOR_TO_PATIENT":
+      return "Médico para Paciente";
     default:
       return "Tipo Desconhecido";
   }
@@ -20,4 +22,23 @@ export function formatDateTime(value?: string) {
     return "-";
   }
   return date.toLocaleString();
+}
+
+export function formatTimeOrDate(value?: string) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const now = new Date();
+  const sameDay =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  if (sameDay) {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  return date.toLocaleDateString();
 }

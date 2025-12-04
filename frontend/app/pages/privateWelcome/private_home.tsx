@@ -20,11 +20,6 @@ export default function PrivateHome() {
         path: ROUTES.ADMIN.MANAGEMENT,
       },
       {
-        title: "Relatórios",
-        icon: <DescriptionIcon />,
-        path: ROUTES.PRIVATE_HOME,
-      },
-      {
         title: "Solicitações de associação",
         icon: <PeopleIcon />,
         path: ROUTES.ASSOCIATION,
@@ -37,7 +32,7 @@ export default function PrivateHome() {
       {
         title: "Registrar Exame",
         icon: <AssignmentIcon />,
-        path: ROUTES.PRIVATE_HOME,
+        path: ROUTES.DOCTOR.EXAMINATION,
       },
       {
         title: "Consultar Pacientes",
@@ -57,12 +52,7 @@ export default function PrivateHome() {
       {
         title: "Meus Pacientes",
         icon: <PeopleIcon />,
-        path: ROUTES.PRIVATE_HOME,
-      },
-      {
-        title: "Agendar Exames",
-        icon: <EventAvailableIcon />,
-        path: ROUTES.PRIVATE_HOME,
+        path: ROUTES.CAREGIVER.PATIENTS,
       },
       {
         title: "Solicitações de associação",
@@ -74,11 +64,6 @@ export default function PrivateHome() {
 
   if (user?.role === "PATIENT") {
     actions.push(
-      {
-        title: "Agendar Exames",
-        icon: <EventAvailableIcon />,
-        path: ROUTES.PRIVATE_HOME,
-      },
       {
         title: "Solicitações de associação",
         icon: <PeopleIcon />,

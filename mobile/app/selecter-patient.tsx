@@ -18,12 +18,11 @@ export default function SelecterPatient() {
   const router = useRouter();
   const { loading } = useAuth();
   const session = useSession();
-  const { selectPatient } = useSelectedPatient();
+  const { selectPatient, clearSelection } = useSelectedPatient();
 
   useEffect(() => {
     const fetchPatient = async () => {
       if (session?.accessToken) {
-        console.log("Fetching patients for user:", session.user);
         if (session.user.role == Roles.CAREGIVER) {
           const resp = await fetchPatientsByCaregiver({
             caregiverId: String(session.user.id),
@@ -47,6 +46,12 @@ export default function SelecterPatient() {
     router.replace("/home");
   };
 
+  const handleSelectNone = async () => {
+    await clearSelection();
+    console.log("No patient selected, navigating to home.");
+    router.replace("/home");
+  };
+
   if (loading) {
     return (
       <ThemedView
@@ -67,14 +72,36 @@ export default function SelecterPatient() {
     );
   }
 
+  const isCaregiver = session.user.role === Roles.CAREGIVER;
+
   return (
     <ThemedView style={styles.container}>
       <ThemedText style={styles.title}>
         Escolha um paciente para continuar
       </ThemedText>
+
+      {isCaregiver && (
+        <Card.Root
+          onPress={handleSelectNone}
+          style={{ marginBottom: 20, borderColor: "#007AFF", borderWidth: 1 }}
+        >
+          <Card.Title
+            title="Acessar minha área (Sem Paciente)"
+            subtitle="Gerencie suas atividades gerais"
+          />
+        </Card.Root>
+      )}
+
+      <ThemedText style={{ fontSize: 16, marginBottom: 8 }}>
+        Seus Pacientes:
+      </ThemedText>
+
       <ThemedView style={styles.patientList}>
-        {patients.map((patient) => (
-          <Card.Root onPress={() => handlePatientSelect(patient)}>
+        {patients.map((patient, i) => (
+          <Card.Root
+            onPress={() => handlePatientSelect(patient)}
+            key={String(patient.id ?? i)}
+          >
             <Card.Title title={patient.name} subtitle={patient.email} />
           </Card.Root>
         ))}

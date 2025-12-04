@@ -54,6 +54,8 @@ public class ExamService {
         ExamStatus examStatus = examStatusRepository.findById(ExamStatusType.REQUESTED.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Default exam status REQUESTED not found"));
 
+        LocalDateTime scheduledDate = dto.getScheduledDate();
+
         Exam exam = new Exam();
         exam.setDoctor(doctor);
         exam.setPatient(patient);
@@ -61,6 +63,7 @@ public class ExamService {
         exam.setStatus(examStatus);
         exam.setRequestDate(LocalDateTime.now());
         exam.setInstructions(dto.getInstructions());
+        exam.setScheduledDate(scheduledDate);
         exam.setNote(dto.getNote());
         exam.setActive(Boolean.TRUE);
 
@@ -99,6 +102,18 @@ public class ExamService {
         examRepository.save(exam);
     }
 
+    @Transactional
+    public ExamResponseDTO changeExamStatus(String examId, String newStatusId) {
+        Exam exam = findById(Long.parseLong(examId));
+
+        ExamStatus newStatus = examStatusRepository.findById(newStatusId)
+                .orElseThrow(() -> new ResourceNotFoundException("Exam Status not found with id: " + newStatusId));
+        exam.setStatus(newStatus);
+        examRepository.save(exam);
+
+        return toResponseDTO(exam);
+    }
+
     public ExamResponseDTO toResponseDTO(Exam exam) {
         ExamResponseDTO dto = new ExamResponseDTO();
 
@@ -108,6 +123,7 @@ public class ExamService {
         dto.setExamTypeId(exam.getType().getId());
         dto.setExamStatusId(exam.getStatus().getId());
         dto.setRequestDate(exam.getRequestDate());
+        dto.setScheduledDate(exam.getScheduledDate());
         dto.setInstructions(exam.getInstructions());
         dto.setNote(exam.getNote());
         dto.setUpdatedAt(exam.getUpdatedAt());

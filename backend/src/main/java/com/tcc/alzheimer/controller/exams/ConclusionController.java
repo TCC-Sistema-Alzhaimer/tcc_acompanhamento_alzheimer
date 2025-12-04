@@ -42,6 +42,11 @@ public class ConclusionController {
         return ResponseEntity.ok(conclusionService.getByExamId(examId));
     }
 
+    @GetMapping(path = "/patient/{patientId}")
+    public ResponseEntity<List<ConclusionResponseDTO>> getByPatient(@PathVariable("patientId") Long patientId) {
+        return ResponseEntity.ok(conclusionService.getByPatientId(patientId));
+    }
+
     @PutMapping(path = "/{id}")
     public ResponseEntity<ConclusionResponseDTO> update(@PathVariable("id") Long id,
             @Validated @RequestBody ConclusionCreateDTO dto) {

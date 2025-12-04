@@ -11,47 +11,54 @@ import { ActivityIndicator } from "react-native";
 
 export default function StartPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { getSession } = useAuth();
   const session = useSession();
   const { state, selectPatient } = useSelectedPatient();
 
   useEffect(() => {
-    if (authLoading || !state.hydrated) {
-      return;
-    }
-    if (user == null) {
+    if (!state.hydrated || session === undefined) return;
+
+    if (!getSession) {
       router.replace("/login");
       return;
     }
 
+    const user = getSession.user;
+
     if (user.role === Roles.PATIENT) {
       const patientId = String(user.id);
+
       if (state.patientId !== patientId) {
         (async () => {
           try {
             const resp = await fetchPatientById({
               accessToken: session?.accessToken || "",
-              patientId: patientId,
+              patientId,
             });
+
             await selectPatient({
               id: user.id,
               email: user.email,
               name: resp.name,
               cpf: resp.cpf,
               phone: resp.phone,
-              gender: GENDER.MALE,
+              gender: resp.gender ?? GENDER.MALE,
               address: resp.address,
               birthdate: resp.birthdate,
               doctorEmails: resp.doctorEmails || [],
               caregiverEmails: resp.caregiverEmails || [],
             });
-          } finally {
+
             router.replace("/home");
+          } catch (err) {
+            console.error(err);
+            router.replace("/login");
           }
         })();
       } else {
         router.replace("/home");
       }
+
       return;
     }
 
@@ -60,23 +67,12 @@ export default function StartPage() {
       user.role === Roles.DOCTOR ||
       user.role === Roles.ADMINISTRATOR
     ) {
-      if (state.patientId) {
-        router.replace("/home");
-      } else {
-        router.replace("/selecter-patient");
-      }
+      router.replace("/home");
       return;
     }
 
     router.replace("/login");
-  }, [
-    authLoading,
-    router,
-    selectPatient,
-    state.hydrated,
-    state.patientId,
-    user,
-  ]);
+  }, [getSession, session, state.hydrated, state.patientId, selectPatient]);
 
   return (
     <ThemedView

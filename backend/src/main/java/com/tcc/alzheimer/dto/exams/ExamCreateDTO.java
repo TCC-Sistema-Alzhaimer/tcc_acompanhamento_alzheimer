@@ -1,5 +1,7 @@
 package com.tcc.alzheimer.dto.exams;
 
+import java.time.LocalDateTime;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +20,8 @@ public class ExamCreateDTO {
 
     @NotNull(message = "Exam type ID is required")
     private String examTypeId;
+
+    private LocalDateTime scheduledDate;
 
     private String instructions;
 

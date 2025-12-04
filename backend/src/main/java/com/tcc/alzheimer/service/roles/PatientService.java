@@ -6,10 +6,10 @@ import java.util.stream.Collectors;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.ValidationUtils;
 
 import com.tcc.alzheimer.dto.roles.patient.PatientPostAndUpdateDto;
 import com.tcc.alzheimer.dto.roles.patient.PatientResponseGetDTO;
+import com.tcc.alzheimer.exception.BadRequestException;
 import com.tcc.alzheimer.exception.ResourceConflictException;
 import com.tcc.alzheimer.exception.ResourceNotFoundException;
 import com.tcc.alzheimer.model.roles.Caregiver;
@@ -18,20 +18,23 @@ import com.tcc.alzheimer.model.roles.Patient;
 import com.tcc.alzheimer.repository.roles.CaregiverRepository;
 import com.tcc.alzheimer.repository.roles.DoctorRepository;
 import com.tcc.alzheimer.repository.roles.PatientRepository;
+import com.tcc.alzheimer.repository.roles.UserRepository;
 
 @Service
 public class PatientService {
     private final PatientRepository repo;
     private final DoctorRepository doctorRepo;
     private final CaregiverRepository caregiverRepo;
+    private final UserRepository UserRepo;
     private final PasswordEncoder encoder;
 
     public PatientService(PatientRepository repo, DoctorRepository doctorRepo, CaregiverRepository caregiverRepo,
-            PasswordEncoder encoder) {
+            PasswordEncoder encoder, UserRepository UserRepo) {
         this.repo = repo;
         this.doctorRepo = doctorRepo;
         this.caregiverRepo = caregiverRepo;
         this.encoder = encoder;
+        this.UserRepo = UserRepo;
     }
 
     private PatientResponseGetDTO toDto(Patient patient) {
@@ -54,6 +57,32 @@ public class PatientService {
                         .collect(Collectors.toList()));
     }
 
+    private void validatePasswordLength(String password) {
+        if (password == null || password.trim().length() < 6) {
+            throw new BadRequestException("A senha deve ter no mínimo 6 caracteres.");
+        }
+    }
+
+    private String cleanNumericField(String value) {
+        if (value == null) return null;
+        return value.replaceAll("[^0-9]", "");
+    }
+    
+    private String normalizeAndValidateGender(String gender) {
+        if (gender == null || gender.isBlank()) {
+            throw new BadRequestException("O gênero é obrigatório.");
+        }
+        String upperCaseGender = gender.trim().toUpperCase();
+        
+        if (upperCaseGender.startsWith("M")) {
+            return "M";
+        }
+        if (upperCaseGender.startsWith("F")) {
+            return "F";
+        }
+        throw new BadRequestException("Gênero inválido. Use M, F, MASCULINO ou FEMININO.");
+    }
+
     public List<PatientResponseGetDTO> findAll() {
         return repo.findAllByActiveTrue().stream()
                 .map(this::toDto)
@@ -72,20 +101,47 @@ public class PatientService {
     }
 
     public Patient save(PatientPostAndUpdateDto dto) {
-        if (repo.findByCpf(dto.getCpf()).isPresent()) {
-            throw new ResourceConflictException("CPF ja cadastrado!");
+        
+        if (dto.getCpf() == null || dto.getCpf().isBlank()) {
+            throw new BadRequestException("CPF é obrigatório.");
         }
-        if (repo.findByEmail(dto.getEmail()).isPresent()) {
-            throw new ResourceConflictException("Email ja cadastrado!");
+        if (dto.getEmail() == null || dto.getEmail().isBlank()) {
+            throw new BadRequestException("Email é obrigatório.");
+        }
+        if (dto.getName() == null || dto.getName().isBlank()) {
+            throw new BadRequestException("Nome é obrigatório.");
+        }
+        if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+            throw new BadRequestException("Senha é obrigatória.");
         }
 
+        String cleanedCpf = cleanNumericField(dto.getCpf());
+        if(cleanedCpf.length() != 11) {
+            throw new BadRequestException("CPF inválido. Deve conter 11 dígitos.");
+        }
+
+        String cleanedPhone = cleanNumericField(dto.getPhone());
+        if(cleanedPhone.length() < 10 || cleanedPhone.length() > 11) {
+            throw new BadRequestException("Telefone inválido. Deve conter entre 10 e 11 dígitos.");
+        }
+
+        if (UserRepo.findByCpf(cleanedCpf).isPresent()) {
+            throw new ResourceConflictException("CPF ja cadastrado!");
+        }
+        if (UserRepo.findByEmail(dto.getEmail()).isPresent()) {
+            throw new ResourceConflictException("Email ja cadastrado!");
+        }
+        validatePasswordLength(dto.getPassword());
+
+        String normalizedGender = normalizeAndValidateGender(dto.getGender());
+
         Patient patient = new Patient();
-        patient.setCpf(dto.getCpf());
+        patient.setCpf(cleanedCpf);
         patient.setName(dto.getName());
         patient.setEmail(dto.getEmail());
-        patient.setPhone(dto.getPhone());
+        patient.setPhone(cleanedPhone);
         patient.setBirthdate(dto.getBirthdate());
-        patient.setGender(dto.getGender());
+        patient.setGender(normalizedGender);
         patient.setAddress(dto.getAddress());
         patient.setPassword(encoder.encode(dto.getPassword()));
         patient.setType(dto.getUserType());
@@ -99,16 +155,37 @@ public class PatientService {
     @Transactional
     public PatientResponseGetDTO update(Long id, PatientPostAndUpdateDto dto) {
         Patient existing = findByIdIntern(id);
+        
+        if (dto.getName() == null || dto.getName().isBlank()) {
+            throw new BadRequestException("Nome é obrigatório para atualização.");
+        }
+        if (dto.getCpf() == null || dto.getCpf().isBlank()) {
+            throw new BadRequestException("CPF é obrigatório para atualização.");
+        }
+        if (dto.getEmail() == null || dto.getEmail().isBlank()) {
+            throw new BadRequestException("Email é obrigatório para atualização.");
+        }
 
+        String cleanedCpf = cleanNumericField(dto.getCpf());
+        if(cleanedCpf.length() != 11) {
+            throw new BadRequestException("CPF inválido. Deve conter 11 dígitos.");
+        }
+
+        String cleanedPhone = cleanNumericField(dto.getPhone());
+        if(cleanedPhone.length() < 10 || cleanedPhone.length() > 11) {
+            throw new BadRequestException("Telefone inválido. Deve conter entre 10 e 11 dígitos.");
+        }
+        String normalizedGender = normalizeAndValidateGender(dto.getGender());
         existing.setName(dto.getName());
         existing.setEmail(dto.getEmail());
-        existing.setPhone(dto.getPhone());
+        existing.setCpf(cleanedCpf);
+        existing.setPhone(cleanedPhone);
         existing.setBirthdate(dto.getBirthdate());
-        existing.setGender(dto.getGender());
+        existing.setGender(normalizedGender);
         existing.setAddress(dto.getAddress());
 
-        // ✅ Atualiza senha somente se enviada
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            validatePasswordLength(dto.getPassword());
             existing.setPassword(encoder.encode(dto.getPassword()));
         }
 

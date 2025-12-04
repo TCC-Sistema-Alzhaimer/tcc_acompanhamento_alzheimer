@@ -12,6 +12,9 @@ interface TopbarProps {
 }
 
 export function Topbar({ children, isCollapsed, onToggle }: TopbarProps) {
+  const { user } = useAuth();
+  const isDoctor = user?.role === "DOCTOR";
+
   return (
     <div className="flex items-center justify-between bg-green-500 h-16 px-4 shadow-md">
       <div className="flex items-center gap-4">
@@ -23,7 +26,7 @@ export function Topbar({ children, isCollapsed, onToggle }: TopbarProps) {
           {isCollapsed ? <PanelRight size={20} /> : <PanelLeft size={20} />}
         </Button>
 
-        <SearchUser />
+        {isDoctor && <SearchUser />}
       </div>
 
       <div className="flex flex-row items-center gap-3">{children}</div>

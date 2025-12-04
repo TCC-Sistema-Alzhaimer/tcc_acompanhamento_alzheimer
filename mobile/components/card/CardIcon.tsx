@@ -1,16 +1,41 @@
+import { Colors } from "@/constants/Colors";
+import { useColorScheme } from "@/hooks/useColorScheme.web";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { IconSymbol, IconSymbolName } from "../ui/IconSymbol";
 
 interface CardIconProps {
   name: IconSymbolName;
   onPress?: () => void;
+  type?: "primary" | "secondary" | "danger" | "disabled";
 }
 
-export function CardIcon({ name, onPress }: CardIconProps) {
+export function CardIcon({ name, onPress, type = "primary" }: CardIconProps) {
+  const theme = useColorScheme() ?? "light";
+
+  const buttonColors = Colors[theme].button;
+
+  let backgroundColor = buttonColors.primaryBackground;
+  let textColor = buttonColors.primaryText;
+
+  switch (type) {
+    case "secondary":
+      backgroundColor = buttonColors.secondaryBackground;
+      textColor = buttonColors.secondaryText;
+      break;
+    case "danger":
+      backgroundColor = buttonColors.dangerBackground;
+      textColor = buttonColors.dangerText;
+      break;
+    case "disabled":
+      backgroundColor = buttonColors.disabledBackground;
+      textColor = buttonColors.disabledText;
+      break;
+  }
+
   return (
     <TouchableOpacity style={styles.container} onPress={onPress || undefined}>
-      <View style={styles.subContainer}>
-        <IconSymbol name={name} size={18} weight="medium" color="#888" />
+      <View style={[styles.subContainer, { backgroundColor }]}>
+        <IconSymbol name={name} size={18} weight="medium" color={textColor} />
       </View>
     </TouchableOpacity>
   );

@@ -6,6 +6,8 @@ export const ROUTES = {
   CHAT: "/chat",
   PRIVATE_HOME: "/private-home",
   ASSOCIATION: "/association",
+  FORGOT_PASSWORD: "/forgot-password",
+  RESET_PASSWORD: "/reset-password",
 
   ADMIN: {
     MANAGEMENT: "/management",
@@ -21,8 +23,16 @@ export const ROUTES = {
   },
 
   CAREGIVER: {
-    EXAMINATION: "/caregiver/examination/:examId?",
+    EXAMINATION: "/caregiver/examination",
     DASHBOARD: "/caregiver/dashboard",
+    PATIENTS: "/caregiver/patients",
+    HISTORY: "/caregiver/history",
+    CONCLUSION : "/caregiver/conclusion",
+  },
+
+  PATIENT: {
+    EXAM: "/patient/examination",
+    exam: (id: number) => `/patient/examination/${id}`,
   },
 
   user: (id: string) => `/user/${id}`,

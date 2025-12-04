@@ -6,6 +6,8 @@ import { ROUTES } from "~/routes/EnumRoutes";
 import type { SelectChangeEvent } from "@mui/material";
 import { useExamTypes } from "./hooks/useExamTypes";
 import Form from "../form";
+import { Send } from "lucide-react";
+import { useToast } from "~/context/ToastContext";
 
 interface SolicitarExameFormProps {
   patientId: number;
@@ -14,6 +16,7 @@ interface SolicitarExameFormProps {
 
 export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
   const navigate = useNavigate();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     tipo: "",
     dataFinal: "",
@@ -40,34 +43,44 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const formattedDate = formData.dataFinal
+      ? `${formData.dataFinal}T00:00:00`
+      : null;
+
+    const now = new Date();
+    if (formattedDate) {
+      const selectedDate = new Date(formattedDate);
+      if (selectedDate < now) {
+        toast.error("A data final não pode ser no passado.");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     const examData = {
       patientId: patientId,
       doctorId: doctorId,
       examTypeId: formData.tipo,
       instructions: formData.anotacoes,
+      scheduledDate: formattedDate,
     };
 
     try {
       await api.post("/exams", examData);
-      alert("Exame solicitado com sucesso!");
-      navigate(ROUTES.DOCTOR.PATIENTS);
+      toast.success("Exame solicitado com sucesso!");
+      setFormData({ tipo: "", dataFinal: "", anotacoes: "" });
     } catch (error) {
       console.error("Erro ao solicitar exame:", error);
-      alert("Erro ao solicitar exame.");
+      toast.error("Erro ao solicitar exame. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col bg-white gap-4 p-6 rounded-lg"
-    >
-      <Form.Header title="Solicitar exames" />
-
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <Form.Select
-        label="Tipo"
+        label="Tipo:"
         name="tipo"
         value={formData.tipo}
         onChange={handleSelectChange}
@@ -80,7 +93,7 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
         }
       />
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
         <label
           htmlFor="dataFinal"
           className="text-sm font-semibold text-gray-700"
@@ -93,11 +106,11 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
           name="dataFinal"
           value={formData.dataFinal}
           onChange={handleChange}
-          className="flex-1 p-2 border border-gray-300 bg-gray-100 rounded-lg w-full"
+          className="p-2 border border-gray-300 bg-gray-50 rounded-lg w-full text-sm"
         />
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
         <label
           htmlFor="anotacoes"
           className="text-sm font-semibold text-gray-700"
@@ -109,21 +122,28 @@ export function ExamRequest({ patientId, doctorId }: SolicitarExameFormProps) {
           name="anotacoes"
           value={formData.anotacoes}
           onChange={handleChange}
-          rows={4}
+          rows={3}
           placeholder="Anotações..."
-          className="flex-1 p-2 border border-gray-300 bg-gray-100 rounded-lg w-full"
+          className="p-2 border border-gray-300 bg-gray-50 rounded-lg w-full text-sm"
         />
       </div>
 
-      <div className="flex justify-end gap-4 mt-4">
+      <div className="flex justify-end gap-3 mt-2">
         <Button
           type="button"
           variant="secondary"
+          className="!w-auto !py-2 !px-4 text-sm"
           onClick={() => navigate(ROUTES.DOCTOR.PATIENTS)}
         >
           Cancelar
         </Button>
-        <Button type="submit" variant="primary" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          variant="primary"
+          className="!w-auto !py-2 !px-4 text-sm"
+          disabled={isSubmitting}
+        >
+          <Send size={16} className="mr-2" />
           {isSubmitting ? "Enviando..." : "Solicitar"}
         </Button>
       </div>

@@ -1,5 +1,6 @@
 package com.tcc.alzheimer.controller.exams;
 
+import com.tcc.alzheimer.dto.exams.ExamChangeStatusDTO;
 import com.tcc.alzheimer.dto.exams.ExamCreateDTO;
 import com.tcc.alzheimer.dto.exams.ExamResponseDTO;
 import com.tcc.alzheimer.exception.InsufficientRoleException;
@@ -27,22 +28,9 @@ public class ExamController {
         this.authService = authService;
     }
 
-    /**
-     * Cria um novo exame.
-     * 
-     * RESTRIÇÃO: Apenas usuários com role DOCTOR podem criar exames.
-     * 
-     * @param examCreateDTO Dados do exame a ser criado
-     * @return Dados do exame criado
-     * @throws org.springframework.security.access.AccessDeniedException se o
-     *                                                                   usuário não
-     *                                                                   for DOCTOR
-     */
     @PostMapping
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<ExamResponseDTO> createExam(@Valid @RequestBody ExamCreateDTO examCreateDTO) {
-        // Dupla validação: anotação @PreAuthorize + validação manual
-        // (a anotação já bloqueia, mas mantemos a validação manual como backup)
         if (!authService.hasRole(UserType.DOCTOR.name())) {
             throw InsufficientRoleException.forOperation("criar exame", UserType.DOCTOR.name());
         }
@@ -90,5 +78,12 @@ public class ExamController {
     public ResponseEntity<Void> deleteExam(@PathVariable Long id) {
         examService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<ExamResponseDTO> changeExamStatus(@PathVariable String id,
+            @RequestBody ExamChangeStatusDTO entity) {
+        ExamResponseDTO result = examService.changeExamStatus(id, entity.getStatus());
+        return ResponseEntity.ok(result);
     }
 }

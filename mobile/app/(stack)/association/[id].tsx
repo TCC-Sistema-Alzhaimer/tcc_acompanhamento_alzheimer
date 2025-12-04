@@ -1,15 +1,18 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useSession } from "@/hooks/useSession";
-import { fetchAssociationById } from "@/services/association-service";
+import {
+  fetchAssociationById,
+  respondToAssociationRequest,
+} from "@/services/association-service";
 import { AssociationResponseDto } from "@/types/api/association";
+import { RequestStatus } from "@/types/enum/exam-status";
 import { Roles } from "@/types/enum/roles";
 import { formatAssociationType } from "@/util/format";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -53,6 +56,7 @@ export default function AssociationDetailScreen() {
           accessToken,
           associationId,
         });
+        console.log("Fetched association:", resp);
         if (!isActive) {
           return;
         }
@@ -151,11 +155,32 @@ export default function AssociationDetailScreen() {
     return items;
   }, [association]);
 
-  const handleAction = (action: string) => {
-    Alert.alert(
-      "Funcionalidade em desenvolvimento",
-      `A ação "${action}" estará disponível em breve.`
-    );
+  const handleAction = async (action: string) => {
+    const status =
+      action === "Aceitar solicitação"
+        ? RequestStatus.ACEITA
+        : action === "Recusar solicitação"
+        ? RequestStatus.RECUSADA
+        : null;
+    if (!status) {
+      return;
+    }
+    respondToAssociationRequest({
+      accessToken: session!.accessToken,
+      associationId: association!.id,
+      responderEmail: session!.user.email,
+      status,
+    })
+      .then(() => {
+        setAssociation((prev) =>
+          prev
+            ? { ...prev, status: status, respondedAt: new Date().toISOString() }
+            : prev
+        );
+      })
+      .catch((err) => {
+        console.error("Erro ao responder à solicitação de associação:", err);
+      });
   };
 
   const formatDateTime = (value?: string | null) => {
@@ -226,7 +251,7 @@ export default function AssociationDetailScreen() {
           </View>
         </View>
 
-        <View style={styles.card}>
+        <ThemedView type="card" style={styles.card}>
           <ThemedText type="subtitle">Participantes</ThemedText>
           <View style={styles.participantRow}>
             <View style={styles.participantInfo}>
@@ -249,9 +274,9 @@ export default function AssociationDetailScreen() {
               </ThemedText>
             </View>
           </View>
-        </View>
+        </ThemedView>
 
-        <View style={styles.card}>
+        <ThemedView type="card" style={styles.card}>
           <ThemedText type="subtitle">Informações gerais</ThemedText>
           <View style={[styles.infoRow, styles.infoRowFirst]}>
             <ThemedText style={styles.infoLabel}>Criada em</ThemedText>
@@ -277,9 +302,9 @@ export default function AssociationDetailScreen() {
               {association.responderEmail ?? "—"}
             </ThemedText>
           </View>
-        </View>
+        </ThemedView>
 
-        <View style={styles.card}>
+        <ThemedView type="card" style={styles.card}>
           <ThemedText type="subtitle">Linha do tempo</ThemedText>
           <View style={styles.timeline}>
             {timelineItems.map((item, index) => (
@@ -310,7 +335,7 @@ export default function AssociationDetailScreen() {
               </View>
             ))}
           </View>
-        </View>
+        </ThemedView>
 
         {isCaregiver ? (
           association.status === "PENDENTE" ? (
@@ -336,32 +361,24 @@ export default function AssociationDetailScreen() {
                   Recusar solicitação
                 </ThemedText>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.cancelAction]}
-                onPress={() => handleAction("Cancelar associação")}
-              >
-                <ThemedText style={styles.actionText}>
-                  Cancelar associação
-                </ThemedText>
-              </TouchableOpacity>
             </View>
           ) : (
-            <View style={styles.card}>
+            <ThemedView type="card" style={styles.card}>
               <ThemedText type="subtitle">Próximos passos</ThemedText>
               <ThemedText style={styles.helperText}>
                 A associação foi respondida. Você pode gerenciar suas
                 associações na seção apropriada do aplicativo.
               </ThemedText>
-            </View>
+            </ThemedView>
           )
         ) : (
-          <View style={styles.card}>
+          <ThemedView type="card" style={styles.card}>
             <ThemedText type="subtitle">Próximos passos</ThemedText>
             <ThemedText style={styles.helperText}>
               Aguardando resposta do cuidador responsável. Você será avisado
               automaticamente assim que houver uma atualização.
             </ThemedText>
-          </View>
+          </ThemedView>
         )}
       </ScrollView>
     </ThemedView>
@@ -416,9 +433,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
     padding: 18,
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255, 255, 255, 0.1)",
     marginBottom: 16,
   },
   participantRow: {

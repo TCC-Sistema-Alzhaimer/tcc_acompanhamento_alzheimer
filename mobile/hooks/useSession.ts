@@ -5,5 +5,5 @@ export function useSession(): Session | null {
   if (!context) {
     throw new Error("useSession must be used within an AuthProvider");
   }
-  return context.useSession();
+  return context.getSession;
 }

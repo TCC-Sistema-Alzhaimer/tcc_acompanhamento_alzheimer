@@ -15,7 +15,12 @@ public class ConclusionResponseDTO {
 
     private Long id;
     private Long examId;
+    private Long patientId;
     private Long doctorId;
+    private String doctorName;
+    private String patientName;
+    private String title;
+    private String content;
     private String description;
     private String notes;
     private String conclusion;
@@ -23,5 +28,6 @@ public class ConclusionResponseDTO {
     private LocalDateTime updatedAt;
     private Long updatedBy;
     private List<FileInfoDTO> files;
+    private List<String> attachmentUrls;
 
 }

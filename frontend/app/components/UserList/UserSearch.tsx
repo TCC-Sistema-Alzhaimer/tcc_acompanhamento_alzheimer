@@ -3,13 +3,15 @@ import { useState, useEffect } from "react";
 interface UserSearchProps {
   onSearch: (term: string) => void;
   placeholder?: string;
+  initialValue?: string;
 }
 
 export function UserSearch({
   onSearch,
   placeholder = "Buscar pacientes...",
+  initialValue = "",
 }: UserSearchProps) {
-  const [term, setTerm] = useState("");
+  const [term, setTerm] = useState(initialValue);
 
   // Busca automática com debounce
   useEffect(() => {

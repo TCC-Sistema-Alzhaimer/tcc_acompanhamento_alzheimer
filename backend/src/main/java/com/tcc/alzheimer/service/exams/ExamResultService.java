@@ -164,11 +164,17 @@ public class ExamResultService {
 
     /**
      * Verifica se o usuário atual tem acesso ao exame.
+     * DOCTOR: pode acessar qualquer exame
      * PATIENT: pode acessar apenas seus próprios exames
      * CAREGIVER: pode acessar exames dos pacientes que cuida
      */
     private boolean hasAccessToExam(User user, Exam exam) {
         String userRole = authService.getCurrentUserRole();
+
+        if (UserType.DOCTOR.name().equals(userRole)) {
+            // Médico pode acessar qualquer exame
+            return true;
+        }
 
         if (UserType.PATIENT.name().equals(userRole)) {
             // Paciente só pode anexar resultado aos próprios exames
@@ -301,7 +307,3 @@ public class ExamResultService {
     }
 
 }
-
-
-
-

@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Clock,
   Paperclip,
@@ -7,6 +8,7 @@ import {
   FileText,
   ClipboardCheck,
   Activity,
+  ChevronRight,
 } from "lucide-react";
 import type {
   MedicalHistoryResponseDTO,
@@ -16,6 +18,8 @@ import type {
   FileInfoDTO,
 } from "~/services/doctorService";
 import type { UnifiedHistoryItem } from "./hooks/usePatientHistory";
+import { ROUTES } from "~/routes/EnumRoutes";
+import { useAuth } from "~/hooks/useAuth";
 
 const AttachmentItem = ({ file }: { file: FileInfoDTO }) => (
   <a
@@ -58,8 +62,17 @@ const MedicalHistoryCard = ({ item }: { item: MedicalHistoryResponseDTO }) => (
   </div>
 );
 
-const ExamCard = ({ item }: { item: ExamResponseDTO }) => (
-  <div className="bg-white border border-gray-200 rounded-lg p-4 w-full relative">
+const ExamCard = ({
+  item,
+  onClick,
+}: {
+  item: ExamResponseDTO;
+  onClick?: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    className="bg-white border border-gray-200 rounded-lg p-4 w-full relative text-left hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer"
+  >
     <span className="absolute top-4 right-4 bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded">
       EXAME
     </span>
@@ -70,24 +83,39 @@ const ExamCard = ({ item }: { item: ExamResponseDTO }) => (
       Solicitado por {item.doctorName} -{" "}
       {new Date(item.requestDate).toLocaleDateString("pt-BR")}
     </p>
-    <p className="text-sm text-gray-700">
-      Status: {item.examStatusDescription}
-    </p>
-  </div>
+    <div className="flex items-center justify-between">
+      <p className="text-sm text-gray-700">
+        Status: {item.examStatusDescription}
+      </p>
+      <ChevronRight size={16} className="text-gray-400" />
+    </div>
+  </button>
 );
 
-const ConclusionCard = ({ item }: { item: ConclusionResponseDTO }) => (
-  <div className="bg-white border border-gray-200 rounded-lg p-4 w-full relative">
+const ConclusionCard = ({
+  item,
+  onClick,
+}: {
+  item: ConclusionResponseDTO;
+  onClick?: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    className="bg-white border border-gray-200 rounded-lg p-4 w-full relative text-left hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer"
+  >
     <span className="absolute top-4 right-4 bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded">
-      CONSULTA
+      CONCLUSÃO
     </span>
     <p className="text-sm font-bold text-gray-800 mb-1">{item.title}</p>
     <p className="text-xs text-gray-800 mb-2">
       Dr. {item.doctorName} -{" "}
       {new Date(item.createdAt).toLocaleDateString("pt-BR")}
     </p>
-    <p className="text-sm text-gray-700 truncate">{item.content}</p>
-  </div>
+    <div className="flex items-center justify-between">
+      <p className="text-sm text-gray-700 truncate">{item.content}</p>
+      <ChevronRight size={16} className="text-gray-400" />
+    </div>
+  </button>
 );
 
 const IndicatorCard = ({ item }: { item: IndicatorResponseDTO }) => (
@@ -108,36 +136,97 @@ const IndicatorCard = ({ item }: { item: IndicatorResponseDTO }) => (
   </div>
 );
 
-export function HistoryItemCard({ item }: { item: UnifiedHistoryItem }) {
-  const renderDot = () => {
-    let bgColor = "bg-gray-300";
+interface HistoryItemCardProps {
+  item: UnifiedHistoryItem;
+  isLast?: boolean;
+}
 
-    if (item.itemType === "HISTORY") {
-      bgColor = "bg-yellow-500";
-    }
+export function HistoryItemCard({
+  item,
+  isLast = false,
+}: HistoryItemCardProps) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const handleExamClick = () => {
     if (item.itemType === "EXAM") {
-      bgColor = "bg-green-500";
+      if (user?.role === "CAREGIVER") {
+        navigate(`${ROUTES.CAREGIVER.EXAMINATION}?examId=${item.id}&patientId=${item.patientId}`, {
+          state: {
+            defaultPatientId: item.patientId,
+          },
+        });
+        return;
+      }
+      navigate(
+        `${ROUTES.DOCTOR.EXAMINATION}?examId=${item.id}&patientId=${item.patientId}`
+      );
     }
-    if (item.itemType === "CONCLUSION") {
-      bgColor = "bg-blue-500";
-    }
-    if (item.itemType === "INDICATOR") {
-      bgColor = "bg-indigo-500";
-    }
-
-    return (
-      <div
-        className={`absolute left-[-29px] top-5 w-4 h-4 rounded-full ${bgColor} border-2 border-white flex items-center justify-center`}
-      ></div>
-    );
   };
 
+  const handleConclusionClick = () => {
+    if (item.itemType === "CONCLUSION") {
+      if (user?.role === "CAREGIVER") {
+        navigate(`${ROUTES.CAREGIVER.CONCLUSION}?tab=list&conclusionId=${item.id}`, {
+          state: {
+            defaultPatientId: item.patientId,
+          },
+        });
+        return;
+      }
+      navigate(`${ROUTES.DOCTOR.CONCLUSION}?tab=list&conclusionId=${item.id}`, {
+        state: {
+          defaultPatientId: item.patientId,
+        },
+      });
+    }
+  };
+
+  const getIconAndColor = () => {
+    switch (item.itemType) {
+      case "HISTORY":
+        return {
+          icon: <FileText size={14} className="text-yellow-600" />,
+          bgColor: "bg-yellow-100",
+        };
+      case "EXAM":
+        return {
+          icon: <Stethoscope size={14} className="text-green-600" />,
+          bgColor: "bg-green-100",
+        };
+      case "CONCLUSION":
+        return {
+          icon: <ClipboardCheck size={14} className="text-blue-600" />,
+          bgColor: "bg-blue-100",
+        };
+      case "INDICATOR":
+        return {
+          icon: <Activity size={14} className="text-indigo-600" />,
+          bgColor: "bg-indigo-100",
+        };
+      default:
+        return { icon: null, bgColor: "bg-gray-100" };
+    }
+  };
+
+  const { icon, bgColor } = getIconAndColor();
+
   return (
-    <div className="flex gap-4 relative pl-4 border-l-3 border-white ml-2">
-      {renderDot()}
+    <div className="relative pl-8">
+      {/* Ponto na linha do tempo */}
+      <div
+        className={`absolute left-[-12px] top-4 w-6 h-6 rounded-full ${bgColor} border border-gray-300 flex items-center justify-center z-10`}
+      >
+        {icon}
+      </div>
+
+      {/* Card do item */}
       {item.itemType === "HISTORY" && <MedicalHistoryCard item={item} />}
-      {item.itemType === "EXAM" && <ExamCard item={item} />}
-      {item.itemType === "CONCLUSION" && <ConclusionCard item={item} />}
+      {item.itemType === "EXAM" && (
+        <ExamCard item={item} onClick={handleExamClick} />
+      )}
+      {item.itemType === "CONCLUSION" && (
+        <ConclusionCard item={item} onClick={handleConclusionClick} />
+      )}
       {item.itemType === "INDICATOR" && <IndicatorCard item={item} />}
     </div>
   );

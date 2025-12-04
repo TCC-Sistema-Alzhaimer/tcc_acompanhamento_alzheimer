@@ -1,7 +1,5 @@
 import { Card } from "@/components/card/Card";
 import { ThemedView } from "@/components/ThemedView";
-import { useAuth } from "@/context/AuthContext";
-import { useSelectedPatient } from "@/context/SelectedPatientContext";
 import { useSession } from "@/hooks/useSession";
 import { Roles } from "@/types/enum/roles";
 import { useRouter } from "expo-router";
@@ -10,32 +8,17 @@ import { ScrollView, StyleSheet, View } from "react-native";
 export default function HomeNewScreen() {
   const router = useRouter();
 
-  const { logout } = useAuth();
   const session = useSession();
-  const { state, clearSelection } = useSelectedPatient();
-
-  const handleLogout = () => {
-    clearSelection();
-    logout();
-  };
-
-  const patientName =
-    session?.user.role === Roles.PATIENT
-      ? "Seu painel " + state.cachedPatient?.name || ""
-      : "Visualizando " + (state.cachedPatient?.name || "nenhum paciente");
 
   return (
     <ThemedView style={styles.container}>
       {session?.user.role !== Roles.PATIENT && (
         <View style={styles.header}>
-          <Card.Root
-            themed={false}
-            onPress={() => router.push("/selecter-patient")}
-          >
+          <Card.Root onPress={() => router.push("/selecter-patient")}>
             <Card.Avatar uri="https://cdn.pixabay.com/photo/2025/01/16/05/01/assist-9336328_1280.jpg" />
             <Card.Title
               title="Pacientes"
-              subtitle="Selecione ou adicione um novo paciente."
+              subtitle="Selecione um paciente para visualizar."
             />
             <Card.Icon
               name="person.3.fill"
@@ -50,7 +33,7 @@ export default function HomeNewScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.content}>
-          <Card.Root themed={false} onPress={() => router.push("/exam")}>
+          <Card.Root onPress={() => router.push("/exam")}>
             <Card.Avatar uri="https://admin.cnnbrasil.com.br/wp-content/uploads/sites/12/2025/07/Avatar-Fogo-e-Cinzas.png?w=1200&h=900&crop=0" />
             <Card.Title
               title="Exames"
@@ -59,7 +42,7 @@ export default function HomeNewScreen() {
             <Card.Icon name="waveform.path.ecg" />
           </Card.Root>
 
-          <Card.Root themed={false} onPress={() => router.push("/conclusion")}>
+          <Card.Root onPress={() => router.push("/conclusion")}>
             <Card.Avatar uri="https://cdn.pixabay.com/photo/2016/02/29/15/01/doctor-1228627_1280.jpg" />
             <Card.Title
               title="Conclusões médicas"
@@ -68,10 +51,11 @@ export default function HomeNewScreen() {
             <Card.Icon
               name="doc.text.magnifyingglass"
               onPress={() => router.push("/conclusion")}
+              type="primary"
             />
           </Card.Root>
 
-          <Card.Root themed={false} onPress={() => router.push("/association")}>
+          <Card.Root onPress={() => router.push("/association")}>
             <Card.Avatar uri="https://cdn.pixabay.com/photo/2016/12/19/10/16/hands-1917895_1280.png" />
             <Card.Title
               title="Pedidos de Associações"
@@ -83,7 +67,7 @@ export default function HomeNewScreen() {
             />
           </Card.Root>
 
-          <Card.Root themed={false} onPress={() => router.push("/historic")}>
+          <Card.Root onPress={() => router.push("/historic")}>
             <Card.Avatar uri="https://cdn.pixabay.com/photo/2015/02/06/18/38/folder-626332_1280.jpg" />
             <Card.Title
               title="Histórico de Exames"
@@ -94,19 +78,6 @@ export default function HomeNewScreen() {
               onPress={() => router.push("/historic")}
             />
           </Card.Root>
-
-          <View style={{ flex: 1, justifyContent: "flex-end" }}>
-            <Card.Root
-              themed={false}
-              onPress={() => console.log("Card pressed")}
-            >
-              <Card.Title title="Sair da conta" subtitle={patientName} />
-              <Card.Icon
-                name="rectangle.portrait.and.arrow.right"
-                onPress={handleLogout}
-              />
-            </Card.Root>
-          </View>
         </View>
       </ScrollView>
     </ThemedView>
@@ -121,7 +92,7 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 16,
     justifyContent: "center",
-    borderColor: "#444", // cor mais sutil para fundo preto
+    borderColor: "#444",
   },
   scrollContent: {
     paddingBottom: 32, // espaço para o final do scroll
