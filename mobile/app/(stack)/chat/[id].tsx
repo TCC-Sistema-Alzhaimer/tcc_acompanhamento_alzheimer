@@ -184,7 +184,7 @@ export default function ChatScreen() {
         ) : chat ? (
           <>
             <View style={styles.header}>
-              <Card.Root themed={true} style={styles.headerCard}>
+              <Card.Root style={styles.headerCard}>
                 <Card.Avatar uri="https://admin.cnnbrasil.com.br/wp-content/uploads/sites/12/2025/07/Avatar-Fogo-e-Cinzas.png?w=1200&h=900&crop=0" />
                 <Card.Title
                   title={chat.name || "Chat"}
@@ -223,7 +223,7 @@ export default function ChatScreen() {
                 { paddingBottom: Math.max(insets.bottom, 12) },
               ]}
             >
-              <Card.Root themed={false} style={styles.inputRow}>
+              <Card.Root style={styles.inputRow}>
                 <ThemedTextInput
                   placeholder="Digite sua mensagem..."
                   style={styles.input}

@@ -6,6 +6,7 @@ import {
   Linking,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   View,
 } from "react-native";
@@ -216,160 +217,168 @@ export default function ExamDetailScreen() {
 
   return (
     <ThemedView style={styles.container} type="default">
-      {lastUploaded ? (
-        <ThemedView style={styles.banner} type="secondary">
-          <IconSymbol name="paperclip.circle.fill" size={20} color="#2563eb" />
-          <View style={styles.bannerText}>
-            <ThemedText style={styles.bannerTitle}>
-              Ultimo documento enviado
-            </ThemedText>
-            <ThemedText style={styles.bannerSubtitle}>
-              {lastUploaded.fileName}
-            </ThemedText>
-          </View>
-        </ThemedView>
-      ) : null}
-
-      {files.length > 0 ? (
-        <ThemedView style={styles.banner} type="secondary">
-          <View style={styles.bannerHeader}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
+        {lastUploaded ? (
+          <ThemedView style={styles.banner} type="secondary">
             <IconSymbol
               name="paperclip.circle.fill"
               size={20}
               color="#2563eb"
             />
-            <ThemedText style={styles.bannerTitle}>
-              Documentos anexados ({files.length})
-            </ThemedText>
-          </View>
+            <View style={styles.bannerText}>
+              <ThemedText style={styles.bannerTitle}>
+                Ultimo documento enviado
+              </ThemedText>
+              <ThemedText style={styles.bannerSubtitle}>
+                {lastUploaded.fileName}
+              </ThemedText>
+            </View>
+          </ThemedView>
+        ) : null}
 
-          <View style={styles.fileList}>
-            {files.map((file) => (
-              <Pressable key={file.id} onPress={() => handleOpenFile(file)}>
-                <ThemedView type="card" style={styles.fileItem}>
-                  <IconSymbol
-                    name={getFileIconName(file) as any}
-                    size={20}
-                    color="#555"
-                  />
-
-                  <View style={{ flex: 1 }}>
-                    <ThemedText style={styles.fileName}>
-                      {file.fileName}
-                    </ThemedText>
-                    <ThemedText style={styles.fileSize}>
-                      {file.formattedFileSize}
-                    </ThemedText>
-                  </View>
-
-                  <IconSymbol
-                    name="magnifyingglass"
-                    size={16}
-                    color="#2563eb"
-                  />
-                </ThemedView>
-              </Pressable>
-            ))}
-          </View>
-        </ThemedView>
-      ) : null}
-
-      {loading ? (
-        <ActivityIndicator />
-      ) : exam ? (
-        <ThemedView style={styles.content}>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <ThemedText>Solicitado em: {requestDate}</ThemedText>
-            <ExamStatus status={exam.examStatusDescription} />
-          </View>
-
-          <InfoField
-            label="Tipo de exame:"
-            value={exam.examTypeDescription ?? "-"}
-            addSeparator={true}
-          />
-          {exam.instructions ? (
-            <InfoField
-              label="Instrucoes:"
-              value={exam.instructions}
-              addSeparator={true}
-            />
-          ) : null}
-          {exam.result ? (
-            <InfoField
-              label="Resultado:"
-              value={exam.result}
-              addSeparator={true}
-            />
-          ) : null}
-          {exam.note ? (
-            <InfoField
-              label="Observações:"
-              value={exam.note}
-              addSeparator={true}
-            />
-          ) : null}
-          {exam.updatedAt ? (
-            <ThemedText>
-              Atualizado em: {new Date(exam.updatedAt).toLocaleString()}
-            </ThemedText>
-          ) : null}
-          {session?.user.role !== Roles.PATIENT && (
-            <ThemedButton
-              type={
-                exam.examStatusDescription === ExamStatusEnum.REQUESTED
-                  ? "primary"
-                  : "disabled"
-              }
-              title="Anexar documento"
-              onPress={() => setOpenModal(true)}
-            >
+        {files.length > 0 ? (
+          <ThemedView style={styles.banner} type="secondary">
+            <View style={styles.bannerHeader}>
               <IconSymbol
                 name="paperclip.circle.fill"
                 size={20}
                 color="#2563eb"
               />
-            </ThemedButton>
-          )}
-          <View style={{ flex: 1, justifyContent: "flex-end", gap: 12 }}>
-            {(files.length > 0 || lastUploaded) && (
+              <ThemedText style={styles.bannerTitle}>
+                Documentos anexados ({files.length})
+              </ThemedText>
+            </View>
+
+            <View style={styles.fileList}>
+              {files.map((file) => (
+                <Pressable key={file.id} onPress={() => handleOpenFile(file)}>
+                  <ThemedView type="card" style={styles.fileItem}>
+                    <IconSymbol
+                      name={getFileIconName(file) as any}
+                      size={20}
+                      color="#555"
+                    />
+
+                    <View style={{ flex: 1 }}>
+                      <ThemedText style={styles.fileName}>
+                        {file.fileName}
+                      </ThemedText>
+                      <ThemedText style={styles.fileSize}>
+                        {file.formattedFileSize}
+                      </ThemedText>
+                    </View>
+
+                    <IconSymbol
+                      name="magnifyingglass"
+                      size={16}
+                      color="#2563eb"
+                    />
+                  </ThemedView>
+                </Pressable>
+              ))}
+            </View>
+          </ThemedView>
+        ) : null}
+
+        {loading ? (
+          <ActivityIndicator />
+        ) : exam ? (
+          <ThemedView style={styles.content}>
+            <View
+              style={{
+                flexDirection: "column",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+              }}
+            >
+              <ThemedText>Solicitado em: {requestDate}</ThemedText>
+              <ExamStatus status={exam.examStatusDescription} />
+            </View>
+
+            <InfoField
+              label="Tipo de exame:"
+              value={exam.examTypeDescription ?? "-"}
+              addSeparator={true}
+            />
+            {exam.instructions ? (
+              <InfoField
+                label="Instrucoes:"
+                value={exam.instructions}
+                addSeparator={true}
+              />
+            ) : null}
+            {exam.result ? (
+              <InfoField
+                label="Resultado:"
+                value={exam.result}
+                addSeparator={true}
+              />
+            ) : null}
+            {exam.note ? (
+              <InfoField
+                label="Observações:"
+                value={exam.note}
+                addSeparator={true}
+              />
+            ) : null}
+            {exam.updatedAt ? (
+              <ThemedText>
+                Atualizado em: {new Date(exam.updatedAt).toLocaleString()}
+              </ThemedText>
+            ) : null}
+            {session?.user.role !== Roles.PATIENT && (
               <ThemedButton
-                title="Enviar para conclusão"
                 type={
                   exam.examStatusDescription === ExamStatusEnum.REQUESTED
                     ? "primary"
                     : "disabled"
                 }
-                onPress={sendForCompletion}
+                title="Anexar documento"
+                onPress={() => setOpenModal(true)}
               >
                 <IconSymbol
-                  name="arrow.right.circle.fill"
+                  name="paperclip.circle.fill"
                   size={20}
-                  color="#fff"
+                  color="#2563eb"
                 />
               </ThemedButton>
             )}
+          </ThemedView>
+        ) : (
+          <ThemedText>Nenhum exame encontrado.</ThemedText>
+        )}
+      </ScrollView>
+
+      {!loading && exam && (
+        <View style={styles.footerButtons}>
+          {(files.length > 0 || lastUploaded) && (
             <ThemedButton
-              title="Voltar"
-              type="secondary"
-              onPress={() => router.back()}
+              title="Enviar para conclusão"
+              type={
+                exam.examStatusDescription === ExamStatusEnum.REQUESTED
+                  ? "primary"
+                  : "disabled"
+              }
+              onPress={sendForCompletion}
             >
               <IconSymbol
-                name="arrow.left.circle.fill"
+                name="arrow.right.circle.fill"
                 size={20}
                 color="#fff"
               />
             </ThemedButton>
-          </View>
-        </ThemedView>
-      ) : (
-        <ThemedText>Nenhum exame encontrado.</ThemedText>
+          )}
+          <ThemedButton
+            title="Voltar"
+            type="secondary"
+            onPress={() => router.back()}
+          >
+            <IconSymbol name="arrow.left.circle.fill" size={20} color="#fff" />
+          </ThemedButton>
+        </View>
       )}
 
       <Modal
@@ -443,5 +452,10 @@ const styles = StyleSheet.create({
   fileSize: {
     fontSize: 11,
     opacity: 0.6,
+  },
+  footerButtons: {
+    paddingTop: 16,
+    gap: 12,
+    backgroundColor: "transparent",
   },
 });

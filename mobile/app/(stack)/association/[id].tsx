@@ -251,7 +251,7 @@ export default function AssociationDetailScreen() {
           </View>
         </View>
 
-        <View style={styles.card}>
+        <ThemedView type="card" style={styles.card}>
           <ThemedText type="subtitle">Participantes</ThemedText>
           <View style={styles.participantRow}>
             <View style={styles.participantInfo}>
@@ -274,9 +274,9 @@ export default function AssociationDetailScreen() {
               </ThemedText>
             </View>
           </View>
-        </View>
+        </ThemedView>
 
-        <View style={styles.card}>
+        <ThemedView type="card" style={styles.card}>
           <ThemedText type="subtitle">Informações gerais</ThemedText>
           <View style={[styles.infoRow, styles.infoRowFirst]}>
             <ThemedText style={styles.infoLabel}>Criada em</ThemedText>
@@ -302,9 +302,9 @@ export default function AssociationDetailScreen() {
               {association.responderEmail ?? "—"}
             </ThemedText>
           </View>
-        </View>
+        </ThemedView>
 
-        <View style={styles.card}>
+        <ThemedView type="card" style={styles.card}>
           <ThemedText type="subtitle">Linha do tempo</ThemedText>
           <View style={styles.timeline}>
             {timelineItems.map((item, index) => (
@@ -335,7 +335,7 @@ export default function AssociationDetailScreen() {
               </View>
             ))}
           </View>
-        </View>
+        </ThemedView>
 
         {isCaregiver ? (
           association.status === "PENDENTE" ? (
@@ -363,22 +363,22 @@ export default function AssociationDetailScreen() {
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={styles.card}>
+            <ThemedView type="card" style={styles.card}>
               <ThemedText type="subtitle">Próximos passos</ThemedText>
               <ThemedText style={styles.helperText}>
                 A associação foi respondida. Você pode gerenciar suas
                 associações na seção apropriada do aplicativo.
               </ThemedText>
-            </View>
+            </ThemedView>
           )
         ) : (
-          <View style={styles.card}>
+          <ThemedView type="card" style={styles.card}>
             <ThemedText type="subtitle">Próximos passos</ThemedText>
             <ThemedText style={styles.helperText}>
               Aguardando resposta do cuidador responsável. Você será avisado
               automaticamente assim que houver uma atualização.
             </ThemedText>
-          </View>
+          </ThemedView>
         )}
       </ScrollView>
     </ThemedView>
@@ -433,9 +433,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
     padding: 18,
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255, 255, 255, 0.1)",
     marginBottom: 16,
   },
   participantRow: {

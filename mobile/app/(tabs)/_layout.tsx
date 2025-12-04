@@ -1,11 +1,10 @@
 import { Tabs } from "expo-router";
 import React, { useEffect } from "react";
-import { ActivityIndicator, Platform } from "react-native";
+import { ActivityIndicator, Platform, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/context/AuthContext";
 import { useSelectedPatient } from "@/context/SelectedPatientContext";
@@ -79,7 +78,14 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
+        tabBarBackground: () => (
+          <View
+            style={{
+              backgroundColor: Colors[colorScheme ?? "light"].background,
+              flex: 1,
+            }}
+          />
+        ),
         tabBarStyle: Platform.select({
           ios: {
             position: "absolute",

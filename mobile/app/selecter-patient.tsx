@@ -97,8 +97,11 @@ export default function SelecterPatient() {
       </ThemedText>
 
       <ThemedView style={styles.patientList}>
-        {patients.map((patient) => (
-          <Card.Root onPress={() => handlePatientSelect(patient)}>
+        {patients.map((patient, i) => (
+          <Card.Root
+            onPress={() => handlePatientSelect(patient)}
+            key={String(patient.id ?? i)}
+          >
             <Card.Title title={patient.name} subtitle={patient.email} />
           </Card.Root>
         ))}

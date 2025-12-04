@@ -44,7 +44,7 @@ export default function RootLayout() {
                 <Stack.Screen name="+not-found" />
               </Stack>
             </SafeAreaView>
-            <StatusBar style="auto" />
+            <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
           </ThemeProvider>
         </SelectedPatientProvider>
       </AuthProvider>

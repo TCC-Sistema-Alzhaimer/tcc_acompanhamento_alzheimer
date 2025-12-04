@@ -44,7 +44,6 @@ export default function AssociationListScreen() {
         {associations.map((association) => (
           <Card.Root
             key={association.id}
-            themed={false}
             style={{ marginBottom: 16 }}
             onPress={() => router.push(`/association/${association.id}`)}
           >

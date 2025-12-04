@@ -1,5 +1,6 @@
 import { Card } from "@/components/card/Card";
 import { ThemedView } from "@/components/ThemedView";
+import { Colors } from "@/constants/Colors";
 import { useSelectedPatient } from "@/context/SelectedPatientContext";
 import { useSession } from "@/hooks/useSession";
 import {
@@ -10,13 +11,15 @@ import { Notification } from "@/types/domain/notification";
 import { parseNotification } from "@/util/parser";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, useColorScheme, View } from "react-native";
 
 export default function NotificationScreen() {
   const [patientNotifications, setPatientNotifications] = useState<
     Notification[] | null
   >();
 
+  const theme = useColorScheme() ?? "light";
+  const colors = Colors[theme];
   const router = useRouter();
   const session = useSession();
   const { state, loading } = useSelectedPatient();
@@ -78,15 +81,15 @@ export default function NotificationScreen() {
             patientNotifications.map((n) => (
               <Card.Root
                 key={n.id!.toString()}
-                style={{ marginBottom: 10 }}
+                style={{
+                  marginBottom: 10,
+                  backgroundColor: n.read ? colors.card : colors.background,
+                }}
                 onPress={() =>
                   handleNavigation({
                     notification: n,
                   })
                 }
-                themed={(() => {
-                  return n.read;
-                })()}
               >
                 <Card.Title title={n.title} subtitle={n.message} />
                 <Card.Icon name="paperplane.fill" />

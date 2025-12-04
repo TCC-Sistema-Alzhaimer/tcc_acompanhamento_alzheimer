@@ -1,12 +1,15 @@
 import { Card } from "@/components/card/Card";
+import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { ThemedView } from "@/components/ThemedView";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/context/AuthContext";
 import { useSession } from "@/hooks/useSession";
 import {
-  ProfileFormData,
   fetchProfile,
+  ProfileFormData,
   updateProfile,
 } from "@/services/profile-service";
 import { Roles } from "@/types/enum/roles";
@@ -15,11 +18,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
+  useColorScheme,
   View,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 
 type EmailListKey = "patientEmails" | "doctorEmails" | "caregiverEmails";
 
@@ -29,6 +34,8 @@ export default function ProfileScreen() {
   const session = useSession();
   const { loading: authLoading } = useAuth();
   const router = useRouter();
+  const theme = useColorScheme() ?? "light";
+  const colors = Colors[theme];
 
   const [profile, setProfile] = useState<ProfileFormData | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
@@ -57,8 +64,11 @@ export default function ProfileScreen() {
 
       try {
         setLoadingProfile(true);
+        if (session.user.id == null || session.user.role == null) {
+          throw new Error("User ID or role is null");
+        }
         const data = await fetchProfile({
-          userId: session.user.id,
+          userId: session.user.id as number,
           role: session.user.role,
           accessToken: session.accessToken,
         });
@@ -203,7 +213,6 @@ export default function ProfileScreen() {
     return (
       <ThemedView style={styles.centered}>
         <Card.Root
-          themed
           onPress={() => router.push("/login")}
           style={styles.loginCard}
         >
@@ -217,199 +226,236 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.header}>
-          <ThemedText type="title">Perfil</ThemedText>
-          <ThemedText type="subtitle">{formattedRole}</ThemedText>
-        </View>
-
-        <Card.Root themed style={styles.section}>
-          <Card.Title title="Dados pessoais" />
-          <View style={styles.fieldGroup}>
-            <ThemedTextInput
-              label="Nome completo"
-              value={profile.name}
-              onChangeText={(text) => updateField("name", text)}
-              placeholder="Informe seu nome"
-              error={errors.name}
-            />
-            <ThemedTextInput
-              label="Email"
-              value={profile.email}
-              onChangeText={(text) => updateField("email", text)}
-              placeholder="email@exemplo.com"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              error={errors.email}
-            />
-            {profile.cpf ? (
-              <ThemedTextInput
-                label="CPF"
-                value={profile.cpf}
-                onChangeText={(text) => updateField("cpf", text)}
-                placeholder="000.000.000-00"
-              />
-            ) : null}
-          </View>
-        </Card.Root>
-
-        <Card.Root themed style={styles.section}>
-          <Card.Title title="Contato" />
-          <View style={styles.fieldGroup}>
-            <ThemedTextInput
-              label="Telefone"
-              value={profile.phone ?? ""}
-              onChangeText={(text) => updateField("phone", text)}
-              placeholder="(00) 00000-0000"
-              keyboardType="phone-pad"
-              error={errors.phone}
-            />
-            {profile.address !== undefined ? (
-              <ThemedTextInput
-                label="Endereco"
-                value={profile.address ?? ""}
-                onChangeText={(text) => updateField("address", text)}
-                placeholder="Rua, numero, bairro"
-              />
-            ) : null}
-            {profile.birthdate !== undefined ? (
-              <ThemedTextInput
-                label="Data de nascimento"
-                value={profile.birthdate ?? ""}
-                onChangeText={(text) => updateField("birthdate", text)}
-                placeholder="AAAA-MM-DD"
-              />
-            ) : null}
-            {profile.gender !== undefined ? (
-              <ThemedTextInput
-                label="Genero"
-                value={profile.gender ?? ""}
-                onChangeText={(text) => updateField("gender", text)}
-                placeholder="MASCULINO, FEMININO..."
-                autoCapitalize="characters"
-              />
-            ) : null}
-          </View>
-        </Card.Root>
-
-        {profile.role === Roles.DOCTOR ? (
-          <Card.Root themed style={styles.section}>
-            <Card.Title title="Informacoes profissionais" />
-            <View style={styles.fieldGroup}>
-              <ThemedTextInput
-                label="CRM"
-                value={profile.crm ?? ""}
-                onChangeText={(text) => updateField("crm", text)}
-                placeholder="CRM"
-              />
-              <ThemedTextInput
-                label="Especialidade"
-                value={profile.speciality ?? ""}
-                onChangeText={(text) => updateField("speciality", text)}
-                placeholder="Especialidade principal"
-              />
-            </View>
-          </Card.Root>
-        ) : null}
-
-        {shouldShowPatientEmails ? (
-          <Card.Root themed style={styles.section}>
-            <Card.Title title="Pacientes vinculados" />
-            <ThemedTextInput
-              multiline
-              numberOfLines={3}
-              value={emailLists.patientEmails}
-              onChangeText={(text) =>
-                handleEmailListChange("patientEmails", text)
-              }
-              style={{ minHeight: 60, width: "100%" }}
-              placeholder="emails separados por virgula"
-            />
-          </Card.Root>
-        ) : null}
-
-        {shouldShowDoctorEmails ? (
-          <Card.Root themed style={styles.section}>
-            <Card.Title title="Medicos vinculados" />
-            <ThemedTextInput
-              multiline
-              numberOfLines={3}
-              value={emailLists.doctorEmails}
-              onChangeText={(text) =>
-                handleEmailListChange("doctorEmails", text)
-              }
-              placeholder="emails separados por virgula"
-            />
-          </Card.Root>
-        ) : null}
-
-        {shouldShowCaregiverEmails ? (
-          <Card.Root themed style={styles.section}>
-            <Card.Title title="Cuidadores vinculados" />
-            <ThemedTextInput
-              multiline
-              numberOfLines={3}
-              value={emailLists.caregiverEmails}
-              onChangeText={(text) =>
-                handleEmailListChange("caregiverEmails", text)
-              }
-              placeholder="emails separados por virgula"
-            />
-          </Card.Root>
-        ) : null}
-
-        <Card.Root themed style={styles.section}>
-          <Card.Title title="Seguranca" />
-          <View style={styles.fieldGroup}>
-            <ThemedTextInput
-              label="Nova senha"
-              value={newPassword}
-              onChangeText={setNewPassword}
-              placeholder="Informe a nova senha"
-              secureTextEntry
-              error={errors.newPassword}
-            />
-            <ThemedTextInput
-              label="Confirmar nova senha"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholder="Repita a nova senha"
-              secureTextEntry
-              error={errors.confirmPassword}
-            />
-          </View>
-        </Card.Root>
-
-        <TouchableOpacity
-          style={[styles.saveButton, saving && styles.saveButtonDisabled]}
-          onPress={handleSave}
-          disabled={saving}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+    >
+      <ThemedView style={styles.container}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          {saving ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <ThemedText style={styles.saveButtonText}>
-              Salvar alteracoes
-            </ThemedText>
-          )}
-        </TouchableOpacity>
-      </ScrollView>
-    </ThemedView>
+          {/* Header */}
+          <View style={styles.headerContainer}>
+            <View style={{ alignItems: "center", gap: 4 }}>
+              <ThemedText type="title">{profile.name}</ThemedText>
+              <ThemedText style={{ color: colors.secondaryText, fontSize: 14 }}>
+                {profile.email} • {formattedRole}
+              </ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.formGap}>
+            {/* Seção Pessoal */}
+            <Card.Root style={styles.formCard}>
+              <Card.Title
+                title="Dados pessoais"
+                subtitle="Informações básicas da conta"
+              />
+              <View style={styles.fieldGroup}>
+                <ThemedTextInput
+                  label="Nome completo"
+                  value={profile.name}
+                  onChangeText={(text) => updateField("name", text)}
+                  placeholder="Seu nome"
+                  error={errors.name}
+                />
+                <ThemedTextInput
+                  label="Email"
+                  value={profile.email}
+                  onChangeText={(text) => updateField("email", text)}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  error={errors.email}
+                />
+                {profile.cpf && (
+                  <ThemedTextInput
+                    label="CPF"
+                    value={profile.cpf}
+                    editable={false} // Geralmente CPF não muda
+                    style={{ opacity: 0.6 }}
+                  />
+                )}
+              </View>
+            </Card.Root>
+
+            {/* Seção Contato */}
+            <Card.Root style={styles.formCard}>
+              <Card.Title
+                title="Contato & Endereço"
+                subtitle="Para comunicação e localização"
+              />
+              <View style={styles.fieldGroup}>
+                <ThemedTextInput
+                  label="Telefone"
+                  value={profile.phone ?? ""}
+                  onChangeText={(text) => updateField("phone", text)}
+                  placeholder="(00) 00000-0000"
+                  keyboardType="phone-pad"
+                  error={errors.phone}
+                />
+                {profile.address !== undefined && (
+                  <ThemedTextInput
+                    label="Endereço"
+                    value={profile.address ?? ""}
+                    onChangeText={(text) => updateField("address", text)}
+                    placeholder="Rua, número..."
+                  />
+                )}
+                <View style={styles.row}>
+                  {profile.birthdate !== undefined && (
+                    <View style={{ flex: 1 }}>
+                      <ThemedTextInput
+                        label="Nascimento"
+                        value={profile.birthdate ?? ""}
+                        onChangeText={(text) => updateField("birthdate", text)}
+                        placeholder="AAAA-MM-DD"
+                      />
+                    </View>
+                  )}
+                  {profile.gender !== undefined && (
+                    <View style={{ flex: 1 }}>
+                      <ThemedTextInput
+                        label="Gênero"
+                        value={profile.gender ?? ""}
+                        onChangeText={(text) => updateField("gender", text)}
+                        placeholder="M/F"
+                      />
+                    </View>
+                  )}
+                </View>
+              </View>
+            </Card.Root>
+
+            {/* Seção Profissional (Médico) */}
+            {profile.role === Roles.DOCTOR && (
+              <Card.Root style={styles.formCard}>
+                <Card.Title
+                  title="Profissional"
+                  subtitle="Dados do CRM e Especialidade"
+                />
+                <View style={styles.fieldGroup}>
+                  <ThemedTextInput
+                    label="CRM"
+                    value={profile.crm ?? ""}
+                    onChangeText={(text) => updateField("crm", text)}
+                  />
+                  <ThemedTextInput
+                    label="Especialidade"
+                    value={profile.speciality ?? ""}
+                    onChangeText={(text) => updateField("speciality", text)}
+                  />
+                </View>
+              </Card.Root>
+            )}
+
+            {/* Seções de Email (Vínculos) */}
+            {(shouldShowPatientEmails ||
+              shouldShowDoctorEmails ||
+              shouldShowCaregiverEmails) && (
+              <Card.Root style={styles.formCard}>
+                <Card.Title
+                  title="Vínculos"
+                  subtitle="Emails separados por vírgula"
+                />
+                <View style={styles.fieldGroup}>
+                  {shouldShowPatientEmails && (
+                    <ThemedTextInput
+                      label="Pacientes vinculados"
+                      multiline
+                      numberOfLines={3}
+                      value={emailLists.patientEmails}
+                      onChangeText={(t) =>
+                        handleEmailListChange("patientEmails", t)
+                      }
+                      style={{ minHeight: 80, textAlignVertical: "top" }}
+                    />
+                  )}
+                  {shouldShowDoctorEmails && (
+                    <ThemedTextInput
+                      label="Médicos vinculados"
+                      multiline
+                      numberOfLines={3}
+                      value={emailLists.doctorEmails}
+                      onChangeText={(t) =>
+                        handleEmailListChange("doctorEmails", t)
+                      }
+                      style={{ minHeight: 80, textAlignVertical: "top" }}
+                    />
+                  )}
+                  {shouldShowCaregiverEmails && (
+                    <ThemedTextInput
+                      label="Cuidadores vinculados"
+                      multiline
+                      numberOfLines={3}
+                      value={emailLists.caregiverEmails}
+                      onChangeText={(t) =>
+                        handleEmailListChange("caregiverEmails", t)
+                      }
+                      style={{ minHeight: 80, textAlignVertical: "top" }}
+                    />
+                  )}
+                </View>
+              </Card.Root>
+            )}
+
+            {/* Seção Segurança */}
+            <Card.Root style={styles.formCard}>
+              <Card.Title
+                title="Segurança"
+                subtitle="Deixe em branco para manter a atual"
+              />
+              <View style={styles.fieldGroup}>
+                <ThemedTextInput
+                  label="Nova senha"
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  placeholder="••••••"
+                  secureTextEntry
+                  error={errors.newPassword}
+                />
+                <ThemedTextInput
+                  label="Confirmar senha"
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  placeholder="••••••"
+                  secureTextEntry
+                  error={errors.confirmPassword}
+                />
+              </View>
+            </Card.Root>
+
+            {/* Botão de Salvar Padronizado */}
+            <View style={{ marginTop: 8 }}>
+              <ThemedButton
+                title={saving ? "Salvando..." : "Salvar alterações"}
+                onPress={handleSave}
+                type={saving ? "disabled" : "primary"}
+              >
+                {!saving && (
+                  <IconSymbol
+                    name="checkmark.circle.fill"
+                    color="#FFF"
+                    size={18}
+                  />
+                )}
+              </ThemedButton>
+            </View>
+          </View>
+        </ScrollView>
+      </ThemedView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
   },
   scrollContent: {
-    paddingBottom: 32,
-    gap: 16,
+    padding: 16,
+    paddingBottom: 40,
   },
   centered: {
     flex: 1,
@@ -417,34 +463,42 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 24,
   },
-  header: {
-    gap: 4,
-  },
-  section: {
-    flexDirection: "column",
-    gap: 16,
-  },
-  fieldGroup: {
-    width: "100%",
+  headerContainer: {
+    alignItems: "center",
+    marginBottom: 24,
+    marginTop: 8,
     gap: 12,
   },
-  saveButton: {
-    marginTop: 8,
-    backgroundColor: "#4FD1C5",
-    paddingVertical: 16,
-    borderRadius: 12,
+  avatarPlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
-  saveButtonDisabled: {
-    opacity: 0.7,
+  formGap: {
+    gap: 20, // Espaçamento entre Cards
   },
-  saveButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
+  formCard: {
+    flexDirection: "column", // Muda de linha para coluna
+    alignItems: "stretch", // Estica os filhos (inputs) para ocupar largura total
+    gap: 16, // Espaço entre o título e os inputs
+  },
+  fieldGroup: {
+    gap: 12,
+    marginTop: 0, // Removido margin extra, controlado pelo gap do pai
+  },
+  row: {
+    flexDirection: "row",
+    gap: 12,
   },
   loginCard: {
     maxWidth: 320,
+    width: "100%",
   },
 });

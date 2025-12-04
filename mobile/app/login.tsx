@@ -1,3 +1,5 @@
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
 import { useAuth } from "@/context/AuthContext";
 import {
   AuthenticationError,
@@ -15,7 +17,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
 } from "react-native";
 
 export default function LoginScreen() {
@@ -70,10 +71,14 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <View style={styles.card}>
-        <Text style={styles.title}>Login</Text>
+      <ThemedView type="card" style={styles.card}>
+        <ThemedText type="title" style={styles.title}>
+          Login
+        </ThemedText>
 
-        <Text style={styles.label}>Email:</Text>
+        <ThemedText type="secondary" style={styles.label}>
+          Email:
+        </ThemedText>
         <TextInput
           style={styles.input}
           value={email}
@@ -83,7 +88,9 @@ export default function LoginScreen() {
           placeholder="seuemail@exemplo.com"
         />
 
-        <Text style={styles.label}>Senha:</Text>
+        <ThemedText type="secondary" style={styles.label}>
+          Senha:
+        </ThemedText>
         <TextInput
           style={styles.input}
           value={password}
@@ -107,7 +114,7 @@ export default function LoginScreen() {
             <Text style={styles.buttonText}>Entrar</Text>
           )}
         </TouchableOpacity>
-      </View>
+      </ThemedView>
     </KeyboardAvoidingView>
   );
 }
@@ -120,7 +127,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#333",
   },
   card: {
-    backgroundColor: "white",
     borderRadius: 12,
     padding: 24,
     width: "85%",
@@ -134,14 +140,10 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   title: {
-    fontSize: 32,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 24,
   },
   label: {
-    fontSize: 16,
-    color: "#333",
     marginBottom: 8,
   },
   input: {
