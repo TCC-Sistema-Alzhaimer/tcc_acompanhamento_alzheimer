@@ -71,7 +71,7 @@ export interface IndicatorResponseDTO {
   descricao: string;
   data: string;
   tipoDescription: string;
-  tipoId: string;
+  tipoId: number;
   patientId: number;
   patientName: string;
   fileId: number | null;

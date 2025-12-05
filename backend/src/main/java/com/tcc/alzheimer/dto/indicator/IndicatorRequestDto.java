@@ -18,7 +18,7 @@ public class IndicatorRequestDto {
     private LocalDateTime data;
 
     @NotNull
-    private String tipoId; // referência ao IndicatorType
+    private Long tipoId; // referência ao IndicatorType
 
     @NotNull
     private Long patientId;

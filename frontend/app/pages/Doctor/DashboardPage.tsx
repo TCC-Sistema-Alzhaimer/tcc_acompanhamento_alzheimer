@@ -31,10 +31,10 @@ export default function DoctorDashboardPage() {
   } | null>(null);
 
   const chartData = useMemo(() => {
-    const bio1 = indicators.filter((i) => i.tipoId === "1");
-    const bio2 = indicators.filter((i) => i.tipoId === "2");
-    const bio3 = indicators.filter((i) => i.tipoId === "3");
-    const bio4 = indicators.filter((i) => i.tipoId === "4");
+    const bio1 = indicators.filter((i) => i.tipoId === 1);
+    const bio2 = indicators.filter((i) => i.tipoId === 2);
+    const bio3 = indicators.filter((i) => i.tipoId === 3);
+    const bio4 = indicators.filter((i) => i.tipoId === 4);
 
     return { bio1, bio2, bio3, bio4 };
   }, [indicators]);
@@ -111,9 +111,7 @@ export default function DoctorDashboardPage() {
               <IndicatorManager
                 isOpen={!!managingType}
                 title={managingType.title}
-                data={indicators.filter(
-                  (i) => i.tipoId === String(managingType.id)
-                )}
+                data={indicators.filter((i) => i.tipoId === managingType.id)}
                 onClose={() => setManagingType(null)}
                 onRefresh={() => window.location.reload()}
               />

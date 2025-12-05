@@ -37,20 +37,20 @@ public class IndicatorTypeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<IndicatorTypeResponseDto> findById(@PathVariable String id) {
+    public ResponseEntity<IndicatorTypeResponseDto> findById(@PathVariable Long id) {
         return ResponseEntity.ok(indicatorTypeService.findById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<IndicatorTypeResponseDto> update(
-            @PathVariable String id,
+            @PathVariable Long id,
             @Valid @RequestBody IndicatorTypeRequestDto dto
     ) {
         return ResponseEntity.ok(indicatorTypeService.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         indicatorTypeService.delete(id);
         return ResponseEntity.noContent().build();
     }

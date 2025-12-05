@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class IndicatorType {
 
     @Id
-    private String id;
+    private Long id;
 
     @Column(name = "description", nullable = false)
     private String description;

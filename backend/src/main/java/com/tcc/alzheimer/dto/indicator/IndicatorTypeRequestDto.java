@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class IndicatorTypeRequestDto {
     @NotBlank
-    private String id;
+    private Long id;
 
     @NotBlank
     private String description;

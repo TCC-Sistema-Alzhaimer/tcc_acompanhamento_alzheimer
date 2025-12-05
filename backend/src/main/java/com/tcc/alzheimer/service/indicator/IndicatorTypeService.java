@@ -37,14 +37,14 @@ public class IndicatorTypeService {
                 .collect(Collectors.toList());
     }
 
-    public IndicatorTypeResponseDto findById(String id) {
+    public IndicatorTypeResponseDto findById(Long id) {
         IndicatorType type = indicatorTypeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tipo de indicador não encontrado"));
         return new IndicatorTypeResponseDto(type.getId(), type.getDescription());
     }
 
     @Transactional
-    public IndicatorTypeResponseDto update(String id, IndicatorTypeRequestDto dto) {
+    public IndicatorTypeResponseDto update(Long id, IndicatorTypeRequestDto dto) {
         IndicatorType type = indicatorTypeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tipo de indicador não encontrado"));
         type.setDescription(dto.getDescription());
@@ -53,7 +53,7 @@ public class IndicatorTypeService {
     }
 
     @Transactional
-    public void delete(String id) {
+    public void delete(Long id) {
         IndicatorType type = indicatorTypeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tipo de indicador não encontrado"));
         indicatorTypeRepository.delete(type);

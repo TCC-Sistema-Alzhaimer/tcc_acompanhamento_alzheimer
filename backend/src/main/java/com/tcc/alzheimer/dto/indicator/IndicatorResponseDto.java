@@ -17,7 +17,7 @@ public class IndicatorResponseDto {
     private LocalDateTime data;
 
     private String tipoDescricao;
-    private String tipoId;
+    private Long tipoId;
 
     private Long patientId;
     private String patientName;
