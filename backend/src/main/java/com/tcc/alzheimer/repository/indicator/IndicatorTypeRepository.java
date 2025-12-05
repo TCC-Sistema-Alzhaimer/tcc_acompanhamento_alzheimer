@@ -4,4 +4,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.tcc.alzheimer.model.exams.IndicatorType;
 
-public interface IndicatorTypeRepository extends JpaRepository<IndicatorType, String> {}
+public interface IndicatorTypeRepository extends JpaRepository<IndicatorType, Long> {}

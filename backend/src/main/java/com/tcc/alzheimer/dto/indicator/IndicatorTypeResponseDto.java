@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class IndicatorTypeResponseDto {
-    private String id;
+    private Long id;
     private String description;
 }

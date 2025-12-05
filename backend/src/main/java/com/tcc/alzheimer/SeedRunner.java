@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tcc.alzheimer.model.Association.AssociationRequest;
 import com.tcc.alzheimer.model.enums.ExamStatusType;
 import com.tcc.alzheimer.model.enums.ExamTypeEnum;
+import com.tcc.alzheimer.model.enums.IndicatorTypeEnum;
 import com.tcc.alzheimer.model.enums.NotificationType;
 import com.tcc.alzheimer.model.enums.RequestStatus;
 import com.tcc.alzheimer.model.enums.RequestType;
@@ -29,6 +30,7 @@ import com.tcc.alzheimer.model.exams.Exam;
 import com.tcc.alzheimer.model.exams.ExamResult;
 import com.tcc.alzheimer.model.exams.ExamStatus;
 import com.tcc.alzheimer.model.exams.ExamType;
+import com.tcc.alzheimer.model.exams.IndicatorType;
 import com.tcc.alzheimer.model.files.File;
 import com.tcc.alzheimer.model.notifications.Notification;
 import com.tcc.alzheimer.model.notifications.NotificationRecipient;
@@ -44,6 +46,7 @@ import com.tcc.alzheimer.repository.exams.ExamResultRepository;
 import com.tcc.alzheimer.repository.exams.ExamStatusRepository;
 import com.tcc.alzheimer.repository.exams.ExamTypeRepository;
 import com.tcc.alzheimer.repository.files.FileRepository;
+import com.tcc.alzheimer.repository.indicator.IndicatorTypeRepository;
 import com.tcc.alzheimer.repository.notifications.NotificationRepository;
 import com.tcc.alzheimer.repository.roles.AdministratorRepository;
 import com.tcc.alzheimer.repository.roles.CaregiverRepository;
@@ -74,6 +77,7 @@ public class SeedRunner implements CommandLineRunner {
     private final NotificationRepository notificationRepository;
     private final SeedExecutionRepository seedExecutionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final IndicatorTypeRepository indicatorTypeRepository;
 
     @Value("${app.seed.force:false}")
     private boolean forceSeed;
@@ -94,6 +98,8 @@ public class SeedRunner implements CommandLineRunner {
             clearSeededData();
         }
 
+        seedIndicatorTypes();
+        
         Administrator admin = seedAdministrator();
         List<Doctor> doctors = seedDoctors();
         List<Caregiver> caregivers = seedCaregivers();
@@ -618,6 +624,23 @@ public class SeedRunner implements CommandLineRunner {
         examRepository.deleteAll();
     }
 
+    private void seedIndicatorTypes() {
+    System.out.println(">>> Seeding Indicator Types...");
+
+    for (IndicatorTypeEnum enumVal : IndicatorTypeEnum.values()) {
+
+        if (!indicatorTypeRepository.existsById(enumVal.getId())) {
+
+            IndicatorType entity = new IndicatorType();
+
+            entity.setId(enumVal.getId());
+            entity.setDescription(enumVal.getDescription());
+
+            indicatorTypeRepository.save(entity);
+        }
+    }
+}
+
     private ExamType getExamType(ExamTypeEnum type) {
         return examTypeRepository.findById(type.getId())
                 .orElseThrow(() -> new IllegalStateException("Exam type not found: " + type.getId()));
@@ -644,6 +667,7 @@ public class SeedRunner implements CommandLineRunner {
 
     private record PatientSeed(String name, String email, String cpf, String phone, String rawPassword, LocalDate birthdate, String gender, String address, List<String> doctorEmails, List<String> caregiverEmails) {
     }
+    
 }
 
 

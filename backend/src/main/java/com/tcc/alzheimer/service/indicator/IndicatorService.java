@@ -63,12 +63,14 @@ public class IndicatorService {
         return toResponse(indicator);
     }
 
+    @Transactional(readOnly = true)
     public IndicatorResponseDto findById(Long id) {
         Indicator indicator = indicatorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Indicador não encontrado"));
         return toResponse(indicator);
     }
 
+    @Transactional(readOnly = true)
     public List<IndicatorResponseDto> findByPatientId(Long patientId) {
         return indicatorRepository.findByPatientId(patientId)
                 .stream()
@@ -129,6 +131,7 @@ public class IndicatorService {
         indicatorRepository.delete(indicator);
     }
 
+    @Transactional(readOnly = true)
     public List<IndicatorResponseDto> findAll() {
         return indicatorRepository.findAll()
                 .stream()
